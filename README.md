@@ -1,1 +1,1 @@
-# Fantasky-Master
+# Fantasky Master
