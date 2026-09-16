@@ -1,0 +1,2509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Fantasky Master S21</title>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:      #c41818;
+  --red2:     #9a0f0f;
+  --red3:     #5c0808;
+  --red4:     #2a0404;
+  --red-glow: rgba(196,24,24,0.35);
+  --red-t:    rgba(196,24,24,0.10);
+
+  --gold:     #b88018;
+  --gold2:    #d4a028;
+  --gold3:    #ecc040;
+  --gold4:    #8a6010;
+  --gold-t:   rgba(184,128,24,0.12);
+  --gold-glow:rgba(212,160,40,0.28);
+  --gold-l:   var(--gold3);
+
+  /* One accent hue outside the red/gold/gray family, reserved for
+     "moving up" states (rank deltas) — everything "down" stays on the
+     existing red so red keeps its one meaning across the whole app. */
+  --up:       #34d399;
+  --up-glow:  rgba(52,211,153,0.35);
+
+  --bg:  #070507;
+  --s0:  #0b090b;
+  --s1:  #100d10;
+  --s2:  #171417;
+  --s3:  #1f1b1f;
+  --s4:  #282428;
+  --s5:  #333038;
+
+  --t1:  #ede8dc;
+  --t2:  #a89880;
+  --t3:  #b6977b; /* was #6a5848 — measured ~2.3-3:1 against panel bgs, failing WCAG AA text (4.5:1) */
+  --t4:  #b18367; /* was #3e2e24 — measured ~1.2-1.6:1, barely legible; now the dimmest tier that still passes */
+
+  --warn:  #c07820;
+  --warn-t:rgba(192,120,32,0.10);
+
+  --b-gold:  rgba(184,128,24,0.20);
+  --b-gold2: rgba(184,128,24,0.07);
+  --b-dim:   rgba(255,255,255,0.05);
+  --b-red:   rgba(196,24,24,0.35);
+
+  --ff-name: 'Fredoka','Arial Rounded MT Bold',sans-serif;
+  --ff-head: 'Bungee','Arial Black',sans-serif;
+  --ff:      'Inter',sans-serif;
+  --fm:      'DM Mono',monospace;
+
+  /* Fluid type */
+  --fs-2xs: clamp(9px,  2.2vw, 10px);
+  --fs-xs:  clamp(10px, 2.6vw, 11px);
+  --fs-sm:  clamp(11px, 2.9vw, 13px);
+  --fs-md:  clamp(12px, 3.2vw, 14px);
+  --fs-lg:  clamp(14px, 3.7vw, 16px);
+  --fs-xl:  clamp(16px, 4.2vw, 19px);
+  --fs-2xl: clamp(18px, 4.8vw, 22px);
+  --fs-3xl: clamp(21px, 5.6vw, 26px);
+  --fs-4xl: clamp(25px, 6.5vw, 32px);
+  --fs-hero:clamp(38px, 9.5vw, 56px);
+
+  /* Fluid spacing */
+  --px: 16px;
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+
+  /* Layout */
+  --tab-h:  54px;
+  --rank-w: clamp(60px,15vw,74px);
+  --port-w: clamp(74px,19vw,90px);
+  --cdp-w:  clamp(120px,28vw,160px);
+
+  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:var(--ff);background:var(--bg);color:var(--t1);
+  max-width:680px;margin:0 auto;width:100%;min-height:100%;
+  background-image:var(--noise),radial-gradient(ellipse at 50% 0%,rgba(80,8,8,0.25) 0%,transparent 65%);}
+
+/* ── SHELL ──────────────────────────────────────────── */
+.shell{display:flex;flex-direction:column;height:100vh;height:100dvh;position:relative}
+/* .hdr and .tabs are ordinary flex-flow siblings stacked at the top
+   (masthead, then nav) — .scr fills whatever height is left below them.
+   .scr is itself a horizontal snap strip of the 3 pages (same swipe
+   pattern as the episode/cast slide strips within a page); each .page
+   then scrolls itself vertically, independent of its siblings. */
+.scr{flex:1;display:flex;overflow-x:auto;overflow-y:hidden;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;
+  scrollbar-width:none;min-height:0}
+.scr::-webkit-scrollbar{display:none}
+.page{flex:0 0 100%;min-width:100%;height:100%;overflow-y:auto;overflow-x:hidden;
+  scroll-snap-align:start;-webkit-overflow-scrolling:touch;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.page::-webkit-scrollbar{width:2px}
+.page::-webkit-scrollbar-track{background:transparent}
+.page::-webkit-scrollbar-thumb{background:var(--gold4);border-radius:1px}
+
+/* ── HEADER ─ sits at the top of the shell, nav tabs directly below it
+   (see .tabs). Compacts as the active page scrolls, via .hdr.compact
+   from JS — all the compact-mode changes below animate on one shared
+   duration/easing curve and stick to transform/opacity (GPU-composited,
+   no per-frame layout reflow) rather than font-size/max-height, which
+   is what made the old shrink feel like it was stepping rather than
+   gliding. */
+.hdr{
+  flex-shrink:0;position:relative;z-index:5;
+  padding:14px var(--px);
+  border-bottom:1px solid var(--b-gold);
+  background:var(--noise),rgba(70,8,8,0.5);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  display:flex;align-items:center;gap:10px;overflow:hidden;
+  transition:padding 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.hdr.compact{padding:7px var(--px);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
+
+/* Left: brand */
+.hdr-brand{flex-shrink:0;min-width:0}
+.hdr-title{font-family:var(--ff-head);font-size:clamp(15px,4.3vw,21px);
+  color:var(--t1);letter-spacing:0;line-height:1;white-space:nowrap;
+  text-shadow:0 0 18px var(--red-glow),0 1px 0 rgba(0,0,0,0.7);
+  transform-origin:left center;
+  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);}
+.hdr.compact .hdr-title{transform:scale(0.72)}
+.hdr-title em{color:var(--gold3);font-style:normal;text-shadow:0 0 14px var(--gold-glow);}
+
+/* Right: episode/countdown pill — see PILL BOX COUNTDOWN below */
+
+
+/* ── ANIMATIONS ──────────────────────────────────────── */
+@keyframes shimmer{0%{left:-100%}100%{left:200%}}
+@keyframes pulse-glow{0%,100%{opacity:0.5}50%{opacity:1}}
+@keyframes rank-pulse{0%,100%{text-shadow:0 0 6px currentColor}50%{text-shadow:0 0 18px currentColor,0 0 36px currentColor}}
+@keyframes slide-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TABS — floating dock, sliding gold spotlight ─────
+   Sits directly below the masthead now (was the bottom of the screen).
+   One gold panel physically slides to sit behind whichever tab is
+   active, rather than each icon restyling itself in place — state reads
+   through motion, not just color. Keeps its frosted-glass fill even
+   though it's no longer overlapping scrolling content underneath it. */
+.tabs{
+  flex-shrink:0;position:relative;
+  margin:8px 10px;
+  display:flex;height:60px;
+  padding:5px;border-radius:18px;
+  background:var(--noise),rgba(11,9,11,0.55);
+  backdrop-filter:blur(18px) saturate(1.4);
+  -webkit-backdrop-filter:blur(18px) saturate(1.4);
+  border:1px solid var(--b-gold);
+  box-shadow:0 8px 22px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.05);}
+.tab-indicator{position:absolute;top:5px;bottom:5px;left:5px;
+  width:calc((100% - 10px) / 3);border-radius:13px;
+  background:linear-gradient(160deg,var(--gold3) 0%,var(--gold) 100%);
+  box-shadow:0 0 12px var(--gold-glow),inset 0 1px 1px rgba(255,255,255,0.45),inset 0 -2px 3px rgba(70,40,0,0.4);
+  transform:translateX(calc(var(--active-idx,0) * 100%));
+  transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);
+  pointer-events:none;z-index:0;}
+.tab{flex:1;position:relative;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;color:var(--t3);border:none;background:none;
+  cursor:pointer;transition:color 0.22s,transform 0.12s cubic-bezier(0.22,1,0.36,1);
+  -webkit-user-select:none;user-select:none;}
+.tab.active{color:var(--red4);}
+.tab:active{transform:scale(0.92);}
+.ti{font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;}
+
+/* ── DIVIDER ────────────────────────────────────────── */
+.sh{display:flex;align-items:center;gap:8px;padding:14px var(--px) 8px}
+.sh::before,.sh::after{content:'◆';font-size:5px;color:var(--gold4);opacity:0.5;flex-shrink:0}
+.sh-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--b-gold),transparent)}
+.sh-text{font-family:var(--ff-head);font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.22em;text-transform:uppercase;white-space:nowrap}
+
+/* ── STANDINGS ───────────────────────────────────────── */
+
+.srow::after{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;
+  background:linear-gradient(90deg,rgba(184,128,24,0.04) 0%,transparent 60%);
+  opacity:0;transition:opacity 0.12s;pointer-events:none}
+.srow:active::after{opacity:1}
+
+
+.srow.rank1 .s-pts-n{color:var(--gold2);text-shadow:0 0 10px var(--gold-glow)}
+
+
+
+
+
+
+.delta{display:flex;flex-direction:column;align-items:center;gap:0;min-width:16px}
+.delta-arrow{font-size:9px;line-height:1}
+.delta-n{font-family:var(--fm);font-size:var(--fs-xs);font-weight:700;line-height:1}
+.delta-dash{font-family:var(--fm);font-size:10px;color:var(--t4);line-height:1}
+.delta.up .delta-arrow,.delta.up .delta-n{color:var(--t2)}
+.delta.dn .delta-arrow,.delta.dn .delta-n{color:var(--t2)}
+
+
+
+
+
+
+
+
+
+
+.s-pts-n{font-family:var(--ff-head);font-size:clamp(19px,5vw,24px);font-weight:700;
+  line-height:1;letter-spacing:-0.02em;color:var(--t1)}
+.s-pts-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);letter-spacing:0.1em}
+
+
+/* ── BACK BUTTON ─────────────────────────────────────── */
+.back{display:flex;align-items:center;gap:6px;width:100%;justify-content:flex-start;
+  padding:12px var(--px);background:none;border:none;
+  border-bottom:1px solid var(--b-gold);cursor:pointer;
+  font-family:var(--ff-head);font-size:var(--fs-xs);color:var(--gold4);
+  letter-spacing:0.16em;text-transform:uppercase;transition:color 0.15s,background 0.15s}
+.back::before{content:'◂';font-size:var(--fs-sm);color:var(--gold4)}
+.back:active{background:var(--gold-t);color:var(--gold2)}
+
+/* ── PLAYER DETAIL ───────────────────────────────────── */
+.pd{display:none}.pd.on{display:block}
+.pd-hero{position:relative;overflow:hidden;border-bottom:1px solid var(--b-gold);
+  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s1) 45%,var(--s0) 100%)}
+.pd-stripe{height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold4) 20%,var(--gold2) 50%,var(--gold4) 80%,transparent);
+  box-shadow:0 0 6px var(--gold-glow)}
+.pd-body{padding:16px var(--px) 14px}
+.pd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
+.pd-rank-n{font-family:var(--ff-head);font-size:clamp(48px,12vw,68px);font-weight:900;
+  line-height:0.85;color:var(--red);letter-spacing:-0.04em;
+  text-shadow:0 0 24px var(--red-glow),0 2px 3px rgba(0,0,0,0.8)}
+.pd-rank-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.12em;margin-top:4px}
+.pd-rank-d{font-family:var(--fm);font-size:var(--fs-sm);margin-top:5px}
+.pd-name-block{flex:1;padding-top:6px;display:flex;flex-direction:column;align-items:center;}
+.pd-name{font-family:var(--ff-name);font-size:clamp(18px,4.8vw,24px);font-weight:700;
+  line-height:1.1;letter-spacing:0.02em}
+.pd-gap{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:5px}
+.pd-pts-block{text-align:right;flex-shrink:0}
+.pd-pts-n{font-family:var(--ff);font-size:clamp(38px,10vw,52px);font-weight:900;
+  line-height:0.88;color:var(--gold2);letter-spacing:-0.03em;
+  text-shadow:0 0 18px var(--gold-glow),0 2px 3px rgba(0,0,0,0.8)}
+.pd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.1em;margin-top:3px}
+
+/* Sparkline row in player detail */
+
+
+
+/* 4-stat strip */
+.stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--b-gold);gap:1px;border:1px solid var(--b-gold);border-radius:12px;
+  overflow:hidden;margin-bottom:12px;
+  box-shadow:inset 0 0 16px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.07)}
+.ss-cell{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  padding:10px 4px;text-align:center}
+.ss-v{font-family:var(--ff);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;letter-spacing:-0.02em}
+.ss-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:3px;letter-spacing:0.06em;text-transform:uppercase}
+
+/* Bar chart */
+
+
+
+
+
+
+
+
+/* Insight */
+.ins{margin:0 var(--px) 10px;
+  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  border:1px solid var(--b-gold);border-left:2px solid var(--gold4);
+  border-radius:12px;padding:10px 14px;
+  box-shadow:inset 0 0 16px rgba(0,0,0,0.2),0 4px 14px rgba(0,0,0,0.3);position:relative}
+.ins::after{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;
+  background:linear-gradient(180deg,transparent,var(--gold4),transparent);}
+.ins-lbl{font-family:var(--ff-head);font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:6px}
+.ins-body{font-size:var(--fs-md);line-height:1.6;color:var(--t2)}
+.ins-body strong{color:var(--t1);font-weight:700}
+
+/* Pick history */
+.ph{padding:0 var(--px) 14px}
+.ph-row{display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--b-dim)}
+.ph-row:last-child{border-bottom:none}
+.ph-ep{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);min-width:26px}
+.ph-cont{font-family:var(--ff);font-size:var(--fs-md);font-weight:600;padding:2px 8px;border-radius:2px;flex-shrink:0}
+.ph-cont.miss{font-family:var(--fm);font-size:var(--fs-xs);font-weight:400;
+  background:var(--warn-t);border:1px dashed rgba(192,120,32,0.3);color:var(--warn)}
+.ph-title{font-size:var(--fs-sm);color:var(--t3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ph-pts{font-family:var(--ff);font-size:clamp(17px,4.5vw,21px);font-weight:700;line-height:1;min-width:28px;text-align:right}
+
+/* ── EPISODE PAGE ────────────────────────────────────── */
+/* Only 7 of 10 episode tabs fit on screen at once, with no scrollbar (hidden
+   below) to hint at the rest. Fade the edges toward whichever side still has
+   tabs to scroll to — JS toggles .at-start/.at-end as the strip scrolls. */
+.ep-tabs{display:flex;overflow-x:auto;scrollbar-width:none;position:relative;
+  border-bottom:1px solid var(--b-gold);
+  background:var(--noise),linear-gradient(180deg,var(--s2) 0%,var(--s1) 100%);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
+  transition:-webkit-mask-image 0.15s,mask-image 0.15s;}
+.ep-tabs.at-start{
+  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%);
+  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%);}
+.ep-tabs.at-end{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 100%);}
+.ep-tabs.at-start.at-end{-webkit-mask-image:none;mask-image:none;}
+.ep-tabs::-webkit-scrollbar{display:none}
+/* Selected tab reads as a pressed-in metal button — inset shadow rather
+   than a flat color wash — instead of an idle one, the same bevel
+   language as the rank medallions above. */
+.ep-tab{flex-shrink:0;padding:10px clamp(12px,3.2vw,17px);position:relative;
+  font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.13em;cursor:pointer;
+  border:none;background:none;border-right:1px solid var(--b-dim);
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:color 0.15s,background 0.15s,box-shadow 0.15s}
+.ep-tab.active{color:var(--t1);
+  background:linear-gradient(180deg,rgba(212,160,40,0.20) 0%,rgba(212,160,40,0.05) 100%);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,0.4),inset 0 -1px 0 rgba(255,255,255,0.06);
+  border-bottom:2px solid var(--gold3)}
+.ep-tab.tbd{color:var(--t4)}
+.ep-tab:active{transform:scale(0.95)}
+
+.ep-header-box{text-align:center;padding:16px var(--px) 12px;
+  border-bottom:1px solid var(--b-gold);
+  background:var(--noise),linear-gradient(180deg,var(--red-t) 0%,transparent 100%);
+  position:relative}
+.ep-header-box::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;
+  background:linear-gradient(90deg,transparent,var(--b-gold),transparent)}
+.ep-kicker{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.22em;text-transform:uppercase;margin-bottom:4px}
+.ep-title{font-family:var(--ff-head);font-size:clamp(19px,5vw,26px);font-weight:700;
+  line-height:1.05;letter-spacing:0.01em;margin-bottom:3px}
+.ep-winner{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.05em}
+
+.ep-body{padding:14px var(--px) 22px}
+
+
+
+
+
+
+
+.tt-wrap{overflow-x:auto;scrollbar-width:none;border:1px solid var(--b-gold);
+  border-radius:12px;overflow:hidden;margin-bottom:12px;
+  box-shadow:0 0 8px rgba(184,128,24,0.05)}
+.tt-wrap::-webkit-scrollbar{display:none}
+.tt{width:100%;border-collapse:collapse;min-width:min(290px,100%)}
+.tt th{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);
+  text-transform:uppercase;letter-spacing:0.1em;
+  padding:8px 6px;text-align:center;border-bottom:1px solid var(--b-gold);
+  background:var(--noise),linear-gradient(180deg,var(--s3) 0%,var(--s2) 100%)}
+.tt th:first-child{text-align:left;padding-left:10px;min-width:100px}
+.tt td{font-size:var(--fs-md);padding:8px 6px;text-align:center;
+  border-bottom:1px solid var(--b-dim);background:var(--s2);vertical-align:middle}
+.tt td:first-child{text-align:left;padding-left:10px;
+  background:var(--noise),linear-gradient(90deg,var(--s3) 0%,var(--s2) 100%)}
+.tt tr:last-child td{border-bottom:none;background:var(--s3);font-weight:700}
+.tn{display:flex;align-items:center;gap:5px}
+.tb{font-size:13px;padding:0 2px;border-radius:2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center}
+.tb.P{}
+.tb.F{}
+.tb.T{}
+.tb.L{}
+.sc{font-family:var(--ff-head);font-size:clamp(15px,4vw,19px);font-weight:700;line-height:1;letter-spacing:-0.01em}
+.sc.best{color:var(--gold2);text-shadow:0 0 6px var(--gold-glow)}
+.sc.worst{color:var(--t4)}.sc.mid{color:var(--t1)}
+
+.ep-ins{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  border:1px solid var(--b-gold);border-left:2px solid var(--gold4);
+  border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.3)}
+.ep-ins-lbl{font-family:var(--fm);font-weight:600;font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:5px}
+.ep-ins-b{font-size:var(--fs-md);line-height:1.6;color:var(--t2)}
+.ep-ins-b strong{color:var(--t1)}
+
+
+/* ── CAST PAGE ──────────────────────────────────────── */
+.cast-list{padding:12px var(--px) 24px;display:flex;flex-direction:column;gap:2px}
+.cc{background:var(--noise),linear-gradient(135deg,var(--s2) 0%,var(--s1) 60%,var(--s2) 100%);
+  border:1px solid var(--b-gold);border-radius:2px;overflow:hidden;cursor:pointer;
+  transition:border-color 0.18s,box-shadow 0.18s;position:relative}
+.cc+.cc{margin-top:-1px;border-radius:0}
+.cc:first-child{border-radius:2px 2px 0 0}.cc:last-child{border-radius:0 0 2px 2px}
+.cc:active{border-color:rgba(184,128,24,0.45);box-shadow:0 0 0 1px rgba(184,128,24,0.14)}
+.cc-stripe{display:none}
+
+.cc-top{display:flex;align-items:stretch;min-height:clamp(86px,22vw,106px)}
+.cc-img{width:var(--port-w);flex-shrink:0;background:var(--s2);
+  display:flex;align-items:center;justify-content:center;padding:4px 3px}
+.cc-portrait{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.7))}
+.cc-ph{width:100%;min-height:86px;display:flex;align-items:center;justify-content:center;
+  font-size:var(--fs-sm);font-weight:900;letter-spacing:0.08em;opacity:0.22;text-transform:uppercase}
+
+.cc-mid{flex:1;padding:10px 10px;display:flex;flex-direction:column;justify-content:center;
+  border-left:1px solid rgba(184,128,24,0.10)}
+.cc-name{font-family:var(--ff-name);font-size:clamp(14px,3.6vw,17px);font-weight:700;line-height:1.15;letter-spacing:0.02em}
+.cc-sub{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:4px;letter-spacing:0.04em}
+
+
+.cc-right{padding:10px 10px;display:flex;flex-direction:column;
+  justify-content:center;align-items:flex-end;
+  border-left:1px solid rgba(184,128,24,0.10);flex-shrink:0;min-width:clamp(52px,13vw,64px)}
+.cc-pts{font-family:var(--ff);font-size:clamp(26px,6.8vw,34px);font-weight:900;
+  line-height:1;letter-spacing:-0.03em;color:var(--gold2);text-shadow:0 0 8px var(--gold-glow)}
+.cc-pts-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);letter-spacing:0.08em;margin-top:2px}
+
+/* Episode score row FIRST, stats SECOND */
+.cc-eps{display:flex;border-top:1px solid rgba(184,128,24,0.09)}
+.cc-ep{flex:1;text-align:center;padding:6px 2px;border-right:1px solid var(--b-dim)}
+.cc-ep:last-child{border-right:none}
+.cc-ep-n{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3)}
+.cc-ep-v{font-family:var(--ff-head);font-size:clamp(14px,3.6vw,17px);font-weight:700;line-height:1;margin-top:2px}
+.cc-ep-v.hi{color:var(--gold2);text-shadow:0 0 5px var(--gold-glow)}
+.cc-ep-v.lo{color:var(--t4)}.cc-ep-v.md{color:var(--t1)}
+
+.cc-stats{display:flex;border-top:1px solid rgba(184,128,24,0.09);
+  background:var(--noise),linear-gradient(180deg,var(--s1) 0%,var(--bg) 100%)}
+.cc-stat{flex:1;text-align:center;padding:6px 3px;border-right:1px solid var(--b-dim)}
+.cc-stat:last-child{border-right:none}
+.cc-stat-v{font-family:var(--ff-head);font-size:clamp(13px,3.4vw,16px);font-weight:700;line-height:1}
+.cc-stat-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
+
+/* ── CAST DETAIL ─────────────────────────────────────── */
+.cd{display:none}.cd.on{display:block}
+.cd-hero{display:flex;align-items:stretch;min-height:clamp(130px,32vw,172px);
+  border-bottom:1px solid var(--b-gold);
+  background:var(--noise),linear-gradient(180deg,var(--red-t) 0%,transparent 100%)}
+.cd-img{width:var(--cdp-w);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;padding:6px 0 6px var(--px)}
+.cd-img-frame{width:100%;aspect-ratio:225/266;overflow:hidden;background:var(--s2)}
+.cd-portrait{width:100%;height:100%;object-fit:cover;display:block;filter:drop-shadow(0 3px 14px rgba(0,0,0,0.85))}
+.cd-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:clamp(16px,4.2vw,20px);font-weight:900;letter-spacing:0.06em;opacity:0.18;text-transform:uppercase}
+.cd-info{flex:1;padding:14px var(--px);display:flex;flex-direction:column;justify-content:center}
+.cd-name{font-family:var(--ff-name);font-size:clamp(19px,5vw,26px);font-weight:700;
+  line-height:1.1;letter-spacing:0.02em}
+.cd-sub{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:6px;letter-spacing:0.06em}
+.cd-pts{font-family:var(--ff);font-size:clamp(32px,8.5vw,48px);font-weight:900;
+  line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em;text-shadow:0 0 14px var(--gold-glow)}
+.cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
+
+
+.cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
+  background:rgba(184,128,24,0.07);gap:1px;border-bottom:1px solid var(--b-gold);flex-shrink:0}
+.cd-s{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  padding:10px 4px;text-align:center}
+.cd-s-v{font-family:var(--ff);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;letter-spacing:-0.02em}
+.cd-s-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
+
+.cd-block{margin:8px var(--px);
+  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  border:1px solid var(--b-gold);border-radius:12px;padding:10px var(--px);
+  box-shadow:inset 0 0 16px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.06),0 4px 14px rgba(0,0,0,0.3)}
+.cd-block.red-l{border-left:2px solid var(--red);border-radius:12px}
+.cd-block-insight{border-left:2px solid var(--gold4);border-radius:12px}
+.cd-block-lbl{font-family:var(--fm);font-weight:600;font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:5px}
+.cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.62;color:var(--t2)}
+.cd-block-body strong{color:var(--t1);font-weight:700}
+
+/* Episode scores strip in cast detail */
+.cd-ep-strip{display:flex;margin:6px var(--px) 8px;
+  border:1px solid var(--b-gold);border-radius:2px;overflow:hidden;
+  background:rgba(184,128,24,0.05);gap:1px}
+.cd-ep{flex:1;background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);padding:8px 3px;text-align:center}
+.cd-ep-n{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3)}
+.cd-ep-v{font-family:var(--ff-head);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;margin-top:2px;letter-spacing:-0.02em}
+
+/* ── RESPONSIVE ──────────────────────────────────────── */
+@media(min-width:480px){
+  :root{--rank-w:74px;--port-w:92px;--cdp-w:155px}
+  .s-pts-n{font-size:24px}
+  .cc-top{min-height:106px}.cc-name{font-size:17px}.cc-pts{font-size:32px}
+  .cd-hero{min-height:170px}.cd-name{font-size:26px}.cd-pts{font-size:46px}
+}
+@media(min-width:600px){
+  :root{--px:20px}
+  body{max-width:680px}
+  .cast-list{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:14px 20px 24px}
+  .cc{border-radius:2px!important;margin-top:0!important}
+  .ep-body{padding:16px 20px 24px}
+  .pd-body{padding:18px 20px 16px}
+}
+@media(min-width:760px){
+  body{max-width:840px}
+  .pd-rank-n{font-size:72px}.pd-pts-n{font-size:54px}
+  .s-pts-n{font-size:26px}
+}
+
+/* ── EPISODE PORTRAIT PODIUM ───────────────────────── */
+.pod-portraits{display:flex;align-items:flex-end;gap:6px;
+  padding:10px 8px 0;margin-bottom:12px;
+  border:1px solid var(--b-gold);border-radius:12px;
+  background:var(--noise),linear-gradient(180deg,var(--s3) 0%,var(--s1) 100%);
+  box-shadow:inset 0 0 24px rgba(0,0,0,0.35)}
+.pod-port-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:8px}
+.pod-port-img{width:100%;aspect-ratio:225/266;overflow:hidden;
+  background:var(--s2);transition:border-color 0.2s}
+.pod-port-photo{width:100%;height:100%;object-fit:cover;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6))}
+.pod-port-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:900;letter-spacing:0.06em;opacity:0.3;text-transform:uppercase}
+
+.pod-port-name{font-family:var(--ff-name);font-size:clamp(9px,2.2vw,11px);letter-spacing:0.04em;
+  text-align:center;line-height:1;margin-top:2px}
+.pod-port-pts{font-family:var(--ff-head);font-size:clamp(14px,3.8vw,18px);font-weight:700;
+  line-height:1;letter-spacing:-0.02em;text-align:center}
+
+/* ── EPISODE HORIZONTAL SCROLL ─────────────────────── */
+/* Nested inside .page, which is itself nested inside the top-level page
+   swipe strip (.scr) — contain overscroll so hitting the first/last
+   slide here doesn't chain into swiping to the next/previous tab. */
+.ep-scroll-container{
+  display:flex;
+  overflow-x:scroll;
+  overflow-y:hidden;
+  overscroll-behavior-x:contain;
+  scroll-snap-type:x mandatory;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.ep-scroll-container::-webkit-scrollbar{display:none}
+.ep-slide{
+  flex:0 0 100%;
+  scroll-snap-align:start;
+  min-width:100%;
+  overflow:hidden;
+  /* Promote each slide to its own compositing layer. Without this, mobile
+     WebKit can fail to paint gradient/shadow-heavy content (like .cd-hero's
+     wash or .cd-pts's glow) on a slide that's scrolled into view rather
+     than visible at initial layout — the slide you land on first always
+     looks right, every other one can render flat/blank until something
+     else forces a repaint. */
+  transform:translateZ(0);
+  -webkit-transform:translateZ(0);
+  will-change:transform;
+}
+
+
+
+
+
+
+
+
+
+/* ── BRAND COLOUR SPLITS ───────────────────────────── */
+.ht-gold { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow); }
+.ht-white { color: var(--t1); text-shadow: 0 0 12px rgba(255,255,255,0.15); }
+.hdr-title em.ht-white { color: var(--t1); font-style: normal; text-shadow: none; }
+
+/* ── ACCESSIBILITY ──────────────────────────────────── */
+/* Focus visible — keyboard nav */
+:focus-visible {
+  outline: 2px solid var(--gold2);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--gold2); outline-offset: 2px; }
+/* Remove default focus for mouse users */
+:focus:not(:focus-visible) { outline: none; }
+
+/* Minimum tap target sizes (WCAG 2.5.5 — 44×44px) */
+.tab { min-height: 44px; min-width: 44px; }
+.back { min-height: 44px; }
+.srow { min-height: 52px; } /* override — still renders taller via content */
+.ep-tab { min-height: 44px; }
+.cc { min-height: 52px; }
+
+/* Reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* High contrast / forced colors support */
+@media (forced-colors: active) {
+  .hdr { border-color: Highlight; }
+  .pd-stripe { background: Highlight; }
+  .s-rank-n.r1, .pd-rank-n, .pd-pts-n, .cc-pts, .cd-pts { color: Highlight; }
+}
+
+/* ── UX REFINEMENTS ─────────────────────────────────── */
+/* Smoother active states on touch */
+.srow:active, .cc:active, .ep-tab:active { opacity: 0.85; }
+
+/* Better link-like cursor on interactive rows */
+.srow, .cc { cursor: pointer; }
+
+/* Prevent text selection on tap */
+.srow, .cc, .tab, .ep-tab, .back, .hdr-pill-box {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Improve readability: increase line-height on body text */
+.ins-body, .ep-ins-b, .cd-block-body { line-height: 1.65; }
+
+/* Better contrast on muted text — ensure ≥ 3:1 against bg */
+/* var(--t3) on var(--s2): #6a5848 on #171714 — ~3.8:1 ✓ */
+/* var(--t2) on var(--s2): #a89880 on #171714 — ~5.4:1 ✓ */
+
+/* Arrow indicator: make tappable area feel right */
+.s-arr { padding: 0 6px 0 4px; }
+
+
+/* Card hover glow on non-touch devices */
+@media (hover: hover) {
+  .srow:hover { background: rgba(255,255,255,0.025); }
+  .cc:hover { border-color: rgba(184,128,24,0.35); box-shadow: 0 0 0 1px rgba(184,128,24,0.10); }
+  .ep-tab:hover:not(.active) { color: var(--t2); }
+  .back:hover { color: var(--gold2); background: rgba(184,128,24,0.05); }
+}
+
+/* Score colour consistency: use var()s not hardcoded */
+/* Ensure ph-pts gold for high scores */
+
+/* Better sparkline container alignment */
+.sparkline-wrap { align-items: center; }
+.pd-sparkline { align-items: center; }
+
+/* ep-header-box text: ensure readable contrast */
+.ep-kicker { color: var(--t3); } /* #6a5848 on dark — 3.8:1 ✓ */
+.ep-winner { color: var(--t2); } /* #a89880 — 5.4:1 ✓ */
+
+/* Pick history: align ep number consistently */
+.ph-ep { font-variant-numeric: tabular-nums; }
+
+/* Standings pts: tabular nums for alignment */
+.s-pts-n, .ss-v, .ph-pts, .pod-port-pts { font-variant-numeric: tabular-nums; }
+
+/* Slightly warmer scrollbar */
+.scr::-webkit-scrollbar-thumb { background: rgba(184,128,24,0.4); }
+
+
+/* Ensure task icons don't shrink on narrow screens */
+.tb { min-width: 18px; }
+
+/* Better spacing between task icon and name */
+.tn { gap: 6px; }
+
+/* ep-slide: ensure full height rendering */
+.ep-slide { min-height: calc(100vh - 160px); }
+
+/* Portrait podium: ensure images don't overflow on small screens */
+.pod-port-img { overflow: hidden; }
+
+/* Cast card: image column consistent height */
+.cc-img { align-self: stretch; }
+
+/* Improve stat strip visual separation */
+.stat-strip { margin-bottom: 10px; }
+.cd-stat-strip { margin-bottom: 0; }
+
+/* Slightly tighten up the sh (section header) */
+.sh { padding: 12px var(--px) 6px; }
+
+/* Remove double-border on adjacent cards in cast list */
+.cc + .cc { border-top-color: transparent; }
+
+/* Responsive: on wide screens cast grid needs border fixes */
+@media (min-width: 600px) {
+  .cast-list .cc { border-top-color: var(--b-gold) !important; margin-top: 0 !important; }
+}
+
+/* Live region for countdown — already set in HTML via aria-live */
+
+/* Font smoothing */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+
+
+/* ── PILL BOX COUNTDOWN ─────────────────────────────── */
+.hdr-pill-box{
+  margin-left:auto;flex-shrink:0;
+  border:1px solid rgba(212,160,40,0.4);border-radius:12px;
+  background:rgba(0,0,0,0.35);
+  box-shadow:0 0 6px rgba(184,128,24,0.08),
+    inset 0 1px 1px rgba(255,255,255,0.10),
+    inset 0 -2px 3px rgba(0,0,0,0.4);
+  padding:6px 10px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  position:relative;overflow:hidden;min-width:86px;
+  -webkit-user-select:none;user-select:none;
+  transform-origin:right center;
+  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);
+}
+.hdr.compact .hdr-pill-box{transform:scale(0.8)}
+.hdr-pill-box::before{
+  content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.03),transparent);
+  animation:shimmer 5s infinite;
+}
+.hdr-pill-label{
+  font-family:var(--ff);font-size:9px;font-weight:500;
+  color:var(--gold2);letter-spacing:0.08em;text-transform:uppercase;white-space:nowrap;
+  line-height:1;
+}
+.hdr-pill-timer{display:flex;align-items:flex-end;gap:0;white-space:nowrap;}
+.hdr-cd-unit{display:flex;flex-direction:column;align-items:center;min-width:20px;}
+.hdr-cd-num{
+  font-family:var(--ff);font-size:clamp(14px,3.8vw,18px);font-weight:800;
+  color:var(--gold2);line-height:1;text-align:center;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 6px var(--gold-glow);
+}
+.hdr-cd-num.urgent{color:var(--red);text-shadow:0 0 8px var(--red-glow);animation:rank-pulse 0.8s ease-in-out infinite;}
+.hdr-cd-lbl{
+  font-family:var(--ff);font-size:8px;font-weight:600;
+  color:rgba(255,255,255,0.45);letter-spacing:0.04em;
+  text-transform:uppercase;line-height:1;margin-top:2px;
+}
+.hdr-cd-sep{
+  font-family:var(--ff);font-size:clamp(13px,3.4vw,17px);font-weight:700;
+  color:rgba(255,255,255,0.25);line-height:1;padding:0 1px;
+  align-self:flex-start;margin-top:1px;
+}
+
+
+
+
+
+
+/* Header row */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Progress bar */
+
+
+
+/* Ep pick chips */
+
+
+
+
+
+
+
+/* Stat row */
+
+
+
+
+
+
+/* Analysis */
+
+
+
+/* Remove player-tabs */
+.player-tabs{display:none}
+
+/* Remove old pd overlay */
+.pd{display:none!important}
+
+/* ═══ PLAYER CARDS ══════════════════════════════════════
+   Vertical scrolling list. Each card = one player.
+   Hierarchy: name/rank → score → picks → footer → analysis
+   ═══════════════════════════════════════════════════════ */
+
+.player-card-list {
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 32px;
+}
+
+/* Card shell */
+.pc {
+  background: var(--noise), linear-gradient(170deg, var(--s2) 0%, var(--s1) 100%);
+  border-bottom: 1px solid var(--b-gold);
+  position: relative;
+}
+/* First card top border */
+.pc:first-child { border-top: 1px solid var(--b-gold); }
+
+/* Rank-1 accent */
+.pc-rank1 {
+  background: var(--noise), linear-gradient(170deg, rgba(184,128,24,0.06) 0%, var(--s1) 50%);
+}
+/* Top-3 subtle left tick */
+.pc-podium::before, .pc-rank1::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(180deg, transparent 10%, var(--gold4) 50%, transparent 90%);
+}
+.pc-rank1::before {
+  background: linear-gradient(180deg, transparent 10%, var(--gold2) 50%, transparent 90%);
+  box-shadow: 0 0 6px var(--gold-glow);
+}
+
+/* ── HEAD: rank · name · score ─── */
+/* Tapping the head is what expands the card — picks + analysis were
+   pushing 17 players' worth of scrolling into every visit to this page,
+   so only the compact scoreline (rank/name/total/bar/footer stats)
+   shows by default now. */
+.pc-head {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px 8px;
+  gap: 12px;
+  cursor: pointer;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pc-head:active { opacity: 0.85; }
+.pc-chev {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: var(--t4);
+  transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+  align-self: center;
+}
+.pc.expanded .pc-chev { transform: rotate(180deg); color: var(--t2); }
+
+/* One-line explainer for whichever board is currently active (see
+   stand-tabs) — swapped by updateSortHeaderUI(). Which board this is
+   (PvE or PvP) is picked via the subtabs, not a column header — so
+   there's no separate header row above the list at all any more. */
+.pc-sort-desc {
+  box-sizing: border-box;
+  min-height: 55px;
+  padding: 9px var(--px) 11px;
+  font-family: var(--fm);
+  font-size: 11px;
+  color: var(--t3);
+  line-height: 1.55;
+  letter-spacing: 0.015em;
+}
+/* The point-range stat reads as a secondary, tabular aside rather than
+   competing with the rule sentence for attention. */
+.pc-sort-desc-range {
+  color: var(--t4);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+/* Collapsible picks + analysis — grid-template-rows 0fr->1fr animates to
+   a natural height with no JS measuring and no layout jank. */
+.pc-detail-wrap {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s cubic-bezier(0.22,1,0.36,1);
+}
+.pc.expanded .pc-detail-wrap { grid-template-rows: 1fr; }
+.pc-detail-inner { overflow: hidden; min-height: 0; }
+
+/* Rank number + delta stacked */
+.pc-rank-col {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: 40px;
+}
+/* Rank medallion — a pressed-metal disc rather than plain colored text,
+   the same "game UI" bevel language used for the tab buttons below:
+   inset highlight top-left, inset shadow bottom-right, tier-colored
+   metal (gold/silver/bronze/steel) instead of a flat text color. */
+.pc-rank-n {
+  font-family: var(--ff-head);
+  font-size: clamp(15px, 4vw, 17px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  width: clamp(30px, 8vw, 34px);
+  height: clamp(30px, 8vw, 34px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--t1);
+  background: radial-gradient(circle at 35% 30%, var(--s4) 0%, var(--s2) 60%, var(--s1) 100%);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.15),
+    inset 0 -2px 3px rgba(0,0,0,0.5),
+    0 2px 3px rgba(0,0,0,0.4);
+}
+.pc-rank-n--1 {
+  color: #3a2504;
+  background: radial-gradient(circle at 35% 30%, #ffe9a8 0%, var(--gold2) 45%, var(--gold4) 100%);
+  border-color: rgba(255,240,200,0.5);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.6),
+    inset 0 -2px 3px rgba(90,50,0,0.6),
+    0 0 10px var(--gold-glow),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+.pc-rank-n--2 {
+  color: #2c2c2c;
+  background: radial-gradient(circle at 35% 30%, #ece5d8 0%, #a89880 45%, #6e6252 100%);
+  border-color: rgba(255,255,255,0.35);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.5),
+    inset 0 -2px 3px rgba(0,0,0,0.45),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+.pc-rank-n--3 {
+  color: #2c1806;
+  background: radial-gradient(circle at 35% 30%, #d9a35f 0%, #b6833d 45%, #7a531f 100%);
+  border-color: rgba(255,220,170,0.35);
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,0.4),
+    inset 0 -2px 3px rgba(50,25,0,0.5),
+    0 2px 4px rgba(0,0,0,0.5);
+}
+.pc-delta {
+  font-family: var(--fm);
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+.pc-delta-up { color: var(--up); }
+.pc-delta-dn { color: var(--red); }
+
+/* Name + no-pick warning */
+.pc-name-col {
+  flex: 1;
+  min-width: 0;
+}
+.pc-name {
+  font-family: var(--ff-name);
+  font-size: clamp(19px, 5vw, 23px);
+  font-weight: 700;
+  color: var(--t1);
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The single score column — whichever of PvP/PvE is the active board
+   (see stand-tabs) — badges gold/silver/bronze on its OWN top-3 status
+   (see PVP_RANK/PVE_PLAYER_RANK). Fixed width (rather than shrink-to-fit) so
+   the header's box and every row's box occupy the exact same pixels —
+   otherwise the header row (label text) and a data row (bare number)
+   would each size the column to their own content and drift out of
+   alignment. */
+.pc-score-col {
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 64px;
+  padding-right: 2px;
+  text-align: right;
+}
+.pc-total {
+  font-family: var(--ff-head);
+  font-size: clamp(19px, 5vw, 23px);
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: var(--t1);
+}
+.pc-score-t1 { color: var(--gold2); text-shadow: 0 0 10px var(--gold-glow); }
+.pc-score-t2 { color: #a89880; text-shadow: 0 0 8px rgba(168,152,128,0.3); }
+.pc-score-t3 { color: #b6833d; text-shadow: 0 0 8px rgba(182,131,61,0.3); }
+
+/* A cast row on the PvE board — as unobtrusive as possible: no score, no
+   label, no rank, no chevron, no tap feedback (see buildCastStandingSlide).
+   Just a name and a dotted rule, reading as a faint reference marker —
+   "this is roughly where that contestant's own total falls" — rather
+   than a list item competing for attention with the players around it. */
+.pc-cast-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Left padding matches a player row's own name-start position exactly:
+     .pc-head's own left padding (var(--px)) + the 40px rank medallion
+     column + its 12px gap — so this name optically lines up with the
+     player names above and below it, not with the row's bare edge. */
+  padding: 3px var(--px) 3px calc(var(--px) + 40px + 12px);
+}
+.pc-cast-name {
+  font-family: var(--ff-name);
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.6;
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 40%;
+}
+.pc-cast-line {
+  flex: 1;
+  height: 0;
+  border-top: 1px dotted var(--b-dim);
+}
+
+/* Hide legacy overlay */
+.pd { display: none !important; }
+.player-tabs { display: none; }
+
+/* ── BOX SCORE ──────────────────────────────────────── */
+.bs-wrap{
+  margin:6px var(--px) 8px;
+  border:1px solid var(--b-gold);
+  border-radius:12px;
+  overflow:hidden;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 4px 14px rgba(0,0,0,0.3);
+}
+/* Expanded player card: everything else (photo, name, rank, total, avg)
+   is already on the collapsed row above, so this holds only the weekly
+   picks — a bare row of 10 contestant photos (contImg's 'pod' variant,
+   same portrait treatment as the episode podium strip), one per episode,
+   with that week's score underneath. Deliberately NOT boxed in its own
+   bordered container — the photos sit directly on the card, un-enclosed. */
+.pc-picks-grid{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:3px;
+  padding:8px var(--px) 12px;
+}
+.pc-pick-cell{
+  text-align:center;
+  min-width:0;
+}
+.pc-pick-photo{
+  width:100%;
+  aspect-ratio:225/266;
+  overflow:hidden;
+  border-radius:4px;
+  background:var(--s2);
+  border:1px solid var(--b-dim);
+}
+.pc-pick-photo .pod-port-photo,.pc-pick-photo .pod-port-ph{width:100%;height:100%}
+/* The fallback letter-avatar (onerror, see imgFail) is sized for the much
+   wider episode-podium strip elsewhere — shrink it here so a broken photo
+   in this narrow 1-of-10 column doesn't overflow into an unreadable
+   clipped fragment. */
+.pc-pick-photo .pod-port-ph{font-size:6px;letter-spacing:0.01em}
+.pc-pick-cell.hi .pc-pick-photo{border-color:var(--gold4)}
+.pc-pick-photo-blank{
+  display:flex;align-items:center;justify-content:center;
+  border-style:dashed;color:var(--t4);font-size:10px;
+}
+.pc-pick-ep{
+  font-family:var(--fm);font-size:6px;color:var(--t4);
+  letter-spacing:0.04em;text-transform:uppercase;
+  margin-bottom:3px;
+}
+.pc-pick-pts{
+  font-family:var(--ff);font-size:clamp(10px,3vw,12px);font-weight:800;
+  line-height:1;margin-top:4px;letter-spacing:-0.01em;color:var(--t1);
+}
+.pc-pick-cell.hi .pc-pick-pts{color:var(--gold2)}
+.pc-pick-cell.lo .pc-pick-pts{color:var(--t4)}
+.bs-header{
+  display:flex;
+  background:var(--noise),linear-gradient(180deg,var(--s3),var(--s2));
+  border-bottom:1px solid var(--b-gold);
+}
+.bs-hcell{
+  flex:1;text-align:center;padding:6px 2px;
+  font-family:var(--fm);font-size:8px;color:var(--t3);
+  letter-spacing:0.06em;border-right:1px solid var(--b-dim);
+}
+.bs-hcell:first-child{
+  min-width:34px;flex:0 0 34px;text-align:left;padding-left:6px;
+}
+.bs-hcell:last-child{border-right:none}
+.bs-row{
+  display:flex;border-bottom:1px solid var(--b-dim);
+}
+.bs-row:last-child{border-bottom:none}
+.bs-label{
+  flex:0 0 34px;min-width:34px;
+  font-family:var(--fm);font-size:9px;color:var(--t3);
+  padding:6px 3px 6px 6px;letter-spacing:0.03em;
+  display:flex;align-items:center;
+  background:var(--noise),linear-gradient(90deg,var(--s3),var(--s2));
+}
+.bs-cell{
+  flex:1;text-align:center;padding:6px 2px;
+  font-family:var(--ff);font-size:clamp(11px,3vw,13px);
+  font-weight:700;line-height:1;
+  border-right:1px solid var(--b-dim);
+  display:flex;align-items:center;justify-content:center;
+}
+.bs-cell:last-child{border-right:none}
+.bs-cell.hi{color:var(--gold2)}
+.bs-cell.lo{color:var(--t4)}
+.bs-cell.mid{color:var(--t1)}
+.bs-cell.blank,.blank{color:var(--t4);font-size:9px;font-family:var(--fm)}
+.bs-rank-row{
+  display:flex;
+  background:var(--noise),linear-gradient(180deg,var(--s1),var(--bg));
+  border-top:1px solid var(--b-gold);
+}
+.bs-rank-label{
+  flex:0 0 34px;min-width:34px;
+  font-family:var(--fm);font-size:8px;color:var(--t3);
+  padding:4px 3px 4px 6px;letter-spacing:0.03em;
+  display:flex;align-items:center;
+}
+.bs-rank-cell{
+  flex:1;text-align:center;padding:4px 2px;
+  font-family:var(--fm);font-size:8px;color:var(--t3);
+  border-right:1px solid var(--b-dim);
+  display:flex;align-items:center;justify-content:center;
+}
+.bs-rank-cell:last-child{border-right:none}
+
+
+/* ╔═══════════════════════════════════════════════════════╗
+   ║  TASKMASTER AMBIENT SHADERS                           ║
+   ║  Wax · Candlelight · Ink · Parchment grain           ║
+   ╚═══════════════════════════════════════════════════════╝ */
+
+/* ── KEYFRAMES ────────────────────────────────────────────── */
+
+/* Candlelight surface flicker — barely perceptible brightness shift */
+@keyframes candle-flicker {
+  0%   { opacity: 0.70; }
+  18%  { opacity: 0.78; }
+  22%  { opacity: 0.68; }
+  50%  { opacity: 0.75; }
+  72%  { opacity: 0.72; }
+  79%  { opacity: 0.80; }
+  100% { opacity: 0.70; }
+}
+
+/* Ink-bleed shimmer — slow wash across section dividers */
+@keyframes ink-bleed {
+  0%   { background-position: -100% 0; opacity: 0.0; }
+  15%  { opacity: 0.6; }
+  85%  { opacity: 0.6; }
+  100% { background-position: 200% 0;  opacity: 0.0; }
+}
+
+/* Parchment breathe — very slow vignette intensity shift */
+@keyframes parchment-breathe {
+  0%   { opacity: 0.30; }
+  50%  { opacity: 0.45; }
+  100% { opacity: 0.30; }
+}
+
+/* Gold ember — gentle glow pulse on gold decorative elements */
+@keyframes ember-glow {
+  0%   { box-shadow: 0 0  6px var(--gold-glow), 0 0 12px rgba(184,128,24,0.12); }
+  50%  { box-shadow: 0 0 10px var(--gold-glow), 0 0 22px rgba(184,128,24,0.22); }
+  100% { box-shadow: 0 0  6px var(--gold-glow), 0 0 12px rgba(184,128,24,0.12); }
+}
+
+/* Stamp reveal — used on rank numbers, score cells */
+@keyframes stamp-in {
+  0%   { opacity: 0; transform: scale(1.15); filter: blur(2px); }
+  60%  { opacity: 1; transform: scale(0.97); filter: blur(0); }
+  80%  { transform: scale(1.01); }
+  100% { transform: scale(1); }
+}
+
+/* ── BACKGROUND VIGNETTE / PARCHMENT LAYER ───────────────── */
+/* Sits over the body radial gradient — breathes slowly */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 80% 70% at 50% 50%,
+    transparent 30%,
+    rgba(10,2,2,0.45) 100%);
+  animation: parchment-breathe 9s ease-in-out infinite;
+}
+
+/* Candlelight warmth layer — upper half of screen */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 90% 55% at 50% 0%,
+    rgba(160,60,10,0.08) 0%,
+    transparent 70%);
+  animation: candle-flicker 7s ease-in-out infinite;
+}
+
+/* ── SECTION DIVIDER INK BLEED ───────────────────────────── */
+/* The sh-line gets a slow ink shimmer */
+.sh-line {
+  position: relative; overflow: hidden;
+  contain: strict;
+}
+.sh-line::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
+  animation: ink-bleed 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── PLAYER CARD SURFACE SHADERS ─────────────────────────── */
+/* Each card has a subtle candlelight overlay */
+.pc::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 120% 80% at 20% 0%,
+    rgba(200,120,30,0.05) 0%,
+    transparent 60%);
+  animation: candle-flicker 13s ease-in-out infinite;
+}
+.pc > * { position: relative; z-index: 1; }
+
+/* Rank-1 card gets wax-seal intensity */
+.pc-rank1::before {
+  background: radial-gradient(ellipse 130% 80% at 15% 0%,
+    rgba(212,160,40,0.09) 0%,
+    transparent 65%);
+  animation: candle-flicker 9s ease-in-out infinite;
+}
+
+/* ── RANK NUMBER STAMP ANIMATION ─────────────────────────── */
+/* Applied via JS on slide mount — here's the class */
+.stamp {
+  animation: stamp-in 0.45s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+/* ── CAST/EPISODE HERO SURFACE ───────────────────────────── */
+/* cd-hero and ep-header-box get a slow candle wash */
+.cd-hero::after, .ep-header-box::before {
+  content: '';
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 0;
+  background: radial-gradient(ellipse 100% 120% at 0% 100%,
+    rgba(180,80,10,0.06) 0%,
+    transparent 70%);
+  animation: candle-flicker 15s ease-in-out infinite 3s;
+}
+
+/* ── SCORECARD HEADER EMBER ──────────────────────────────── */
+.bs-header {
+  position: relative; overflow: hidden;
+}
+.bs-header::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(212,160,40,0.06) 50%,
+    transparent 100%);
+  background-size: 200% 100%;
+  animation: ink-bleed 12s ease-in-out infinite 4s;
+  pointer-events: none;
+}
+
+/* ── COUNTDOWN PILL FLICKER ──────────────────────────────── */
+.hdr-pill-box::before {
+  animation: ink-bleed 6s ease-in-out infinite 1s;
+}
+/* Gold numbers: ember pulse */
+.hdr-cd-num {
+  animation: ember-glow 4s ease-in-out infinite;
+  border-radius: 2px;
+}
+
+/* ── REDUCE MOTION OVERRIDE ──────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  body::before, body::after,
+  .tabs::before, .sh-line::after,
+  .pc::before, .pc-rank1::before,
+  .cd-hero::after, .ep-header-box::before,
+  .bs-header::after, .hdr-pill-box::before,
+  .tab.active::before,
+  .hdr-cd-num {
+    animation: none !important;
+  }
+}
+
+
+/* ╔═══════════════════════════════════════════════════════╗
+   ║  TASKMASTER SHADERS v2 — BOLD & PURPOSEFUL            ║
+   ║  Surface texture · Slide reveals · Tab feedback       ║
+   ║  Wax stamp · Score flash · Scroll shimmer             ║
+   ╚═══════════════════════════════════════════════════════╝ */
+
+/* ──────────────────────────────────────────────────────────
+   KEYFRAMES
+   ────────────────────────────────────────────────────────── */
+
+/* Slide reveal: new content sweeps in from right with a
+   red-gold flash — like a wax seal breaking open          */
+@keyframes slide-reveal {
+  0%   { opacity: 0; transform: translateX(18px); }
+  30%  { opacity: 1; transform: translateX(-3px); }
+  50%  { transform: translateX(1px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Wax stamp: score/rank numbers slam down with overshoot */
+@keyframes wax-stamp {
+  0%   { opacity: 0; transform: scale(1.45); filter: blur(3px); }
+  55%  { opacity: 1; transform: scale(0.93); filter: blur(0); }
+  75%  { transform: scale(1.04); }
+  90%  { transform: scale(0.98); }
+  100% { transform: scale(1); }
+}
+
+/* Card enter: each player card drops in from above */
+@keyframes card-drop {
+  0%   { opacity: 0; transform: translateY(-12px); }
+  60%  { transform: translateY(2px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Red heat: pulsing crimson vignette on header */
+@keyframes red-heat {
+  0%   { opacity: 0.4; }
+  45%  { opacity: 0.72; }
+  55%  { opacity: 0.65; }
+  100% { opacity: 0.4; }
+}
+
+/* Gold vein: thin gold line crawls across the page */
+
+  20%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { transform: scaleX(1); opacity: 0; transform-origin: left; }
+}
+
+/* Rank glow burst: rank-1 number pulses with authority */
+@keyframes rank-burst {
+  0%,100% { text-shadow: 0 0 12px var(--gold-glow), 0 0 28px rgba(212,160,40,0.3); }
+  50%      { text-shadow: 0 0 24px var(--gold-glow), 0 0 56px rgba(212,160,40,0.55), 0 0 80px rgba(212,160,40,0.2); }
+}
+
+/* ──────────────────────────────────────────────────────────
+   SURFACE TEXTURE — visible, always-on
+   ────────────────────────────────────────────────────────── */
+
+/* Gold vein on section dividers — periodic sweep */
+.sh-line {
+  position: relative; overflow: hidden;
+  contain: strict;
+}
+.sh-line::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg, transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
+  animation: ink-bleed 8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ──────────────────────────────────────────────────────────
+   SLIDE REVEAL — fires when a new slide comes into view
+   ────────────────────────────────────────────────────────── */
+
+/* ep-slide and cast-slide children animate in */
+.ep-slide > *, .cast-slide > * { animation: none; }
+
+/* Applied via JS class .slide-fresh — lasts 0.5s then removed */
+.slide-fresh {
+  animation: slide-reveal 0.42s cubic-bezier(0.22,1,0.36,1) both !important;
+}
+
+/* ──────────────────────────────────────────────────────────
+   WAX STAMP — score/rank numbers
+   ────────────────────────────────────────────────────────── */
+
+.pc-rank-n {
+  animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+.pc-rank1 .pc-rank-n {
+  animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) both,
+             rank-burst 3s ease-in-out infinite 0.6s;
+}
+.pc-total {
+  animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s both;
+}
+.cd-pts {
+  animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) 0.1s both;
+  will-change: transform;
+}
+
+/* ──────────────────────────────────────────────────────────
+   CARD DROP — player cards stagger into the list
+   ────────────────────────────────────────────────────────── */
+
+.player-card { animation: card-drop 0.35s ease both; }
+/* Stagger via inline style animation-delay from JS */
+
+/* ──────────────────────────────────────────────────────────
+   TAB INTERACTION FEEDBACK
+   ────────────────────────────────────────────────────────── */
+
+/* Active tab top bar — static gold line, no sweep, on both tab strips. */
+.ep-tab.active::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg,
+    transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
+}
+
+/* ──────────────────────────────────────────────────────────
+   SCORE HIGH/BEST — gold flash on top scores in box
+   ────────────────────────────────────────────────────────── */
+
+@keyframes score-flash {
+  0%,100% { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+  50%     { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow), 0 0 28px rgba(212,160,40,0.4); }
+}
+.bs-cell.hi, .pc-pts-hi {
+  animation: score-flash 2.5s ease-in-out infinite;
+}
+
+/* ──────────────────────────────────────────────────────────
+   REDUCE MOTION
+   ────────────────────────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .sh-line::after, .ep-tab.active::before,
+  .pc-rank-n, .pc-rank1 .pc-rank-n,
+  .pc-total, .cd-pts,
+  .player-card, .slide-fresh,
+  .bs-cell.hi {
+    animation: none !important;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Settings overlay */
+
+
+.settings-panel {
+  width: 100%; max-width: 680px; margin: 0 auto;
+  background: var(--noise), linear-gradient(180deg, var(--s3) 0%, var(--s2) 100%);
+  border-top: 2px solid var(--gold2);
+  border-radius: 4px 4px 0 0;
+  padding: 20px 20px 32px;
+  animation: slide-up 0.25s cubic-bezier(0.22,1,0.36,1);
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
+}
+@keyframes slide-up {
+  from { transform: translateY(100%); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+
+
+
+
+
+
+
+
+
+
+/* Live mode toggle */
+
+
+
+
+
+
+
+/* Export table */
+
+
+
+
+
+/* ── DELTA INLINE ───────────────────────────────────── */
+.pc-delta-inline{
+  font-family:var(--fm);font-size:9px;font-weight:700;
+  line-height:1;padding-bottom:2px;
+}
+.pc-di-up,.pc-di-dn{color:var(--t2)}
+.pc-di-flat{color:var(--t4)}
+
+/* ── CHIP PORTRAITS ────────────────────────────────── */
+
+
+
+
+
+/* ── DELTA BESIDE RANK ──────────────────────────────── */
+.pc-delta{font-family:var(--ff);font-size:9px;font-weight:700;line-height:1;}
+.pc-delta-up{color:var(--up);text-shadow:0 0 6px var(--up-glow);}
+.pc-delta-dn{color:var(--red);text-shadow:0 0 6px var(--red-glow);}
+.pc-delta-flat{color:var(--t4);}
+
+/* ── SANS-SERIF SOME SCORES ──────────────────────────── */
+/* Dense tabular numbers stay plain/legible — Bungee is a display face,
+   great for one big hero number, cluttered across a whole grid of them.
+   .pc-total is deliberately NOT here: it's a standalone number like the
+   rank medallion, and should render in --ff-head same as it does, not
+   get silently forced back to sans-serif. */
+.s-pts-n,.pd-pts-n,.cd-pts,.cc-pts,
+.ss-v,.cd-s-v,.cc-ep-v,.cc-stat-v,.cd-ep-v,
+.pod-port-pts,.ps-pts-n,.ps-stat-v,
+.ph-pts,.bs-cell,.sc{font-family:var(--ff)!important;}
+
+/* Active tab gold fire sweep on the indicator */
+@keyframes indicator-sweep {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+/* Prevent scrollbar flash from internal animations */
+.ep-scroll-container,
+#cast-body,
+#player-body {
+  overflow-y: hidden !important;
+  contain: layout style;
+}
+
+/* ── TAB LABEL TEXT ─────────────────────────────────── */
+.tab-label {
+  font-family: var(--fm);
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: inherit;
+}
+
+/* ── OPTICAL ICON SIZING ────────────────────────────── */
+/* Podium: wide shape, needs full height to read clearly */
+.ti-svg--standings {
+  width: 26px;
+  height: 24px;
+}
+/* Clapperboard: dense rectangular shape, slightly smaller */
+.ti-svg--episodes {
+  width: 22px;
+  height: 20px;
+}
+/* Crown: tall pointed shape, narrower to optically match */
+.ti-svg--cast {
+  width: 24px;
+  height: 22px;
+}
+
+/* Full-width equal-split tab strip — shared by the 5 cast tabs and the
+   2 PvE/PvP standings subtabs (#stand-tabs). */
+.cast-tabs {
+  display: flex;
+  position: relative;
+  border-bottom: 1px solid var(--b-gold);
+  background: var(--noise), linear-gradient(180deg, var(--s2) 0%, var(--s1) 100%);
+}
+.cast-tabs .ep-tab {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<header class="hdr">
+  <div class="hdr-brand">
+    <div class="hdr-title"><span class="ht-gold">FAN</span><span class="ht-white">TASK</span><span class="ht-gold">Y</span> <em class="ht-white">MASTER</em></div>
+  </div>
+  
+  <div class="hdr-pill-box" aria-label="Series 21 results" aria-live="polite" aria-atomic="true">
+    <div class="hdr-pill-timer" id="hdr-countdown"></div>
+  </div>
+</header>
+<nav class="tabs" style="--active-idx:0">
+  <div class="tab-indicator"></div>
+  <button class="tab active" onclick="nav('stand',this)" aria-label="Standings">
+    <div class="ti"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="ti-svg ti-svg--standings">
+  <rect x="2" y="14" width="7" height="11" rx="1" fill="currentColor" opacity="0.7"/>
+  <rect x="10.5" y="8" width="7" height="17" rx="1" fill="currentColor"/>
+  <rect x="19" y="18" width="7" height="7" rx="1" fill="currentColor" opacity="0.5"/>
+  <path d="M12 6 L14 3 L16 6 L18 4 L17.5 8H10.5L10 4Z" fill="currentColor"/>
+</svg></div>
+    <span class="tab-label">Standings</span>
+  </button>
+  <button class="tab" onclick="nav('eps',this)" aria-label="Episodes">
+    <div class="ti"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="ti-svg ti-svg--episodes">
+  <rect x="4" y="10" width="20" height="14" rx="2" fill="currentColor" opacity="0.15" stroke="currentColor" stroke-width="1.5"/>
+  <rect x="4" y="6" width="20" height="5" rx="1.5" fill="currentColor"/>
+  <line x1="9" y1="6" x2="7" y2="11" stroke="var(--bg)" stroke-width="1.8"/>
+  <line x1="14" y1="6" x2="12" y2="11" stroke="var(--bg)" stroke-width="1.8"/>
+  <line x1="19" y1="6" x2="17" y2="11" stroke="var(--bg)" stroke-width="1.8"/>
+  <path d="M12 15 L12 21 L18 18 Z" fill="currentColor"/>
+</svg></div>
+    <span class="tab-label">Episodes</span>
+  </button>
+  <button class="tab" onclick="nav('cast',this)" aria-label="Cast">
+    <div class="ti"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="ti-svg ti-svg--cast">
+  <path d="M5 20 L5 12 L9 16 L14 8 L19 16 L23 12 L23 20 Z" fill="currentColor" opacity="0.9"/>
+  <rect x="5" y="20" width="18" height="3" rx="1" fill="currentColor"/>
+  <circle cx="14" cy="20" r="1.5" fill="var(--bg)"/>
+  <circle cx="9" cy="20" r="1" fill="var(--bg)" opacity="0.7"/>
+  <circle cx="19" cy="20" r="1" fill="var(--bg)" opacity="0.7"/>
+</svg></div>
+    <span class="tab-label">Cast</span>
+  </button>
+</nav>
+
+
+<div class="scr" id="scr">
+
+  <div class="page active" id="p-stand">
+    <div class="cast-tabs" id="stand-tabs">
+      <button class="ep-tab active" id="stand-tab-pve" onclick="sortStandings('pve',this)">PvE</button>
+      <button class="ep-tab" id="stand-tab-pvp" onclick="sortStandings('pvp',this)">PvP</button>
+    </div>
+    <div class="pc-sort-desc" id="stand-sort-desc"></div>
+    <div id="player-body"></div>
+  </div>
+
+  <div class="page" id="p-eps">
+    <div class="ep-tabs" id="ep-tabs"></div>
+    <div id="ep-body"></div>
+  </div>
+
+  <div class="page" id="p-cast">
+    <div class="cast-tabs" id="cast-tabs"></div>
+    <div id="cast-body"></div>
+  </div>
+
+</div>
+
+</div>
+
+<script>const NAMES=["Amy","Armando","Joanna","Joel","Kumail"];
+// Portraits — swap nulls for base64 strings to enable images
+const PORT={
+  // Hotlinked from an album the user curated specifically for this app —
+  // gold-frame headshots for all 5 contestants, including Joanna.
+  Amy:    "https://i.imgur.com/KXhQLQQ.png",
+  Armando:"https://i.imgur.com/JZSgjrb.png",
+  Joanna: "https://i.imgur.com/IuSCsrt.png",
+  Joel:   "https://i.imgur.com/nRfy6Um.png",
+  Kumail: "https://i.imgur.com/u0hZhnG.png",
+};
+const CONT={
+  Amy:{full:"Amy Gledhill",acc:"#6f82ff",bio:"<strong>Amy Gledhill</strong> (Edinburgh Comedy Award Winner 2024) is one half of cult double act The Delightful Sausage. A northern stand-up with a gift for absurdist commitment, she won back-to-back episodes in eps 2 and 3 &mdash; the only contestant to do so this series.",stat:"Amy wins 3 episodes — equal with Armando. Ranks #2 in filmed tasks (99pts, behind Joanna). Six scores of 16+ in 10 episodes. Her ep3 (22pts) ties for the second-highest single-episode score of the series, behind Armando's 24 in ep5. Prize avg 2.9/ep. Live tasks are her weak point &mdash; averaged 2.7/ep including a zero in ep1."},
+  Armando:{full:"Armando Iannucci",acc:"#f05c37",bio:"<strong>Armando Iannucci</strong> (The Thick of It, Veep, BAFTA Fellowship) is the most decorated writer in Taskmaster history. He delivered the series&rsquo;s most dramatic episode: <strong>24 points in ep5</strong>, the highest score of the series.",stat:"Leads prize tasks (38pts, #1) but ranks #2 in live tasks (32pts, behind Kumail). Highest variance in the cast (σ=4.7). Three episode wins (eps 5, 7, 9) — two of the three in the back half of the series. Brilliant at wit; poor on physical precision tasks."},
+  Joanna:{full:"Joanna Page",acc:"#30b050",bio:"<strong>Joanna Page</strong> (Gavin &amp; Stacey, Love Actually) opened with 22pts in ep1 and led for most of the series, ceding top spot to Amy only briefly around eps 3&ndash;4. She has scored 16+ in seven of ten episodes &mdash; the most consistent performer in the cast.",stat:"Wins Series 21 on 165pts. Leads filmed tasks (104pts, #1). Ranks #2 in prize tasks (31pts, behind Armando). σ=2.6 &mdash; the lowest variance in the cast. Scored 16+ in 7 of 10 episodes — the most of any contestant."},
+  Joel:{full:"Joel Dommett",acc:"#3296c8",bio:"<strong>Joel Dommett</strong> (The Masked Singer, I&rsquo;m a Celebrity) brings relentless physical energy. Quietly competitive before breaking out with <strong>20pts in ep4</strong>.",stat:"Finishes last in the series on 150pts. Episode 10 winner (23pts — his series best). Ranks #4 in live tasks (28pts). Filmed total (92pts) — only Armando scores lower."},
+  Kumail:{full:"Kumail Nanjiani",acc:"#c060fa",bio:"<strong>Kumail Nanjiani</strong> (Eternals, The Big Sick, Silicon Valley) has the most dramatic arc in the series: from 9pts in ep1 to a run of 19, 18, 16, 20 across eps 3&ndash;6 that made him the form contestant of the series&rsquo; midpoint, before a quieter finish.",stat:"Finishes 3rd overall on 160pts. Scored 16+ in 6 of 10 episodes. Live task total leads the field (34pts, #1). Dramatically improved from ep1 (9pts) to his series high of 20pts in ep6. The ep1 low (9pts) is a task-fit anomaly, not a ceiling."}
+};
+
+const TASKS=[
+  {ep:1,n:"Prize: Deter people from premises",t:"P",s:[5,3,4,1,2]},
+  {ep:1,n:"Find a worm",t:"F",s:[4,2,3,5,1]},
+  {ep:1,n:"Team: Give Greg five foods",t:"T",s:[3,5,5,3,3]},
+  {ep:1,n:"Put most T-shirts on Alex",t:"F",s:[4,1,5,2,3]},
+  {ep:1,n:"Live: Find four oranges",t:"L",s:[0,0,5,0,0]},
+  {ep:2,n:"Prize: Most unquestionable beauty",t:"P",s:[5,4,5,3,1]},
+  {ep:2,n:"Bowling outfit / ball in bucket",t:"F",s:[2,0,4,3,5]},
+  {ep:2,n:"Mirror your reflection",t:"F",s:[4,5,3,2,1]},
+  {ep:2,n:"Most things before balloon pops",t:"F",s:[4,2,5,1,4]},
+  {ep:2,n:"Live: Word the piper is piping",t:"L",s:[5,4,2,4,2]},
+  {ep:3,n:"Prize: Fun thing to drag on string",t:"P",s:[3,5,1,2,4]},
+  {ep:3,n:"Headphones: build the tower",t:"F",s:[4,1,5,3,2]},
+  {ep:3,n:"Team: Paint while hugging",t:"T",s:[5,1,1,5,5]},
+  {ep:3,n:"Staircase: no repeat letters",t:"F",s:[5,3,2,1,4]},
+  {ep:3,n:"Live: Transfer Greg's balls",t:"L",s:[5,3,3,1,4]},
+  {ep:4,n:"Prize: Two things better combined",t:"P",s:[1,4,3,5,2]},
+  {ep:4,n:"Make something boring exciting",t:"F",s:[3,1,5,5,4]},
+  {ep:4,n:"Work out food under cloche",t:"F",s:[4,0,5,0,3]},
+  {ep:4,n:"Complete all three tasks",t:"F",s:[3,2,1,5,4]},
+  {ep:4,n:"Team Live: Communicate item silently",t:"L",s:[5,3,3,5,5]},
+  {ep:5,n:"Prize: Surprising big thing to conceal",t:"P",s:[2,5,1,4,3]},
+  {ep:5,n:"Write & make a prediction",t:"F",s:[3,5,3,3,4]},
+  {ep:5,n:"Team: Win sardines",t:"T",s:[3,5,5,3,3]},
+  {ep:5,n:"Get a ball in the glass",t:"F",s:[2,5,4,3,1]},
+  {ep:5,n:"Live: Swing ring onto thing",t:"L",s:[1,4,3,3,5]},
+  {ep:6,n:"Prize: Most embarrassing possession",t:"P",s:[2,2,5,4,3]},
+  {ep:6,n:"Be brave",t:"F",s:[3,4,2,4,5]},
+  {ep:6,n:"Win coconkers",t:"F",s:[2,3,4,1,5]},
+  {ep:6,n:"Photos: escalating-size things in mouth",t:"F",s:[5,1,3,4,2]},
+  {ep:6,n:"Live: Beanbags on opponents' faces",t:"L",s:[4,1,2,3,5]},
+  {ep:7,n:"Best bumpy thing",t:"P",s:[2,3,1,4,5]},
+  {ep:7,n:"Turn on the telly",t:"F",s:[0,0,0,0,5]},
+  {ep:7,n:"Find and eat a doughnut",t:"F",s:[2,4,3,1,0]},
+  {ep:7,n:"Have serious fun in the lab",t:"T",s:[2,5,5,2,2]},
+  {ep:7,n:"Make the most socks stand up",t:"F",s:[3,5,2,1,4]},
+  {ep:7,n:"Live: Snort raspberry or whistle",t:"L",s:[1,5,4,2,3]},
+  {ep:8,n:"Prize: Ordinary household object with most personality",t:"P",s:[3,3,4,2,5]},
+  {ep:8,n:"Censor yourself unnecessarily",t:"F",s:[5,4,4,4,4]},
+  {ep:8,n:"Most photos featuring 50% of Alex",t:"F",s:[4,4,2,1,5]},
+  {ep:8,n:"Nuts and nails in nappy, don't look away",t:"F",s:[5,2,3,4,1]},
+  {ep:8,n:"Team Live: Mop bearer with mask",t:"L",s:[2,5,5,2,2]},
+  {ep:9,n:"Prize: Thing to winch from a well",t:"P",s:[5,4,3,2,1]},
+  {ep:9,n:"Work out what powers the bulb",t:"F",s:[2,0,5,4,3]},
+  {ep:9,n:"Leave most pink balls on other side",t:"F",s:[1,5,3,2,4]},
+  {ep:9,n:"Catch a flip-flop with one foot",t:"F",s:[4,3,1,5,2]},
+  {ep:9,n:"Live: Correct sock on appendage",t:"L",s:[1,5,2,3,4]},
+  {ep:10,n:"Prize: Object most likely to make you say oh yeah quality",t:"P",s:[1,5,4,3,2]},
+  {ep:10,n:"Fill egg cup with lint, stop clock at 10 seconds",t:"F",s:[1,4,3,5,2]},
+  {ep:10,n:"Most exhilarating near-miss with paint balloon",t:"F",s:[2,4,3,5,2]},
+  {ep:10,n:"Team: Greatest pillow fight of all time",t:"T",s:[5,5,5,5,5]},
+  {ep:10,n:"Live: Chuck your duck in your buck",t:"L",s:[3,2,1,5,4]},
+];
+const EM={1:{t:"Cube is good.",d:"9 Apr"},2:{t:"Leg up, Johnny!",d:"16 Apr"},3:{t:"A creepy bit of advice.",d:"23 Apr"},4:{t:"Lou Reed and The Wombles.",d:"30 Apr"},5:{t:"I corroborate.",d:"7 May"},6:{t:"An even bigger spoon.",d:"14 May"},7:{t:"Putting things on things.",d:"21 May"},8:{t:"I don't got any.",d:"28 May"},9:{t:"Maybe someone else wrote Veep?",d:"4 Jun"},10:{t:"Domestic bumfluff.",d:"11 Jun"}};
+
+const EPS={};NAMES.forEach((n,ni)=>{EPS[n]=[1,2,3,4,5,6,7,8,9,10].map(ep=>TASKS.filter(t=>t.ep===ep).reduce((s,t)=>s+t.s[ni],0))});
+const TY={};NAMES.forEach((n,ni)=>{TY[n]={P:0,F:0,T:0,L:0};TASKS.forEach(t=>TY[n][t.t]+=t.s[ni])});
+
+const PICKS={
+  Kevin:{1:"Joel",2:"Amy",3:"Armando",4:"Kumail",5:"Joanna",6:"Joanna",7:"Joanna",8:"Amy",9:"Armando",10:"Armando"},
+  Jill:{1:"Joel",2:"Amy",3:"Kumail",4:"Armando",5:"Amy",6:"Joanna",7:"Amy",8:"Joel",9:"Kumail",10:"Joel"},
+  Emma:{1:"Joel",2:"Armando",3:"Amy",4:"Joanna",5:"Kumail",6:"Amy",7:"Kumail",8:"Joanna",9:"Joel",10:"Amy"},
+  Jamie:{1:"Joel",2:"Amy",3:"Joanna",4:"Amy",5:"Armando",6:"Joanna",7:"Amy",8:"Kumail",9:"Joanna",10:"Joanna"},
+  Blinky:{1:"Amy",2:"Joel",3:"Armando",4:"Kumail",5:"Amy",6:"Joel",7:"Kumail",8:"Joanna",9:"Amy",10:"Kumail"},
+  Riley:{1:"Amy",2:"Kumail",3:"Armando",4:"Joel",5:"Kumail",6:"Amy",7:"Joel",8:"Kumail",9:"Joel",10:"Amy"},
+  Elyse:{1:"Amy",2:"Kumail",3:"Armando",4:"Joanna",5:"Joel",6:"Joanna",7:"Joel",8:"Amy",9:"Kumail",10:"Joanna"},
+  Amanda:{1:"Armando",2:"Joel",3:"Amy",4:"Amy",5:"Joanna",6:"Kumail",7:"Joel",8:"Joanna",9:"Amy",10:"Kumail"},
+  Julia:{1:"Armando",2:"Amy",3:"Joanna",4:"Joel",5:"Armando",6:"Kumail",7:"Joel",8:null,9:"Amy",10:null},
+  "Amy D":{1:"Armando",2:"Joanna",3:"Joel",4:"Amy",5:"Kumail",6:"Armando",7:"Amy",8:"Armando",9:"Joel",10:"Kumail"},
+  Claire:{1:"Joanna",2:"Joel",3:"Amy",4:"Armando",5:"Kumail",6:"Joel",7:"Joanna",8:"Kumail",9:"Joanna",10:"Armando"},
+  Melissa:{1:"Joanna",2:"Kumail",3:"Joel",4:"Armando",5:"Amy",6:"Joel",7:"Joanna",8:"Joel",9:"Kumail",10:"Joanna"},
+  Ellen:{1:"Joanna",2:"Joel",3:"Amy",4:"Kumail",5:"Kumail",6:"Armando",7:"Joanna",8:"Joanna",9:"Joel",10:"Amy"},
+  Alex:{1:"Kumail",2:"Armando",3:"Joanna",4:"Joanna",5:"Kumail",6:"Amy",7:"Armando",8:"Joel",9:"Kumail",10:"Joel"},
+  Brady:{1:"Kumail",2:"Amy",3:"Armando",4:"Joanna",5:"Joel",6:"Joanna",7:"Joel",8:"Joel",9:"Kumail",10:"Joel"},
+  Celia:{1:null,2:null,3:null,4:"Joel",5:"Joanna",6:"Amy",7:"Kumail",8:"Amy",9:"Armando",10:"Joanna"},
+  Katherine:{1:null,2:"Amy",3:"Armando",4:"Joanna",5:"Joel",6:"Kumail",7:"Amy",8:"Joanna",9:"Kumail",10:null}
+};
+
+// Rank delta ep9→ep10 (final-week movement)
+const RD={Kevin:2,Jill:4,Emma:-2,Jamie:-1,Blinky:-1,Riley:-4,Elyse:-1,Amanda:-1,Julia:-4,"Amy D":-1,Claire:2,Melissa:1,Ellen:-2,Alex:4,Brady:4,Celia:0,Katherine:-3};
+
+const EI={
+  8:"<strong>Amy</strong> wins ep8 with 19pts — her second win. She swept the filmed tasks. Armando and Joanna tied on 18pts with a joint live task win. Joel had a quiet episode (13pts), his joint-second-lowest of the series. Kumail won the prize task with 5pts.",
+  1:"<strong>Joanna</strong> opened with 22pts, taking the live orange task outright (5–0–0–0–0). Armando and Joel tied on 11pts. Kumail's 9pts was the series low. Range of 13pts — tied with ep5 for the widest spread of the series.",
+  2:"<strong>Amy</strong> won with 20pts. Armando was disqualified on the bowling task. Kumail's bold choice of the full outfit paid off with 5pts. One of the tightest episodes of the series — just 7pts between 1st and 5th.",
+  3:"<strong>Amy</strong> won back-to-back with 22pts — the only contestant to do so. Kumail's resurgence (19pts) began here after his difficult opener. Joel and Joanna tied last on 12pts.",
+  4:"<strong>Joel</strong> broke out with 20pts. Armando disqualified on the cloche task. Kumail (18pts) continued upward. Four contestants within 4pts of each other.",
+  5:"<strong>Armando's episode</strong> — 24pts, the highest score of the series. He swept the filmed tasks. Amy had her worst week (11pts). Armando now leads prize tasks despite sitting last overall.",
+  6:"The 200th Taskmaster episode. <strong>Kumail</strong> dominated with 20pts — his series high. Joanna, Joel, and Amy all tied on 16pts. Armando had his second-worst episode (11pts).",
+  7:"The series milestone episode. <strong>Armando wins convincingly with 22pts</strong> — his second episode victory — driven by a 14-point filmed haul and a perfect 5 in the live task. Kumail (19pts) continued his late-series surge. Amy, Joel, and Joanna all scored between 10 and 15pts. At the top of the league, Julia and Ellen are now tied on 117pts with three episodes remaining.",
+  9:"<strong>Armando</strong> wins ep9 with 17pts — his third episode win, equalling Amy. Joel 2nd on 16pts. Joanna and Kumail tied 3rd on 14pts. Amy continued a quiet stretch (13pts) — her post-win form has cooled since ep8. Kevin's Armando pick (17pts) was the standout call.",
+  10:"<strong>Joel</strong> wins the finale with 23pts — his best episode. <strong>Armando</strong> 2nd on 20pts. Joanna 3rd on 16pts. <strong>Joanna wins Series 21</strong> with 165pts overall (Amy 155, Armando 161, Kumail 160, Joel 150). In the fantasy league, Kevin and Claire both picked Armando (20pts) for the finale — the identical call that vaulted them level at the top, 165pts apiece, for a shared league title."};
+
+// Compute players
+let PLAYERS=Object.keys(PICKS).map(name=>{
+  const pk=PICKS[name];
+  const epPts=[1,2,3,4,5,6,7,8,9,10].map(ep=>pk[ep]?EPS[pk[ep]][ep-1]:null);
+  const total=epPts.reduce((s,v)=>s+(v||0),0);
+  const used=new Set(Object.values(pk).filter(Boolean));
+  const unused=NAMES.filter(n=>!used.has(n));
+  return{name,picks:pk,epPts,total,used,unused};
+});
+// Rank badge formatting — the cast's own prize/filmed/live ranks. A
+// plain #N for every rank (no medal emoji); rnkCol still golds/silvers/
+// bronzes the top 3 via colour alone.
+const rnkFmt = r => '#'+r;
+const rnkCol = r => r===1?'var(--gold2)':r===2?'#a89880':r===3?'#b6833d':'var(--t2)';
+
+// Ties on this key share a rank — e.g. Kevin and Claire both show gold
+// "165"/rank 1 on PvE, full stop, since they really are tied on PvE
+// points. (The OTHER score still breaks the tie for list ORDER — see
+// buildStandings — but that's a presentation detail, not a claim that
+// one of them actually out-scored the other on this metric.)
+// idFn defaults to plain name-keyed ranks (players only, never collide);
+// the combined player+cast PvE board passes an idFn that also tags type,
+// since a player and a cast member could in principle share a name.
+function rankWithTies(arr, keyFn, idFn){
+  idFn = idFn || (p=>p.name);
+  const ranks = {};
+  arr.forEach((p,i) => {
+    ranks[idFn(p)] = i===0 || keyFn(p)!==keyFn(arr[i-1]) ? i+1 : ranks[idFn(arr[i-1])];
+  });
+  return ranks;
+}
+
+// PvP score: each week, the 5 cast members are ranked by that episode's
+// score and awarded 5/4/3/2/1 points (1st place = 5). A player earns
+// whatever their pick that week scored — so this rewards correctly
+// calling the week's best performer, independent of how many raw points
+// that pick was actually worth. It's "player vs player" because it only
+// makes sense as a contest between the pickers, not against the cast.
+const CAST_EP_RANK_PTS = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
+  const order = NAMES.map(n=>({n,pts:EPS[n][ep-1]})).sort((a,b)=>b.pts-a.pts);
+  const rankPts = {};
+  order.forEach((o,i) => { rankPts[o.n] = 5 - i; });
+  return rankPts;
+});
+const PVP_SCORE = {};
+PLAYERS.forEach(p => {
+  let s = 0;
+  for(let ep=1; ep<=10; ep++){
+    const pk = p.picks[ep];
+    if(pk) s += CAST_EP_RANK_PTS[ep-1][pk] || 0;
+  }
+  PVP_SCORE[p.name] = s;
+});
+
+// Each player's PvP rank, fixed regardless of which column the standings
+// list is currently sorted by — this is what badges the top-3 PvP number
+// on every row, not just when PvP is the active sort. PvP only has
+// meaning between players (cast don't make picks), so this stays
+// players-only — unlike PvE below, which now also ranks the cast.
+const PVP_RANK = rankWithTies([...PLAYERS].sort((a,b)=>PVP_SCORE[b.name]-PVP_SCORE[a.name]), p=>PVP_SCORE[p.name]);
+
+// PvE board: raw point totals. Cast members sit in the list at their
+// sorted position — same unit as a player's total, so the comparison is
+// apples-to-apples — but purely as a reference point: they aren't part
+// of the numbered ranking (see PVE_PLAYER_RANK, players-only), aren't
+// clickable, and don't carry a rank badge of their own.
+const PVE_ENTRIES = [
+  ...PLAYERS.map(p => ({type:'player', name:p.name, score:p.total})),
+  ...NAMES.map(n => ({type:'cast', name:n, score: EPS[n].reduce((a,b)=>a+b,0)}))
+];
+const PVE_PLAYER_RANK = rankWithTies([...PLAYERS].sort((a,b)=>b.total-a.total), p=>p.total);
+
+// Contestant image helper. variant:'pod' targets the episode-page podium strip;
+// otherwise isDetail picks between the cast-detail hero and the (legacy, unused) card.
+function contImg(name,isDetail,variant){
+  const src=PORT[name];
+  const acc=CONT[name]?.acc||'#888';
+  const label=(CONT[name]?.full||name).split(' ')[0].toUpperCase();
+  const phCls = variant==='pod' ? 'pod-port-ph' : (isDetail?'cd-ph':'cc-ph');
+  if(!src){
+    return `<div class="${phCls}" style="color:${acc}">${label}</div>`;
+  }
+  const imgCls = variant==='pod' ? 'pod-port-photo' : (isDetail?'cd-portrait':'cc-portrait');
+  return `<img src="${src}" alt="${name}" class="${imgCls}" onerror="imgFail(this,'${name}',${isDetail?'true':'false'},'${variant||''}')">`;
+}
+function imgFail(el,name,isDetail,variant){
+  const acc=CONT[name]?.acc||'#888';
+  const label=(CONT[name]?.full||name).split(' ')[0].toUpperCase();
+  const cls = variant==='pod' ? 'pod-port-ph' : (isDetail?'cd-ph':'cc-ph');
+  el.outerHTML=`<div class="${cls}" style="color:${acc}">${label}</div>`;
+}
+
+function deltaHTML(name){
+  const d=RD[name]||0;
+  if(d>0)return`<div class="delta up"><span class="delta-arrow">&#9650;</span><span class="delta-n">${d}</span></div>`;
+  if(d<0)return`<div class="delta dn"><span class="delta-arrow">&#9660;</span><span class="delta-n">${Math.abs(d)}</span></div>`;
+  return`<div class="delta eq"><span class="delta-dash">&mdash;</span></div>`;
+}
+
+
+
+
+
+
+function ptColor(pts){
+  if(pts===null)return'var(--t4)';
+  if(pts>=22)return'var(--gold2)';
+  if(pts>=18)return'#22c55e';
+  if(pts>=14)return'var(--t1)';
+  return'var(--t3)';
+}
+
+// ── STANDINGS ─────────────────────────────────────────
+
+// Cast order — by series total desc (matches cast list)
+let castOrder = [];
+function updateCastOrder() {
+  castOrder = [...NAMES].sort((a,b) => EPS[b].reduce((s,v)=>s+v,0) - EPS[a].reduce((s,v)=>s+v,0));
+}
+
+const TASK_ICON={P:'🏆',F:'🎬',T:'👥',L:'⚡'};
+function cleanTask(n){
+  return n.replace(/^(?:Prize|Team|Live|Filmed):\s*/i,'');
+}
+
+
+// Standings is either of two boards (PvE/PvP), picked via the stand-tabs
+// subtabs, swipeable exactly like the episode/cast strips (same
+// .ep-scroll-container/.ep-slide pattern) — always highest-first, so the
+// medallion/gold-silver-bronze tiers always mean "best in this view"
+// rather than risking a "#1 gold" badge on the lowest scorer. Only the
+// active board's score column shows at all — the other metric doesn't
+// appear on the row (see buildPlayerSlide).
+const STAND_KEYS = ['pve','pvp'];
+let standSortKey = 'pve';
+// Split into a rule sentence + a range stat so they can be typeset with
+// different weight/colour (see .pc-sort-desc-range) instead of running
+// the number into the sentence as plain trailing text.
+const SORT_DESC = {
+  pve: {rule:'Cumulative scoring against the cast and other players.', range:'0–25 pt/ep'},
+  pvp: {rule:'Weekly rank scoring against other players.', range:'1–5 pt/ep'}
+};
+function updateSortHeaderUI(){
+  const desc = document.getElementById('stand-sort-desc');
+  const d = SORT_DESC[standSortKey];
+  if(desc && d) desc.innerHTML = `${d.rule} <span class="pc-sort-desc-range">${d.range}</span>`;
+}
+// Tapping a tab scrolls to that board's slide — the scroll listener below
+// (set up once, in buildStandings) is what actually flips standSortKey
+// and the active tab, live, whether that scroll was this smooth-scroll
+// or a manual swipe. So this only needs to kick off the scroll.
+function sortStandings(key, btn){
+  document.querySelectorAll('#stand-tabs .ep-tab').forEach(t=>t.classList.remove('active'));
+  (btn || document.getElementById('stand-tab-'+key))?.classList.add('active');
+  const container = document.getElementById('player-body');
+  const slide = document.getElementById('stand-slide-'+key);
+  if(slide) container.scrollTo({left: slide.offsetLeft, behavior:'smooth'});
+}
+
+function buildStandings(){
+  const container = document.getElementById('player-body');
+  container.innerHTML = '';
+  container.className = 'ep-scroll-container';
+
+  // PvE slide — the combined board, players and cast on one raw-point
+  // scale (see PVE_ENTRIES above). Cast rows sit at their sorted position
+  // as thin, unranked, unclickable reference points (buildCastStandingSlide).
+  const pveSlide = document.createElement('div');
+  pveSlide.className = 'ep-slide';
+  pveSlide.id = 'stand-slide-pve';
+  const pveList = document.createElement('div');
+  pveList.className = 'player-card-list';
+  [...PVE_ENTRIES].sort((a,b)=>b.score-a.score).forEach((e, i) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.animationDelay = `${i * 35}ms`;
+    card.innerHTML = e.type==='cast' ? buildCastStandingSlide(e.name) : buildPlayerSlide(e.name, PVE_PLAYER_RANK[e.name], 'pve');
+    pveList.appendChild(card);
+  });
+  pveSlide.appendChild(pveList);
+
+  // PvP slide — players only, cast don't make picks so they have no PvP
+  // score to show. PvE breaks ties for LIST ORDER only; the rank number
+  // itself still ties on a real tie (see PVP_RANK).
+  const pvpSlide = document.createElement('div');
+  pvpSlide.className = 'ep-slide';
+  pvpSlide.id = 'stand-slide-pvp';
+  const pvpList = document.createElement('div');
+  pvpList.className = 'player-card-list';
+  [...PLAYERS].sort((a,b)=> PVP_SCORE[b.name]-PVP_SCORE[a.name] || b.total-a.total).forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'player-card';
+    card.style.animationDelay = `${i * 35}ms`;
+    card.innerHTML = buildPlayerSlide(p.name, PVP_RANK[p.name], 'pvp');
+    pvpList.appendChild(card);
+  });
+  pvpSlide.appendChild(pvpList);
+
+  container.appendChild(pveSlide);
+  container.appendChild(pvpSlide);
+  container.scrollLeft = 0;
+  standSortKey = 'pve';
+  updateSortHeaderUI();
+
+  // Sync active tab + description live, while the swipe is still in
+  // progress — not just once scrolling settles. Same rAF-throttled
+  // pattern as the episode/cast strips.
+  let standRAF = null, lastStandIdx = 0;
+  container.addEventListener('scroll', () => {
+    if (standRAF) return;
+    standRAF = requestAnimationFrame(() => {
+      standRAF = null;
+      const w = container.offsetWidth;
+      const idx = Math.max(0, Math.min(Math.round(container.scrollLeft / w), STAND_KEYS.length - 1));
+      if (idx === lastStandIdx) return;
+      lastStandIdx = idx;
+      const key = STAND_KEYS[idx];
+      standSortKey = key;
+      document.querySelectorAll('#stand-tabs .ep-tab').forEach(tb => tb.classList.remove('active'));
+      const activeTab = document.getElementById('stand-tab-'+key);
+      if(activeTab) activeTab.classList.add('active');
+      updateSortHeaderUI();
+    });
+  }, {passive:true});
+
+  // From PvP (the last standings slide), one more swipe forward continues
+  // straight into Episode 1 instead of dead-ending — mirrors the ep10 ->
+  // cast and cast-first -> ep10 handoffs below, so every strip in the app
+  // reads as one continuous swipe path. The reverse (ep1 -> PvP) is wired
+  // from buildEpTabs()'s own touchend handler.
+  let standTouchStartX = null;
+  container.addEventListener('touchstart', (e) => {
+    standTouchStartX = e.touches[0].clientX;
+  }, {passive:true});
+  container.addEventListener('touchend', (e) => {
+    if (standTouchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - standTouchStartX;
+    standTouchStartX = null;
+    const atEnd = container.scrollLeft >= container.scrollWidth - container.offsetWidth - 2;
+    if (atEnd && dx < -40) {
+      const epsBtn = document.querySelector('.tabs .tab[onclick*="eps"]');
+      if (epsBtn) nav('eps', epsBtn);
+      const epContainer = document.getElementById('ep-body');
+      if (epContainer) epContainer.scrollLeft = 0;
+    }
+  }, {passive:true});
+}
+
+// Picks + analysis are collapsed by default (see buildPlayerSlide) —
+// tapping a player's row reveals them without navigating away.
+function togglePC(headEl){
+  headEl.closest('.pc').classList.toggle('expanded');
+}
+
+
+
+function buildPlayerSlide(name, rank, boardKey){
+  const p      = PLAYERS.find(x=>x.name===name);
+  const sub    = p.epPts.filter(v=>v!==null);
+  const best   = sub.length ? Math.max(...sub) : '—';
+  const d      = RD[name]||0;
+
+  // Rank medallion tier — gold/silver/bronze/steel, matches standings rank colouring
+  const rankTier = rank<=3 ? ' pc-rank-n--'+rank : '';
+  // The list only ever shows ONE score column, matching whichever board
+  // this slide is for (PvE or PvP — each slide is built once, up front,
+  // for both boards, so this can't just read the "current" tab off a
+  // global). PvE tier is judged against players only (see PVE_PLAYER_RANK
+  // — cast are reference points in that list, not part of the ranking);
+  // PvP only ranks players too, since cast don't make picks at all.
+  const scoreVal = boardKey==='pvp' ? PVP_SCORE[name] : p.total;
+  const scoreTier = boardKey==='pvp'
+    ? (PVP_RANK[name]<=3 ? ' pc-score-t'+PVP_RANK[name] : '')
+    : (PVE_PLAYER_RANK[name]<=3 ? ' pc-score-t'+PVE_PLAYER_RANK[name] : '');
+
+  // Delta: only show if non-zero
+  const deltaStr = d===0 ? '' : `<span class="pc-delta ${d>0?'pc-delta-up':'pc-delta-dn'}">${d>0?'↑':'↓'}${Math.abs(d)}</span>`;
+
+  // Weekly picks — a single row of all 10 episodes, one contestant photo
+  // per week (reusing contImg's 'pod' variant — same portrait treatment
+  // as the episode podium strip) with that pick's score underneath.
+  // Points follow this slide's own board (PvP = 5..1 placement, PvE =
+  // raw points), matching the collapsed row's own number above, so
+  // there's never a mismatched pair on screen.
+  const worst = sub.length ? Math.min(...sub) : null;
+  const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
+    const pk = p.picks[ep];
+    if(!pk){
+      return `<div class="pc-pick-cell pc-pick-blank">
+        <div class="pc-pick-ep">E${ep}</div>
+        <div class="pc-pick-photo pc-pick-photo-blank">&mdash;</div>
+      </div>`;
+    }
+    const pts = boardKey==='pvp' ? CAST_EP_RANK_PTS[ep-1][pk] : p.epPts[ep-1];
+    const tier = boardKey==='pvp'
+      ? (pts===5?' hi':pts===1?' lo':' mid')
+      : (pts===best?' hi':pts===worst?' lo':' mid');
+    return `<div class="pc-pick-cell${tier}">
+      <div class="pc-pick-ep">E${ep}</div>
+      <div class="pc-pick-photo">${contImg(pk,false,'pod')}</div>
+      <div class="pc-pick-pts">${pts}</div>
+    </div>`;
+  }).join('');
+
+  return `<div class="pc${rank===1?' pc-rank1':rank<=3?' pc-podium':''}">
+
+    <div class="pc-head" onclick="togglePC(this)">
+      <div class="pc-rank-col">
+        <div class="pc-rank-n${rankTier}">${rank}</div>
+        ${deltaStr}
+      </div>
+      <div class="pc-name-col">
+        <div class="pc-name">${CONT[name]?.full||name}</div>
+      </div>
+      <div class="pc-score-col">
+        <div class="pc-total${scoreTier}">${scoreVal}</div>
+      </div>
+      <div class="pc-chev">&#9662;</div>
+    </div>
+
+    <div class="pc-detail-wrap"><div class="pc-detail-inner">
+      <div class="pc-picks-grid">${pickCells}</div>
+    </div></div>
+
+  </div>`;
+}
+
+// A cast member's row on the PvE board — deliberately NOT a scaled-down
+// player row: no rank (they aren't part of the numbered ranking, see
+// PVE_PLAYER_RANK), no score, no label, not clickable, no chevron, no
+// expand — just their name and a dotted rule, marking roughly where
+// their own season total sits relative to the players around it, without
+// drawing the eye the way a real competitor's row does.
+function buildCastStandingSlide(name){
+  const acc = CONT[name].acc;
+  return `<div class="pc pc-cast-row">
+    <span class="pc-cast-name" style="color:${acc}">${CONT[name].full.split(' ')[0]}</span>
+    <span class="pc-cast-line"></span>
+  </div>`;
+}
+
+function updateEpTabsFade(){
+  const tabsEl = document.getElementById('ep-tabs');
+  if(!tabsEl) return;
+  const atStart = tabsEl.scrollLeft <= 1;
+  const atEnd = tabsEl.scrollLeft >= tabsEl.scrollWidth - tabsEl.clientWidth - 1;
+  tabsEl.classList.toggle('at-start', atStart);
+  tabsEl.classList.toggle('at-end', atEnd);
+}
+
+function buildEpTabs(){
+  // Tab strip — same pattern as cast
+  const tabsEl = document.getElementById('ep-tabs');
+  tabsEl.innerHTML = Array.from({length:10},(_,i)=>{
+    const ep=i+1;
+    return `<button class="ep-tab${ep===1?' active':''}${ep>10?' tbd':''}" id="ep-tab-${ep}" onclick="selEp(${ep},this)">Ep ${ep}</button>`;
+  }).join('');
+
+  // Only ~7 of 10 tabs fit on screen with no visible scrollbar — fade the
+  // edge(s) that still have tabs beyond them, so the strip doesn't look
+  // like a complete, non-scrolling row of 7. (Also re-run from nav() since
+  // this page is display:none — and so has zero width — until it's shown.)
+  tabsEl.addEventListener('scroll', updateEpTabsFade, {passive:true});
+  updateEpTabsFade();
+
+  // Slides side by side
+  const container = document.getElementById('ep-body');
+  container.innerHTML = '';
+  container.className = 'ep-scroll-container';
+  for(let ep=1;ep<=10;ep++){
+    const slide = document.createElement('div');
+    slide.className = 'ep-slide';
+    slide.id = 'ep-slide-' + ep;
+    slide.innerHTML = buildEpSlide(ep);
+    container.appendChild(slide);
+  }
+  container.scrollLeft = 0;
+
+  // Sync active tab live, while the swipe is still in progress — not just
+  // once scrolling settles. rAF-throttled so it's at most once per frame,
+  // and the DOM only touched when the nearest slide actually changes.
+  let epRAF = null, lastEpIdx = 0;
+  container.addEventListener('scroll', () => {
+    if (epRAF) return;
+    epRAF = requestAnimationFrame(() => {
+      epRAF = null;
+      const w = container.offsetWidth;
+      const idx = Math.max(0, Math.min(Math.round(container.scrollLeft / w), 9));
+      if (idx === lastEpIdx) return;
+      lastEpIdx = idx;
+      const ep = idx + 1;
+      document.querySelectorAll('#ep-tabs .ep-tab').forEach(tb => tb.classList.remove('active'));
+      const activeTab = document.getElementById('ep-tab-' + ep);
+      if(activeTab){
+        activeTab.classList.add('active');
+        activeTab.scrollIntoView({inline:'nearest', block:'nearest'});
+      }
+    });
+  }, {passive:true});
+
+  // From ep10, one more swipe left continues straight into the cast list
+  // (first member) instead of dead-ending — episodes and cast read as one
+  // continuous strip. overscroll-behavior-x:contain (above) stops the
+  // browser's own scroll-chaining here, so this is done explicitly: a
+  // swipe that starts and ends at the container's right edge, past the
+  // last slide, hands off to nav('cast') and resets cast-body to its
+  // first slide. Symmetrically, from ep1 a swipe right hands back to the
+  // PvP standings slide (the reverse of the handoff in buildStandings()).
+  let epTouchStartX = null;
+  container.addEventListener('touchstart', (e) => {
+    epTouchStartX = e.touches[0].clientX;
+  }, {passive:true});
+  container.addEventListener('touchend', (e) => {
+    if (epTouchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - epTouchStartX;
+    epTouchStartX = null;
+    const atEnd = container.scrollLeft >= container.scrollWidth - container.offsetWidth - 2;
+    const atStart = container.scrollLeft <= 2;
+    if (atEnd && dx < -40) {
+      const castBtn = document.querySelector('.tabs .tab[onclick*="cast"]');
+      if (castBtn) nav('cast', castBtn);
+      const castContainer = document.getElementById('cast-body');
+      if (castContainer) castContainer.scrollLeft = 0;
+    } else if (atStart && dx > 40) {
+      const standBtn = document.querySelector('.tabs .tab[onclick*="stand"]');
+      if (standBtn) nav('stand', standBtn);
+      const standContainer = document.getElementById('player-body');
+      const pvpSlide = document.getElementById('stand-slide-pvp');
+      if (standContainer && pvpSlide) standContainer.scrollLeft = pvpSlide.offsetLeft;
+    }
+  }, {passive:true});
+}
+
+
+function selEp(ep, btn){
+  document.querySelectorAll('#ep-tabs .ep-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('ep-body');
+  const slide = document.getElementById('ep-slide-' + ep);
+  if(slide) container.scrollTo({left: slide.offsetLeft, behavior:'smooth'});
+}
+
+
+function buildEpSlide(ep){
+  const m=EM[ep];
+  if(ep>10){
+    return `<div style="padding:48px 16px;text-align:center">
+      <div style="font-family:var(--fm);font-size:12px;color:var(--red);letter-spacing:.25em;text-transform:uppercase;margin-bottom:8px">Episode ${ep}</div>
+      <div style="font-size:26px;font-weight:800;letter-spacing:-0.02em;margin-bottom:6px">${m.t}</div>
+      <div style="font-family:var(--fm);font-size:14px;color:var(--t3)">${m.d} 2026</div>
+      <div style="margin-top:18px;font-family:var(--fm);font-size:13px;color:var(--t4)">Awaiting broadcast</div>
+    </div>`;
+  }
+  const epT=TASKS.filter(t=>t.ep===ep);
+  const tots=NAMES.map((_,ni)=>epT.reduce((s,t)=>s+t.s[ni],0));
+  const epMax=Math.max(...tots),winner=NAMES[tots.indexOf(epMax)],wAcc=CONT[winner].acc;
+  const podS=[...NAMES.map((n,i)=>({n,pts:tots[i]}))].sort((a,b)=>b.pts-a.pts);
+
+  // Sort LOW to HIGH (left to right) for portrait display
+  const podLow=[...NAMES.map((n,i)=>({n,pts:tots[i]}))].sort((a,b)=>a.pts-b.pts);
+  const pods=podLow.map(({n,pts})=>{
+    const acc=CONT[n].acc;
+    const isWinner=pts===epMax;
+    return`<div class="pod-port-col">
+      <div class="pod-port-img">
+        ${contImg(n,false,'pod')}
+      </div>
+      <div class="pod-port-name" style="color:${acc}">${CONT[n].full.split(' ')[0]}</div>
+      <div class="pod-port-pts" style="color:${isWinner?'var(--gold2)':'var(--t1)'}${isWinner?';text-shadow:0 0 8px var(--gold-glow)':''}">${pts}</div>
+    </div>`;
+  }).join('');
+
+  let tbl=`<div class="tt-wrap"><table class="tt"><thead><tr><th>Task</th>${NAMES.map(n=>`<th style="color:${CONT[n].acc}">${n.slice(0,3)}</th>`).join('')}</tr></thead><tbody>`;
+  epT.forEach(t=>{
+    const mx=Math.max(...t.s),mn=Math.min(...t.s);
+    tbl+=`<tr><td><div class="tn"><span class="tb ${t.t}">${TASK_ICON[t.t]}</span><span style="font-size:14px;color:var(--t2)">${cleanTask(t.n)}</span></div></td>${t.s.map(s=>`<td class="sc ${s===mx&&mx>mn?'best':s===mn&&mx>mn?'worst':'mid'}">${s}</td>`).join('')}</tr>`;
+  });
+  tbl+=`<tr><td style="font-family:var(--fm);font-size:12px;color:var(--t3);letter-spacing:.1em">TOTAL</td>${tots.map((pts,i)=>`<td style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:${pts===epMax?'var(--gold-l)':'var(--t1)'}">${pts}</td>`).join('')}</tr></tbody></table></div>`;
+
+  return `<div class="ep-header-box">
+    <div class="ep-kicker">Episode ${ep} &middot; ${m.d} 2026</div>
+    <div class="ep-title">${m.t.replace('.','')}</div>
+    <div class="ep-winner">Won by <span style="color:${wAcc};font-weight:700">${winner}</span> with ${epMax} points</div>
+  </div>
+  <div class="ep-body">
+    <div class="pod-portraits">${pods}</div>
+    ${tbl}
+    <div class="ep-ins"><div class="ep-ins-lbl">Episode Analysis</div><div class="ep-ins-b">${EI[ep]||''}</div></div>
+  </div></div>`;
+
+}
+
+
+
+// ── CAST ─────────────────────────────────────────────
+function buildCast(){
+  updateCastOrder();
+  // Build tab strip (cast names)
+  const tabsEl = document.getElementById('cast-tabs');
+  if(!tabsEl) return;
+  tabsEl.innerHTML = castOrder.map((n,i)=>
+    `<button class="ep-tab${i===0?' active':''}" id="cast-tab-${n}" onclick="selCast('${n}',this)">${CONT[n].full.split(' ')[0]}</button>`
+  ).join('');
+
+  // Build all cast slides side by side
+  const container = document.getElementById('cast-body');
+  container.innerHTML = '';
+  container.className = 'ep-scroll-container';
+
+  castOrder.forEach(n => {
+    const slide = document.createElement('div');
+    slide.className = 'ep-slide';
+    slide.id = 'cast-slide-' + n;
+    slide.innerHTML = buildCastSlide(n);
+    container.appendChild(slide);
+  });
+
+  container.scrollLeft = 0;
+
+  // Sync active tab live, while the swipe is still in progress — not just
+  // once scrolling settles. rAF-throttled so it's at most once per frame,
+  // and the DOM only touched when the nearest slide actually changes.
+  let castRAF = null, lastCastIdx = 0;
+  container.addEventListener('scroll', () => {
+    if (castRAF) return;
+    castRAF = requestAnimationFrame(() => {
+      castRAF = null;
+      const w = container.offsetWidth;
+      const idx = Math.max(0, Math.min(Math.round(container.scrollLeft / w), castOrder.length - 1));
+      if (idx === lastCastIdx) return;
+      lastCastIdx = idx;
+      const n = castOrder[idx];
+      document.querySelectorAll('.cast-tabs .ep-tab').forEach(tb => tb.classList.remove('active'));
+      const activeTab = document.getElementById('cast-tab-' + n);
+      if(activeTab){ activeTab.classList.add('active'); activeTab.scrollIntoView({inline:'nearest',block:'nearest'}); }
+    });
+  }, {passive:true});
+
+  // Mirror of the ep10 -> first-cast-member handoff: from the first cast
+  // member, one more swipe backward continues into the last episode
+  // instead of dead-ending, so the strip reads as continuous both ways.
+  let castTouchStartX = null;
+  container.addEventListener('touchstart', (e) => {
+    castTouchStartX = e.touches[0].clientX;
+  }, {passive:true});
+  container.addEventListener('touchend', (e) => {
+    if (castTouchStartX === null) return;
+    const dx = e.changedTouches[0].clientX - castTouchStartX;
+    castTouchStartX = null;
+    const atStart = container.scrollLeft <= 2;
+    if (atStart && dx > 40) {
+      const epsBtn = document.querySelector('.tabs .tab[onclick*="eps"]');
+      if (epsBtn) nav('eps', epsBtn);
+      const epContainer = document.getElementById('ep-body');
+      const lastSlide = document.getElementById('ep-slide-10');
+      if (epContainer && lastSlide) epContainer.scrollLeft = lastSlide.offsetLeft;
+    }
+  }, {passive:true});
+}
+
+function selCast(name, btn){
+  document.querySelectorAll('.cast-tabs .ep-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('cast-body');
+  const slide = document.getElementById('cast-slide-' + name);
+  if(slide) container.scrollTo({left: slide.offsetLeft, behavior:'smooth'});
+}
+
+function buildCastSlide(n){
+  const eps=EPS[n], tot=eps.reduce((a,b)=>a+b,0), mx=Math.max(...eps), mn=Math.min(...eps);
+  const acc=CONT[n].acc;
+  const ni=NAMES.indexOf(n);
+  const imgEl=contImg(n,true);
+  const srank=NAMES.map(nm=>({nm,tot:EPS[nm].reduce((a,b)=>a+b,0)})).sort((a,b)=>b.tot-a.tot).findIndex(x=>x.nm===n)+1;
+  const pRankC=[...NAMES].map(nm=>({nm,v:TY[nm].P})).sort((a,b)=>b.v-a.v).findIndex(x=>x.nm===n)+1;
+  const fRankC=[...NAMES].map(nm=>({nm,v:TY[nm].F+TY[nm].T})).sort((a,b)=>b.v-a.v).findIndex(x=>x.nm===n)+1;
+  const lRankC=[...NAMES].map(nm=>({nm,v:TY[nm].L})).sort((a,b)=>b.v-a.v).findIndex(x=>x.nm===n)+1;
+
+  const ALL_EPS=[1,2,3,4,5,6,7,8,9,10];
+  const bsHdr='<div class="bs-hcell"></div>'+ALL_EPS.map(ep=>`<div class="bs-hcell">E${ep}</div>`).join('')+'<div class="bs-hcell" style="color:var(--gold2);font-weight:700">Tot</div>';
+
+  const bsP='<div class="bs-label">🏆</div>'+ALL_EPS.map(ep=>{
+    if(ep>10)return'<div class="bs-cell blank">—</div>';
+    const v=TASKS.filter(t=>t.ep===ep&&t.t==='P').reduce((a,t)=>a+t.s[ni],0);
+    return`<div class="bs-cell mid">${v}</div>`;
+  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='P').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsF='<div class="bs-label">🎬</div>'+ALL_EPS.map(ep=>{
+    if(ep>10)return'<div class="bs-cell blank">—</div>';
+    const v=TASKS.filter(t=>t.ep===ep&&(t.t==='F'||t.t==='T')).reduce((a,t)=>a+t.s[ni],0);
+    return`<div class="bs-cell mid">${v}</div>`;
+  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='F'||t.t==='T').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsL='<div class="bs-label">⚡</div>'+ALL_EPS.map(ep=>{
+    if(ep>10)return'<div class="bs-cell blank">—</div>';
+    const v=TASKS.filter(t=>t.ep===ep&&t.t==='L').reduce((a,t)=>a+t.s[ni],0);
+    return`<div class="bs-cell mid">${v}</div>`;
+  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='L').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsTot='<div class="bs-label" style="font-weight:700;color:var(--t1)">Tot</div>'+ALL_EPS.map(ep=>{
+    const v=eps[ep-1];
+    return`<div class="bs-cell ${v===mx?'hi':v===mn?'lo':'mid'}" style="font-weight:700">${v}</div>`;
+  }).join('')+'<div class="bs-cell hi" style="font-weight:700;color:var(--gold2)">'+tot+'</div>';
+  const boxScore='<div class="bs-wrap"><div class="bs-header">'+bsHdr+'</div>'
+    +'<div class="bs-row">'+bsTot+'</div>'
+    +'<div class="bs-row">'+bsP+'</div>'
+    +'<div class="bs-row">'+bsF+'</div>'
+    +'<div class="bs-row">'+bsL+'</div></div>';
+
+  return `<div style="padding:0">
+    <div class="cd-hero">
+      <div class="cd-img"><div class="cd-img-frame">${imgEl}</div></div>
+      <div class="cd-info">
+        <div class="cd-name" style="color:${acc}">${CONT[n].full}</div>
+        <div class="cd-sub">Rank #${srank} &middot; avg ${(tot/eps.length).toFixed(1)}/ep</div>
+        <div class="cd-pts">${tot}</div>
+        <div class="cd-pts-l">total pts</div>
+        <div style="display:flex;gap:8px;margin-top:8px;font-family:var(--fm);font-size:9px;flex-wrap:wrap">
+          <span>🏆 <span style="color:${rnkCol(pRankC)}">${rnkFmt(pRankC)}</span> prize</span>
+          <span>🎬 <span style="color:${rnkCol(fRankC)}">${rnkFmt(fRankC)}</span> filmed</span>
+          <span>⚡ <span style="color:${rnkCol(lRankC)}">${rnkFmt(lRankC)}</span> live</span>
+        </div>
+      </div>
+    </div>
+    ${boxScore}
+    <div class="cd-block"><div class="cd-block-lbl">Profile</div><div class="cd-block-body">${CONT[n].bio}</div></div>
+    <div class="cd-block cd-block-insight"><div class="cd-block-lbl">Statistical insight</div><div class="cd-block-body">${CONT[n].stat}</div></div>
+  </div>`;
+}
+
+
+
+
+
+// ── NAV ───────────────────────────────────────────────
+const PAGE_NAMES = ['stand','eps','cast'];
+// Tracks which page is current and whether nav() currently owns an
+// in-flight programmatic scroll — shared with the swipe-sync listener
+// below so a tap on a non-adjacent tab (e.g. Standings -> Cast) doesn't
+// have the two fighting over --active-idx as the animation passes
+// through the tab in between (that fight was the visible stutter).
+let pgIdx = 0, pgNavigating = false;
+
+function nav(name,btn){
+  const idx = PAGE_NAMES.indexOf(name);
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const tabs = [...document.querySelectorAll('.tabs .tab')];
+  tabs.forEach(t=>t.classList.remove('active'));
+  const page = document.getElementById('p-'+name);
+  page.classList.add('active');
+  btn.classList.add('active');
+  btn.closest('.tabs').style.setProperty('--active-idx', idx);
+  page.scrollTop = 0;
+  pgIdx = idx;
+  pgNavigating = true;
+  const scrEl = document.getElementById('scr');
+  scrEl.scrollTo({left: page.offsetLeft, behavior:'smooth'});
+  const clearNav = () => { pgNavigating = false; scrEl.removeEventListener('scrollend', clearNav); };
+  scrEl.addEventListener('scrollend', clearNav, {once:true});
+  setTimeout(clearNav, 600); // fallback for browsers without scrollend
+  if(name==='eps') updateEpTabsFade();
+}
+
+// Pages sit side by side in #scr (same horizontal-swipe pattern as the
+// episode/cast slide strips) so a finger-swipe moves between Standings/
+// Episodes/Cast directly, without needing the bottom nav. This listener
+// keeps the nav tab + gold indicator in sync while that swipe happens —
+// rAF-throttled so it's at most once per frame, DOM touched only when
+// the nearest page actually changes. It stands down while nav() owns a
+// click-triggered scroll so the two don't both drive --active-idx at once.
+(function(){
+  const scrEl = document.getElementById('scr');
+  let pgRAF = null;
+  scrEl.addEventListener('scroll', (e) => {
+    if (e.target !== scrEl) return; // ignore bubbled scrolls from a .page's own vertical scroll
+    if (pgNavigating) return;
+    if (pgRAF) return;
+    pgRAF = requestAnimationFrame(() => {
+      pgRAF = null;
+      const w = scrEl.offsetWidth;
+      const idx = Math.max(0, Math.min(Math.round(scrEl.scrollLeft / w), PAGE_NAMES.length - 1));
+      if (idx === pgIdx) return;
+      pgIdx = idx;
+      const name = PAGE_NAMES[idx];
+      const tabs = [...document.querySelectorAll('.tabs .tab')];
+      tabs.forEach(t => t.classList.remove('active'));
+      tabs[idx].classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      const page = document.getElementById('p-'+name);
+      page.classList.add('active');
+      document.querySelector('.tabs').style.setProperty('--active-idx', idx);
+      document.querySelector('.hdr').classList.toggle('compact', page.scrollTop > 8);
+      if (name==='eps') updateEpTabsFade();
+    });
+  }, {passive:true});
+})();
+
+// Shrink the masthead as the active page scrolls down, expand it back
+// near the top. Scroll events on a .page don't bubble, so this listener
+// is registered on #scr with capture:true to still catch them.
+(function(){
+  const hdr = document.querySelector('.hdr');
+  const scrEl = document.getElementById('scr');
+  let hdrRAF = null;
+  scrEl.addEventListener('scroll', (e) => {
+    if (e.target === scrEl) return; // top-level page swipe, not page content scroll
+    if (hdrRAF) return;
+    hdrRAF = requestAnimationFrame(() => {
+      hdrRAF = null;
+      hdr.classList.toggle('compact', e.target.scrollTop > 8);
+    });
+  }, {capture:true, passive:true});
+})();
+
+
+// Countdown — Ep 10 finale: 11 Jun 2026. Set EP10_UTC to a Date.UTC(...) ms
+// timestamp to arm the countdown for next series; leave null once complete.
+const EP10_UTC = null; // Series complete
+function renderCountdown(){
+  const el=document.getElementById('hdr-countdown');
+  if(!el)return;
+  if(!EP10_UTC){ el.innerHTML='<span class="hdr-pill-label" style="color:var(--gold2);letter-spacing:0.18em">SERIES 21 RESULTS</span>'; return; }
+  const now=Date.now(), diff=EP10_UTC-now;
+  if(diff<=0){ el.innerHTML='<span class="hdr-pill-label" style="color:var(--gold2)">LIVE NOW</span>'; return; }
+  const d=Math.floor(diff/864e5),h=Math.floor((diff%864e5)/36e5),m=Math.floor((diff%36e5)/6e4),sc=Math.floor((diff%6e4)/1e3);
+  const pad=n=>String(n).padStart(2,'0');
+  el.innerHTML='<span class="hdr-pill-label">Ep 10 &middot; 11 Jun</span><span class="hdr-cd"><span class="hdr-cd-num">'+d+'</span>d <span class="hdr-cd-num">'+pad(h)+'</span>h <span class="hdr-cd-num">'+pad(m)+'</span>m <span class="hdr-cd-num">'+pad(sc)+'</span>s</span>';
+}
+renderCountdown();
+if(EP10_UTC) setInterval(renderCountdown,1000);
+
+
+
+updateCastOrder();
+buildStandings();buildEpTabs();buildCast();
+
+</script>
+</body>
+</html>
