@@ -6,6 +6,7 @@ This document specifies the Fantasky Master system: its purpose, inputs, data mo
 - **Source:** <https://github.com/kbroadie/Fantasky-Master> (`index.html`)
 - **Taskmaster YouTube channel** (where episodes livestream): <https://www.youtube.com/@Taskmaster>
 - **Player-facing rules and how to vote:** [README.md](README.md)
+- **Contestant image albums (Imgur):** Series 22 <https://imgur.com/a/taskmaster-series-22-r7FwUp3> · Series 21 <https://imgur.com/a/taskmaster-series-21-sQsejvk>
 
 ---
 
@@ -90,7 +91,7 @@ SERIES_RAW = {
 | Field | Type | Meaning |
 |---|---|---|
 | `NAMES` | array of 5 strings | Contestant short names. Every score array `s` in `TASKS` is aligned to this order. |
-| `PORT` | `{name: imageURL}` | Contestant portrait URL. |
+| `PORT` | `{name: imageURL}` | Contestant portrait: a direct Imgur image link, `https://i.imgur.com/<id>.png`, to an image in that series' album (§4.2). |
 | `CONT` | `{name: {full, acc, bio, stat}}` | Full name `full`; `acc`, a hex value not used by any calculation; and two free-text paragraphs, `bio` and `stat` (statistical insight), authored outside the system. |
 | `TASKS` | array of `{ep, n, t, s}` | One entry per task: episode number `ep`; task name `n` (may carry a "Prize:", "Team:" or "Live:" prefix); type `t` ∈ {P, F, T, L}; and `s`, 5 scores aligned to `NAMES`. |
 | `EM` | `{ep: {t, d, tb?}}` | Episode metadata for all 10 episodes: title `t`; London air date `d` (e.g. `"1 Oct 2026"`); and, only when contestants tied for the top score, `tb`, the tiebreak winner's name. |
@@ -105,6 +106,20 @@ Example task and tiebreak entries (Series 22):
 
 EM_S22[2] = {t:"This Is Food Glue", d:"10 Sep 2026", tb:"Richard"}   // Richard, Matt, Nina tied on 14
 ```
+
+### 4.2 Image hosting
+
+Contestant images are not stored in the repository. They are hosted in one Imgur album per series, maintained by the host:
+
+| Series | Album | Image IDs referenced by `PORT` |
+|---|---|---|
+| 22 | <https://imgur.com/a/taskmaster-series-22-r7FwUp3> (album id `r7FwUp3`) | Chloe `8ZFXOSZ`, Isy `Mqxwewi`, Matt `A4Eabuj`, Nina `Tf5CoeT`, Richard `Az8PJmE` |
+| 21 | <https://imgur.com/a/taskmaster-series-21-sQsejvk> (album id `sQsejvk`) | Amy `KXhQLQQ`, Armando `JZSgjrb`, Joanna `IuSCsrt`, Joel `nRfy6Um`, Kumail `u0hZhnG` |
+
+- **Link format.** `PORT` uses the **direct image link** (`https://i.imgur.com/<id>.png`), not the album or post URL, so the file can be fetched as an image. The `<id>` is the image's own Imgur ID, distinct from the album id.
+- **Extra images.** The albums may hold images that `PORT` doesn't reference (at the time of writing, six extra in the Series 22 album and one in the Series 21 album). Only the five `PORT` entries per series are used.
+- **External dependency.** Images are fetched from Imgur at run time. If Imgur is unreachable or an image is deleted, the system still computes everything; only the image is missing. No calculation reads `PORT`.
+- **Replacing an image.** Upload the new image to the series' album, then point that contestant's `PORT` entry at the new image's direct link. Deleting an image from the album breaks any `PORT` entry still pointing at it.
 
 ---
 
@@ -336,7 +351,11 @@ At any time after a Series 22 episode airs, edit `index.html`:
 
 Everything else is derived: aired and scored weeks, totals, both boards, ranks, rank deltas, episode winners, pick-rule statuses, contestant statistics, the next episode and the current series.
 
-**New series:** add a `SERIES_RAW` entry keyed `"s" + number` with the same fields and the 10 London air dates in `EM`. It becomes current automatically when its Episode 1 airs.
+**New series:**
+1. Add a `SERIES_RAW` entry keyed `"s" + number`, with the same fields and the 10 London air dates in `EM`.
+2. Create an Imgur album for the series, upload one image per contestant, and set `PORT` to each image's direct link (§4.2).
+
+The series becomes current automatically when its Episode 1 airs.
 
 ---
 
@@ -344,7 +363,7 @@ Everything else is derived: aired and scored weeks, totals, both boards, ranks, 
 
 | Function / constant | Responsibility |
 |---|---|
-| `SERIES_RAW`, `*_S21`, `*_S22` | Series data (§4.1). |
+| `SERIES_RAW`, `*_S21`, `*_S22` | Series data (§4.1); `PORT_*` point into the Imgur albums (§4.2). |
 | `EPISODES_PER_SERIES`, `AIR_TZ`, `AIR_HOUR`, `AIR_MIN` | Schedule constants (§5.1). |
 | `zonedTimeToDate`, `parseEpDate` | Air instants, DST-aware (§5.1). |
 | `seriesNum`, `SERIES_KEYS`, `currentSeriesKey` | Series identity and current-series selection (§5.3). |
