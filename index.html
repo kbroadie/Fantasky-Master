@@ -4,85 +4,100 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fantasky Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Oswald:wght@400;500;600&family=Rye&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* ═══ VICTORIAN PRINT THEME ═══════════════════════════════
-     Flat, matte, letterpress-on-card: an off-black charcoal ground,
-     razor-thin cream and muted-gold rules, no gradients, textures or
-     glows anywhere. */
+  /* ═══ VICTORIAN PRINT THEME — MUSIC-HALL PALETTE ═══════════
+     Still flat and matte (no gradients, textures or glows), but inked
+     like a cheerful Victorian playbill: a deep ultramarine ground,
+     cream stock, marigold, vermilion and mint. Each accent has one job:
+       marigold  — the best/leading value, active states, gold rules
+       vermilion — wax seals, the countdown, "moved down"
+       mint      — "moved up"
+       cream     — text and razor-thin frame rules */
 
   /* Gap between the framed standings panels and the screen edge; the
      Standings header row adds it to its own padding to stay aligned. */
   --wall-inset: 12px;
 
-  --cream:      #f5f5dc;
-  --line-cream: #f5f5dc;   /* razor-thin frame rules */
-  --line-gold:  #a8904f;   /* muted gold rules */
-  --line-dim:   #2e2c27;   /* hairline separators inside panels */
+  --cream:      #fbf3dc;
+  --marigold:   #f6c350;
+  --vermilion:  #ee5a40;
+  --mint:       #5fd3a8;
+  --periwinkle: #7d8bc4;
 
-  /* Sealing-wax crimson, used flat and sparingly */
-  --red:      #b3284f;
-  --red2:     #881337;
-  --red3:     #4c0519;
-  --red4:     #2a0410;
+  --line-cream: #fbf3dc;   /* razor-thin frame rules */
+  --line-gold:  #f2b544;   /* marigold rules */
+  --line-frame: #56639a;   /* everyday panel frames */
+  --line-dim:   #2d3a63;   /* hairline separators inside panels */
+
+  --red:      #ee5a40;
+  --red2:     #d9432b;
+  --red3:     #7a2215;
+  --red4:     #3d120b;
   --red-glow: transparent;
   --red-t:    transparent;
-  --wax:      #881337;
+  --wax:      #e0483a;
 
   /* DL envelope stationery (flat tones) */
-  --env-front:  #f5f5dc;
-  --env-flap:   #e4dfc0;
-  --env-inside: #c9c3a2;
-  --env-card:   #fffdf3;
-  --env-ink:    #121212;
+  --env-front:  #fbf3dc;
+  --env-flap:   #f1e3bb;
+  --env-inside: #d8c796;
+  --env-card:   #fffdf6;
+  --env-ink:    #1a2340;
 
-  --gold:     #a8904f;
-  --gold2:    #cdb274;
-  --gold3:    #dcc690;
-  --gold4:    #7d6a3e;
-  --gold-t:   rgba(168,144,79,0.12);
+  --gold:     #f2b544;
+  --gold2:    #f6c350;
+  --gold3:    #ffd978;
+  --gold4:    #b98a2a;
+  --gold-t:   rgba(246,195,80,0.14);
   --gold-glow:transparent;  /* no glows in a flat print theme */
   --gold-l:   var(--gold2);
 
-  --up:       #9fbf9f;
+  --up:       #5fd3a8;
   --up-glow:  transparent;
 
-  /* Charcoal surfaces — solid, matte */
-  --bg:  #121212;
-  --s0:  #121212;
-  --s1:  #161616;
-  --s2:  #191919;
-  --s3:  #1d1d1d;
-  --s4:  #232323;
-  --s5:  #2a2a2a;
+  /* Ultramarine surfaces — solid, matte */
+  --bg:  #1a2340;
+  --s0:  #1a2340;
+  --s1:  #202b4d;
+  --s2:  #243053;
+  --s3:  #29365c;
+  --s4:  #2f3d66;
+  --s5:  #374672;
 
-  --t1:  #f5f5dc;
-  --t2:  #cfcab0;
-  --t3:  #aaa58c;
-  --t4:  #8e8a74;
+  --t1:  #fbf3dc;
+  --t2:  #ddd6c0;
+  --t3:  #b5bcd4;
+  --t4:  #98a0bd;
 
-  --warn:  #c9a25a;
+  --warn:  #f6c350;
   --warn-t:transparent;
 
-  --b-gold:  #3a3527;
-  --b-gold2: #262420;
-  --b-dim:   #242424;
-  --b-red:   #5a1a2c;
+  --b-gold:  #3a4670;
+  --b-gold2: #2a3558;
+  --b-dim:   #2d3a63;
+  --b-red:   #7a2215;
 
-  /* Type: Cormorant Garamond for headings, names, scores and rank
-     markers; Libre Baskerville for body copy and small-caps labels. */
+  /* Type roles:
+       Rye                — the FANTASKY wordmark only
+       Cormorant Garamond — headings and player/contestant names
+       Oswald             — every number and all small type (labels,
+                            tabs, column heads): a condensed gothic in
+                            the Victorian wood-type grotesque tradition
+       Libre Baskerville  — narrative copy (analysis, profiles) */
+  --ff-mark: 'Rye','Cormorant Garamond',Georgia,serif;
   --ff-head: 'Cormorant Garamond',Garamond,'Libre Baskerville',Georgia,serif;
-  --ff-num:  'Cormorant Garamond',Garamond,'Libre Baskerville',Georgia,serif;
+  --ff-num:  'Oswald','Arial Narrow',sans-serif;
   --ff-name: var(--ff-head);
   --ff-serif:var(--ff-head);
   --ff:      'Libre Baskerville',Baskerville,Georgia,serif;
-  --fm:      'Libre Baskerville',Baskerville,Georgia,serif;
+  --fm:      'Oswald','Arial Narrow',sans-serif;
   --ff-type: var(--fm);
   --ff-hand: var(--ff-num);
   --ff-stamp:var(--fm);
   /* Printer's rule with a centre lozenge, drawn under page headings */
-  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23a8904f' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23a8904f'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23a8904f'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23cdb274'/%3E%3C/svg%3E");
+  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23f2b544' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23f2b544'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23f2b544'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23ee5a40'/%3E%3C/svg%3E");
 
   /* Fluid type */
   --fs-2xs: clamp(9px,  2.2vw, 10px);
@@ -100,7 +115,7 @@
   --px: 16px;
   /* Extra margin after the Standings Rank column (header AND data rows —
      see .st-h-rank/.pc-rank-col) so the Rank↔Player gap visually matches
-     the Task Points↔Rank Points gap. */
+     the Show Pts↔League Pts gap. */
   --rank-col-gap: 7.5px;
   --sp-1: 4px;
   --sp-2: 8px;
@@ -121,8 +136,8 @@
 html,body{height:100%}
 body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   max-width:680px;margin:0 auto;width:100%;min-height:100%;
-  /* Cormorant defaults to old-style figures; scores, dates and the
-     stopwatch all read better with lining ones (SVG text inherits this). */
+  /* Lining figures everywhere (Cormorant and Baskerville default to
+     old-style in places); SVG text inherits this. */
   font-variant-numeric:lining-nums;}
 
 /* ── SHELL ──────────────────────────────────────────── */
@@ -159,23 +174,39 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .hdr.compact{padding:14px var(--px) 6px}
 
 /* Left: brand */
-.hdr-brand{flex:1 1 auto;min-width:0}
-.hdr-title{font-family:var(--ff-head);font-size:clamp(15px,5vw,30px);font-weight:700;
-  color:var(--t1);letter-spacing:0.06em;line-height:1;white-space:nowrap;}
-.hdr-title em{color:var(--gold2);font-style:normal;}
+.hdr-brand{flex:1 1 auto;min-width:0;display:flex;justify-content:center}
+/* Wordmark — a two-line playbill lockup. "FANTASKY" in Rye (Victorian
+   wood type) printed cream with a flat vermilion offset, like a second
+   ink pass slightly out of register, and "TASK" picked out in marigold.
+   Beneath it "MASTER" is letter-spaced Oswald between marigold rules,
+   ending in the series number set in a marigold roundel (the tap
+   target that toggles Series 21/22). */
+.hdr-title{display:inline-flex;flex-direction:column;align-items:center;gap:7px;
+  line-height:1;white-space:nowrap;color:var(--t1);}
+.ht-word{font-family:var(--ff-mark);font-weight:400;text-transform:uppercase;
+  font-size:clamp(23px,7.4vw,42px);letter-spacing:0.02em;color:var(--cream);
+  text-shadow:0.06em 0.06em 0 var(--vermilion);}
+.ht-task{color:var(--marigold);}
+.ht-sub{display:flex;align-items:center;gap:8px;align-self:stretch;
+  font-family:var(--fm);font-weight:500;text-transform:uppercase;
+  font-size:clamp(11px,3.1vw,16px);letter-spacing:0.42em;color:var(--cream);}
+.ht-sub em{font-style:normal;margin-right:-0.42em;} /* cancel trailing tracking */
+.ht-rule{flex:1;height:0;border-top:1px solid var(--marigold);min-width:10px;}
 /* The "22" in the masthead doubles as the Series 21/22 toggle — tap it
    to flip which series the whole app is showing (see toggleSeries()).
    Its own digits swap to reflect whichever series is active, and it
    dims/recolors on S21 so the title still reads as "you're in the
    archive" even with no separate series badge anywhere else. */
 .ht-series{
-  display:inline-block;color:var(--gold3);cursor:pointer;font-style:italic;
-  -webkit-user-select:none;user-select:none;
-  padding:0 2px;
-  transition:color 0.2s,opacity 0.2s;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:2.3em;height:2.3em;margin-left:0.55em;border-radius:50%;
+  background:var(--marigold);color:var(--env-ink);
+  font-family:var(--ff-num);font-weight:600;letter-spacing:0;font-size:0.95em;
+  cursor:pointer;-webkit-user-select:none;user-select:none;
+  transition:background 0.2s,color 0.2s,opacity 0.2s;
 }
 .ht-series:active{opacity:0.6}
-.ht-series.on-s21{color:var(--t3)}
+.ht-series.on-s21{background:var(--periwinkle);color:var(--env-ink)}
 
 /* Right: episode/countdown pill — see PILL BOX COUNTDOWN below */
 
@@ -221,8 +252,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   transition:transform 0.3s ease, height 0.3s ease;}
 /* Destination printed on the front */
 .tab::after{content:attr(aria-label);position:absolute;left:0;right:0;bottom:9%;z-index:4;
-  font-family:var(--ff-head);font-weight:700;font-size:clamp(10px,2.7vw,15px);
-  letter-spacing:0.16em;text-transform:uppercase;line-height:1;text-align:center;
+  font-family:var(--fm);font-weight:500;font-size:clamp(10px,2.7vw,15px);
+  letter-spacing:0.2em;text-transform:uppercase;line-height:1;text-align:center;
   color:var(--env-ink);
   transition:opacity 0.3s ease;}
 /* Pocket front + seal */
@@ -242,8 +273,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9%;
   background:var(--env-card);
   box-shadow:inset 0 0 0 1px var(--line-gold);
-  font-family:var(--ff-head);font-weight:700;font-size:clamp(10px,2.7vw,15px);
-  letter-spacing:0.16em;color:var(--env-ink);
+  font-family:var(--fm);font-weight:500;font-size:clamp(10px,2.7vw,15px);
+  letter-spacing:0.2em;color:var(--env-ink);
   transform:translateY(0);
   transition:transform 0.3s ease, height 0.3s ease;}
 /* Open state — active tab, or any tab under a hovering pointer */
@@ -387,10 +418,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   padding:8px 8px;gap:4px;background:var(--bg);border-bottom:1px solid var(--line-gold)}
 .ep-tabs::-webkit-scrollbar{display:none}
 .ep-tab{flex:1 1 0;min-width:0;padding:6px 0;position:relative;white-space:nowrap;
-  font-family:var(--ff-head);font-weight:700;font-size:clamp(11px,3.1vw,15px);color:var(--t3);letter-spacing:0.02em;cursor:pointer;
+  font-family:var(--fm);font-weight:500;font-size:clamp(11px,3vw,14px);color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
   background:none;border:1px solid transparent;border-radius:0;
   transition:color 0.15s,background 0.15s,border-color 0.15s}
-.ep-tab.active{color:var(--env-ink);background:var(--cream);border-color:var(--line-gold)}
+.ep-tab.active{color:var(--env-ink);background:var(--marigold);border-color:var(--marigold)}
 .ep-tab.tbd{color:var(--t4)}
 .ep-tab.tbd.active{color:var(--env-ink)}
 .ep-tab:active{transform:scale(0.95)}
@@ -426,7 +457,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   background:var(--s1);border:1px solid var(--line-cream)}
 .tt-wrap::-webkit-scrollbar{display:none}
 .tt{width:100%;border-collapse:collapse;min-width:min(290px,100%)}
-.tt th{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-2xs);color:var(--t3);
+.tt th{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--t3);
   text-transform:uppercase;letter-spacing:0.12em;
   padding:9px 6px 8px;text-align:center;border-bottom:1px solid var(--line-gold);background:transparent}
 .tt th:first-child{text-align:left;padding-left:10px;min-width:100px}
@@ -435,14 +466,14 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--line-dim)}
 .tt tr:last-child td{border-bottom:none;border-top:3px double var(--line-gold)}
 .tn{display:flex;align-items:center;gap:6px}
-.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--gold2)}
+.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--marigold)}
 .tb svg{width:15px;height:15px;display:block}
 .tt-task{font-family:var(--ff);font-size:12.5px;line-height:1.35;color:var(--t2)}
-.tt-total-lbl{font-family:var(--ff-type);font-weight:700;font-size:11px;color:var(--t3);letter-spacing:0.14em}
+.tt-total-lbl{font-family:var(--ff-type);font-weight:500;font-size:13px;color:var(--t3);letter-spacing:0.14em}
 /* .tt prefix: must outrank the generic .tt td font-size above */
-.tt .sc,.tt .tt-total{font-family:var(--ff-num);font-size:clamp(19px,5vw,23px);font-weight:600;line-height:1;
+.tt .sc,.tt .tt-total{font-family:var(--ff-num);font-size:clamp(17px,4.6vw,21px);font-weight:500;line-height:1;
   font-variant-numeric:lining-nums tabular-nums}
-.tt .tt-total{font-size:clamp(22px,5.8vw,26px);font-weight:700}
+.tt .tt-total{font-size:clamp(20px,5.4vw,24px);font-weight:600}
 .sc.best,.tt-total.win{color:var(--gold2)}
 .sc.worst{color:var(--t4)}.sc.mid{color:var(--t1)}
 
@@ -452,7 +483,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   background:var(--s1);border:1px solid var(--line-cream);border-radius:0;
   outline:1px solid var(--line-gold);outline-offset:-5px;
   padding:16px 18px;margin-bottom:14px}
-.ep-ins-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-2xs);color:var(--gold2);
+.ep-ins-lbl{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--gold2);
   letter-spacing:0.2em;text-transform:uppercase;
   padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
 .ep-ins-b{font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
@@ -519,12 +550,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-name{font-family:var(--ff-head);font-size:clamp(26px,7vw,36px);font-weight:700;
   line-height:1.05;letter-spacing:0.01em}
 .cd-sub{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:6px;letter-spacing:0.06em}
-.cd-pts{font-family:var(--ff-num);font-size:clamp(44px,11vw,62px);font-weight:600;
+.cd-pts{font-family:var(--ff-num);font-size:clamp(40px,10vw,56px);font-weight:500;
   line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em}
 .cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
 .cd-ranks{display:flex;gap:10px;margin-top:9px;font-family:var(--fm);font-size:10px;color:var(--t2);flex-wrap:wrap}
 .cd-ranks > span{display:inline-flex;align-items:center;gap:4px}
-.cd-ranks svg{width:13px;height:13px;color:var(--gold2)}
+.cd-ranks svg{width:13px;height:13px;color:var(--marigold)}
 
 
 .cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
@@ -535,7 +566,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-s-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
 
 .cd-block{margin:14px var(--px) 8px}
-.cd-block-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-2xs);color:var(--gold2);
+.cd-block-lbl{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--gold2);
   letter-spacing:0.2em;text-transform:uppercase;
   padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
 .cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
@@ -583,7 +614,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 .pod-port-name{font-family:var(--ff-name);font-weight:600;font-size:clamp(12px,3.2vw,15px);letter-spacing:0.02em;
   text-align:center;line-height:1;margin-top:2px}
-.pod-port-pts{font-family:var(--ff-num);font-size:clamp(20px,5.2vw,25px);font-weight:600;color:var(--t1);
+.pod-port-pts{font-family:var(--ff-num);font-size:clamp(19px,5vw,23px);font-weight:500;color:var(--t1);
   line-height:1;letter-spacing:-0.02em;text-align:center}
 
 /* ── EPISODE HORIZONTAL SCROLL ─────────────────────── */
@@ -624,10 +655,6 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 
-/* ── BRAND COLOUR SPLITS ───────────────────────────── */
-.ht-gold { color: var(--gold3) }
-.ht-white { color: var(--t1) }
-.hdr-title em.ht-white { color: var(--t1); font-style: normal }
 
 ::selection{background:var(--wax);color:var(--cream)}
 
@@ -757,18 +784,23 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .hdr.compact .hdr-cd{transform:none}
 /* Stopwatch (see stopwatchSVG()), enlarged so the digits read clearly.
-   Everything is a flat fill set here: muted-gold case, charcoal bezel
-   ring, cream dial. Digits are SVG <tspan>s so they scale with it. */
+   Everything is a flat fill set here: marigold case, ultramarine bezel
+   ring, cream dial, vermilion days. Digits are SVG <tspan>s so they
+   scale with it. */
 #hdr-countdown{display:flex;align-items:center}
 .sw{display:block;width:clamp(86px,27vw,136px);height:auto;overflow:visible}
 .sw-case{fill:var(--line-gold)}
 .sw-bezel{fill:var(--bg)}
 .sw-dial{fill:var(--cream)}
-.sw-ticks{stroke:#3a3834}
-.sw-ep{font-family:var(--ff-type);font-weight:700;font-size:8px;letter-spacing:1.4px;fill:#5b5646}
-.sw-big{font-family:var(--ff-num);font-weight:700;font-size:30px;fill:var(--wax)}
-.sw-unit{font-family:var(--ff-num);font-weight:700;font-size:13px;fill:var(--wax)}
-.sw-small{font-family:var(--ff-num);font-weight:700;font-size:17px;fill:#2a2a2a;letter-spacing:0.5px}
+.sw-ticks{stroke:var(--env-ink)}
+.sw-ep{font-family:var(--ff-type);font-weight:500;font-size:8.5px;letter-spacing:1.6px;fill:#56639a}
+.sw-big{font-family:var(--ff-num);font-weight:600;font-size:28px;fill:var(--vermilion)}
+.sw-unit{font-family:var(--ff-num);font-weight:500;font-size:12px;fill:var(--vermilion)}
+.sw-small{font-family:var(--ff-num);font-weight:500;font-size:16px;fill:var(--env-ink);letter-spacing:0.5px}
+/* The hour ticks, second hand and hub carry crimson as SVG presentation
+   attributes; CSS outranks those, so re-ink them vermilion here. */
+.sw circle[stroke="#881337"],.sw-hand line{stroke:var(--vermilion)}
+.sw > circle:last-child{fill:var(--vermilion)}
 .sw-hand{transform-origin:50px 58px;animation:sw-sweep 60s steps(60) infinite}
 @keyframes sw-sweep{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.sw-hand{animation:none}}
@@ -838,21 +870,23 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 
 /* Card shell (also the episode podium) — each player is an independent
-   flat panel framed like a printed card: a razor-thin muted-gold outer
-   rule and a cream hairline set 4px inside it (outline-offset). The
-   leader's frame swaps the two, cream outside and gold within. */
+   flat panel framed like a printed card: a razor-thin outer rule and a
+   hairline set 4px inside it (outline-offset). */
 .pc, .pod-portraits {
   position: relative;
   border-radius: 0;
   background: var(--s1);
-  border: 1px solid var(--line-gold);
-  outline: 1px solid #4a473c;
+  border: 1px solid var(--line-frame);
+  outline: 1px solid var(--line-dim);
   outline-offset: -5px;
 }
+/* Podium panels are framed in their medal colour; the leader's frame is
+   cream outside, marigold within. */
 .pc-rank1 {
   border-color: var(--line-cream);
-  outline-color: var(--line-gold);
+  outline-color: var(--marigold);
 }
+.pc-podium { border-color: #dfe3ee; }
 
 /* Last place hangs slightly crooked. Applied to the inner .pc, not
    .player-card, because card-drop's fill-mode would otherwise pin
@@ -933,16 +967,16 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .st-h {
   font-family: var(--ff-type);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 500;
   color: var(--t3);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   line-height: 1.25;
   -webkit-user-select: none;
   user-select: none;
 }
-/* Only Task Points/Rank Points actually sort anything — Rank and Player
+/* Only Show Pts/League Pts actually sort anything — Rank and Player
    are plain labels, so they don't get pointer/press affordances. */
 .st-h-sortable { cursor: pointer; }
 .st-h-sortable:active { opacity: 0.7; }
@@ -950,13 +984,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    emphasized (brighter gold, a soft glow) instead, so which column
    you're sorted by reads as "the one that stands out" rather than
    needing a separate glyph to parse. Font-weight deliberately does NOT
-   change here (color/glow only) — Task Points and Rank Points are the
+   change here (color/glow only) — Show Pts and League Pts are the
    same length, and bolding one would widen its text and throw off the
    gap between the two headers depending on which was active. */
 .st-h.active { color: var(--gold2) }
 /* Rank's own text is centered in a narrow box, so it eats into the flex
    gap on both sides — a bit of extra margin here brings the visible
-   Rank↔Player gap up to match Task Points↔Rank Points' gap exactly
+   Rank↔Player gap up to match Show Pts↔League Pts' gap exactly
    (that one runs wider because right-aligned text inside a 90px column
    leaves slack space before the next column starts). Tuned against the
    rendered gap, not a guess — see the alignment note above .pc-score-col.
@@ -994,8 +1028,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .pc-rank-n {
   font-family: var(--ff-num);
-  font-size: 24px;
-  font-weight: 600;
+  font-size: 22px;
+  font-weight: 500;
   color: var(--t2);
   line-height: 1;
   font-variant-numeric: lining-nums;
@@ -1016,13 +1050,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .pc-rank-seal .ws-shine { display: none; }
 .pc-rank-seal span {
   position: relative;
-  font-size: 19px;
-  font-weight: 700;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--seal-ink);
 }
-.seal-t1 { --seal-base:#cdb274; --seal-ink:#2b230f; }
-.seal-t2 { --seal-base:#bfc0bb; --seal-ink:#26272a; }
-.seal-t3 { --seal-base:#b98a5e; --seal-ink:#2b1a0c; }
+.seal-t1 { --seal-base:#f6c350; --seal-ink:#1a2340; }
+.seal-t2 { --seal-base:#dfe3ee; --seal-ink:#1a2340; }
+.seal-t3 { --seal-base:#f0a36b; --seal-ink:#1a2340; }
 
 /* Name */
 .pc-name-col {
@@ -1040,7 +1074,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Two score columns — Task Points and Rank Points side by side, same
+/* Two score columns — Show Pts and League Pts side by side, same
    fixed width as their header cells (.st-h-num) so numbers and labels
    line up. Each badges gold/silver/bronze on its OWN top-3 status
    (PVE_RANK/PVP_RANK) independently of the other column and of
@@ -1056,21 +1090,21 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .pc-total {
   font-family: var(--ff-num);
-  font-size: clamp(22px, 5.8vw, 27px);
-  font-weight: 600;
+  font-size: clamp(20px, 5.4vw, 25px);
+  font-weight: 500;
   line-height: 1;
   color: var(--t1);
 }
-.pc-score-t1 { color: var(--gold2); }
-.pc-score-t2 { color: #cfd0cb; }
-.pc-score-t3 { color: #c79a6e; }
+.pc-score-t1 { color: var(--marigold); }
+.pc-score-t2 { color: #dfe3ee; }
+.pc-score-t3 { color: #f0a36b; }
 /* Narrow phones: the gallery-wall inset and the wider serif names leave
    too little room, so tighten the gaps and both score columns (header
    AND rows, so they stay aligned) — the column labels wrap to two lines
    ("Task / Points") to give player names the space. */
 @media (max-width: 360px) {
   .stand-head, .pc-head { gap: 8px; }
-  .st-h { font-size: 10px; }
+  .st-h { font-size: 11px; letter-spacing: 0.08em; }
   .st-h-num, .pc-score-col { width: 60px; }
 }
 
@@ -1129,7 +1163,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 /* Weekly score beneath each portrait, set in Cormorant: gold for the
    best week, dimmed for the worst. */
 .pc-pick-pts{
-  font-family:var(--ff-num);font-size:clamp(16px,4.3vw,19px);font-weight:600;
+  font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);font-weight:500;
   line-height:1;margin-top:5px;padding-top:4px;color:var(--t1);
   border-top:1px solid var(--line-dim);
   font-variant-numeric:lining-nums;
@@ -1147,6 +1181,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .pc-pick-envelope path,.ep-sealed-envelope path{stroke:var(--line-gold)}
 .pc-pick-envelope path[fill],.ep-sealed-envelope path[fill]{fill:var(--env-flap)}
 .pc-pick-envelope circle:first-of-type,.ep-sealed-envelope circle:first-of-type{fill:var(--wax)}
+.pc-pick-envelope rect,.ep-sealed-envelope rect{stroke:var(--gold4)}
 .pc-pick-envelope circle:last-of-type,.ep-sealed-envelope circle:last-of-type{display:none}
 /* Picked before that week's episode has aired — real pick, no score to
    show yet, so the photo dims slightly and the points slot reads as a
@@ -1159,7 +1194,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .bs-hcell{
   flex:1;text-align:center;padding:7px 2px 6px;
-  font-family:var(--ff-type);font-weight:700;font-size:8px;color:var(--t3);
+  font-family:var(--ff-type);font-weight:500;font-size:8px;color:var(--t3);
   letter-spacing:0.06em;border-right:1px solid var(--line-dim);
 }
 .bs-hcell:first-child{
@@ -1174,7 +1209,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .bs-row-tot{border-bottom:3px double var(--line-gold)}
 .bs-label{
   flex:0 0 34px;min-width:34px;
-  font-family:var(--ff-type);font-weight:700;font-size:9px;color:var(--gold2);
+  font-family:var(--ff-type);font-weight:500;font-size:9px;color:var(--gold2);
   padding:6px 3px 6px 6px;letter-spacing:0.03em;
   display:flex;align-items:center;
   border-right:1px solid var(--line-dim);
@@ -1182,8 +1217,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .bs-label svg{width:14px;height:14px;display:block}
 .bs-cell{
   flex:1;text-align:center;padding:5px 1px 4px;
-  font-family:var(--ff-num);font-size:clamp(15px,4.2vw,19px);
-  font-weight:600;line-height:1;color:var(--t1);
+  font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);
+  font-weight:500;line-height:1;color:var(--t1);
   border-right:1px solid var(--line-dim);
   display:flex;align-items:center;justify-content:center;
   font-variant-numeric:lining-nums tabular-nums;
@@ -1395,11 +1430,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── DELTA BESIDE RANK ──────────────────────────────── */
 /* Rank movement as a small printed figure in a hairline box rather than
-   a green/red ticker — muted green up, muted crimson down. */
+   a ticker — mint up, soft vermilion down. */
 .pc-delta{font-family:var(--ff-stamp);font-size:9px;font-weight:400;line-height:1;
   letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:0;}
 .pc-delta-up{color:var(--up);}
-.pc-delta-dn{color:#d77890;}
+.pc-delta-dn{color:#ff8a73;}
 .pc-delta-flat{color:var(--t4);border-color:transparent;opacity:0.6;}
 
 /* ── SCORE NUMERALS ─────────────────────────────────── */
@@ -1426,7 +1461,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── TAB LABEL TEXT ─────────────────────────────────── */
 .tab-label {
-  font-family: var(--ff-head);
+  font-family: var(--fm);
   font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1475,7 +1510,10 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 <div class="topbar">
 <header class="hdr">
   <div class="hdr-brand">
-    <div class="hdr-title"><span class="ht-gold">FAN</span><span class="ht-white">TASK</span><span class="ht-gold">Y</span> <em class="ht-white">MASTER</em> <span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span></div>
+    <div class="hdr-title">
+      <span class="ht-word">Fan<span class="ht-task">task</span>y</span>
+      <span class="ht-sub"><span class="ht-rule" aria-hidden="true"></span><em>Master</em><span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span><span class="ht-rule" aria-hidden="true"></span></span>
+    </div>
   </div>
 
   <div class="hdr-cd" id="hdr-cd" aria-label="Countdown to next episode">
@@ -1528,8 +1566,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     <div class="stand-head" id="stand-head">
       <div class="st-h st-h-rank">Rank</div>
       <div class="st-h st-h-name">Player</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Task Points</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">Rank Points</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Show Pts</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">League Pts</div>
     </div>
     <div id="player-body" class="player-card-list"></div>
   </div>
@@ -2095,8 +2133,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
 
   // Rank + delta both live in the Rank column now, and both reflect
   // whichever column the table is CURRENTLY sorted by (boardKey, passed
-  // in from renderStandingsList) — sort by Task Points and you see PvE
-  // rank/movement, switch to Rank Points and both swap to the PvP
+  // in from renderStandingsList) — sort by Show Pts and you see PvE
+  // rank/movement, switch to League Pts and both swap to the PvP
   // numbers instead. Always rendered, even at zero — a dash rather than
   // an absent element, so every row's rank column is the same height.
   const rankCell = rankDisplay<=3
@@ -2111,8 +2149,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   // per week (reusing contImg's 'pod' variant — same portrait treatment
   // as the episode podium strip) with that week's points underneath.
   // Follows the same board the table is sorted by: raw PvE points when
-  // sorted by Task Points, that week's 5..1 PvP rank-points when sorted
-  // by Rank Points — so the expanded row always matches the number
+  // sorted by Show Pts, that week's 5..1 PvP rank-points when sorted
+  // by League Pts — so the expanded row always matches the number
   // that's actually summed into the currently-emphasized column above.
   const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const pk = p.picks[ep];
