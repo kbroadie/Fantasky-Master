@@ -2,7 +2,7 @@
 
 This CSV holds **every hand-entered piece of league data**, for all series. Nothing in it is calculated. Show and League points, placings, ranks, rank changes, winners and every statistic are worked out from it.
 
-> **Status:** the site does **not** read this file yet; parsing will be integrated later. Until then `index.html` is still the live source, so an edit here won't appear on the site on its own.
+> **Status:** the new app in [`app/`](../app/) reads this file directly, so an edit here shows up there on the next page load. The original `index.html` site does **not** read it; it still uses its own in-file data.
 
 - Save as **CSV, UTF-8**. The file starts with a byte-order mark so Excel shows `—` and `’` correctly.
 - Row order doesn't matter to the data, but keeping each episode's rows together makes weekly edits easy.

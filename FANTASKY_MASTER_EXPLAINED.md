@@ -123,7 +123,7 @@ Contestant images are not stored in the repository. They are hosted in one Imgur
 
 ### 4.3 Planned data source: `data/fantasky_master_data.csv`
 
-All hand-entered data (§4.1) also exists as one CSV file, `data/fantasky_master_data.csv`, which is intended to replace the constants in `index.html` as the single editable source. **Parsing is not integrated yet;** until it is, `index.html` remains authoritative. The file was generated from `index.html`, and rebuilding every series from the CSV alone reproduces the in-file data exactly.
+All hand-entered data (§4.1) also exists as one CSV file, `data/fantasky_master_data.csv`, which is intended to replace the constants in `index.html` as the single editable source. The rebuilt app in `app/` already loads it at run time (`app/js/csv.js`); `index.html` does not parse it yet and remains authoritative for the original site. The file was generated from `index.html`, and rebuilding every series from the CSV alone reproduces the in-file data exactly.
 
 The CSV holds inputs only; nothing derived (§5–§6) is stored. Each row has a `record` type; columns not used by that type are blank:
 
