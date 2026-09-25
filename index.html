@@ -4,100 +4,114 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fantasky Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Oswald:wght@400;500;600&family=Rye&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Bodoni+Moda:ital,wght@0,500;0,700;0,800;1,600&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* ═══ VICTORIAN PRINT THEME — MUSIC-HALL PALETTE ═══════════
-     Still flat and matte (no gradients, textures or glows), but inked
-     like a cheerful Victorian playbill: a deep ultramarine ground,
-     cream stock, marigold, vermilion and mint. Each accent has one job:
-       marigold  — the best/leading value, active states, gold rules
-       vermilion — wax seals, the countdown, "moved down"
-       mint      — "moved up"
-       cream     — text and razor-thin frame rules */
+  /* ═══ THE FANTASKY GAZETTE ════════════════════════════════
+     19th-century newsprint meets Taskmaster red-and-gold opulence.
+     The page is a deep claret ground; everything you read sits on
+     ivory index cards that stand clear of it. Colour roles:
+       claret     — the page ground (and the ink of the masthead's
+                    shadow)
+       ivory      — cards, scoresheets, envelopes
+       ink        — text on ivory
+       Taskmaster red — seals, card labels, the ticket, best scores
+       gold       — the masthead, rules, leaders, active states
+     Surfaces are flat (no gradients or textures); cards lift off the
+     ground with a soft shadow. */
 
-  /* Gap between the framed standings panels and the screen edge; the
-     Standings header row adds it to its own padding to stay aligned. */
+  /* Gap between the standings cards and the screen edge; the Standings
+     header row adds it to its own padding to stay aligned. */
   --wall-inset: 12px;
 
-  --cream:      #fbf3dc;
-  --marigold:   #f6c350;
-  --vermilion:  #ee5a40;
-  --mint:       #5fd3a8;
-  --periwinkle: #7d8bc4;
+  /* Ground */
+  --bg:  #2e0a0f;
+  --s0:  #2e0a0f;
+  --s1:  #3a0f15;
+  --s2:  #42131a;
+  --s3:  #4b1820;
+  --s4:  #561d26;
+  --s5:  #62232d;
 
-  --line-cream: #fbf3dc;   /* razor-thin frame rules */
-  --line-gold:  #f2b544;   /* marigold rules */
-  --line-frame: #56639a;   /* everyday panel frames */
-  --line-dim:   #2d3a63;   /* hairline separators inside panels */
+  /* Paper & ink */
+  --paper:  #f7f0dd;
+  --paper-edge: #e3d5b0;
+  --paper-rule: #e6dbbf;
+  --ink:  #1d1512;
+  --ink2: #4a3b30;
+  --ink3: #6c5a4b;
+  --ink4: #8c7766;
+  --card-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 10px 22px -6px rgba(0,0,0,0.55);
 
-  --red:      #ee5a40;
-  --red2:     #d9432b;
-  --red3:     #7a2215;
-  --red4:     #3d120b;
+  /* Taskmaster red & gold */
+  --tm-red:  #c8102e;
+  --tm-red-dk: #8e0b20;
+  --gold:    #d9a93d;
+  --gold2:   #e9bf55;
+  --gold3:   #f3d488;
+  --gold4:   #9c7424;
+  --gold-ink:#8a6516;   /* gold dark enough to read on ivory */
+  --gold-t:  rgba(217,169,61,0.14);
+  --gold-glow: transparent;
+  --gold-l:  var(--gold2);
+  --marigold: var(--gold2);   /* legacy alias */
+  --cream:   #f7ecd2;
+
+  --red:      #c8102e;
+  --red2:     #a50d26;
+  --red3:     #6e0818;
+  --red4:     #3d060f;
   --red-glow: transparent;
   --red-t:    transparent;
-  --wax:      #e0483a;
+  --wax:      #b50f2a;
 
-  /* DL envelope stationery (flat tones) */
-  --env-front:  #fbf3dc;
-  --env-flap:   #f1e3bb;
-  --env-inside: #d8c796;
-  --env-card:   #fffdf6;
-  --env-ink:    #1a2340;
-
-  --gold:     #f2b544;
-  --gold2:    #f6c350;
-  --gold3:    #ffd978;
-  --gold4:    #b98a2a;
-  --gold-t:   rgba(246,195,80,0.14);
-  --gold-glow:transparent;  /* no glows in a flat print theme */
-  --gold-l:   var(--gold2);
-
-  --up:       #5fd3a8;
+  --up:       #7fd49a;
   --up-glow:  transparent;
 
-  /* Ultramarine surfaces — solid, matte */
-  --bg:  #1a2340;
-  --s0:  #1a2340;
-  --s1:  #202b4d;
-  --s2:  #243053;
-  --s3:  #29365c;
-  --s4:  #2f3d66;
-  --s5:  #374672;
+  /* Rules on the claret ground */
+  --line-cream: #f7ecd2;
+  --line-gold:  #c99a3a;
+  --line-dim:   #5a1c24;
 
-  --t1:  #fbf3dc;
-  --t2:  #ddd6c0;
-  --t3:  #b5bcd4;
-  --t4:  #98a0bd;
+  /* DL envelope stationery */
+  --env-front:  #f7efdc;
+  --env-flap:   #ecdfbd;
+  --env-inside: #cdb888;
+  --env-card:   #fffdf6;
+  --env-ink:    #1d1512;
 
-  --warn:  #f6c350;
+  /* Text on the claret ground */
+  --t1:  #f7ecd2;
+  --t2:  #ead6bf;
+  --t3:  #d4b8a2;
+  --t4:  #bb9a84;
+
+  --warn:  #e9bf55;
   --warn-t:transparent;
 
-  --b-gold:  #3a4670;
-  --b-gold2: #2a3558;
-  --b-dim:   #2d3a63;
-  --b-red:   #7a2215;
+  --b-gold:  #5a1c24;
+  --b-gold2: #45141b;
+  --b-dim:   #4a161d;
+  --b-red:   #8e0b20;
 
   /* Type roles:
-       Rye                — the FANTASKY wordmark only
-       Cormorant Garamond — headings and player/contestant names
-       Oswald             — every number and all small type (labels,
-                            tabs, column heads): a condensed gothic in
-                            the Victorian wood-type grotesque tradition
-       Libre Baskerville  — narrative copy (analysis, profiles) */
-  --ff-mark: 'Rye','Cormorant Garamond',Georgia,serif;
-  --ff-head: 'Cormorant Garamond',Garamond,'Libre Baskerville',Georgia,serif;
+       UnifrakturMaguntia — the nameplate, like a Victorian daily's
+       Bodoni Moda        — headlines (Standings, episode titles, cast)
+       Old Standard TT    — names and narrative copy (19th-c. book face)
+       Oswald             — numbers and small type: a condensed gothic
+                            straight out of the headline cases */
+  --ff-mark: 'UnifrakturMaguntia','Old Standard TT',Georgia,serif;
+  --ff-head: 'Bodoni Moda','Old Standard TT',Didot,Georgia,serif;
   --ff-num:  'Oswald','Arial Narrow',sans-serif;
-  --ff-name: var(--ff-head);
-  --ff-serif:var(--ff-head);
-  --ff:      'Libre Baskerville',Baskerville,Georgia,serif;
+  --ff-name: 'Old Standard TT',Georgia,serif;
+  --ff-serif:var(--ff-name);
+  --ff:      'Old Standard TT',Georgia,serif;
   --fm:      'Oswald','Arial Narrow',sans-serif;
   --ff-type: var(--fm);
   --ff-hand: var(--ff-num);
   --ff-stamp:var(--fm);
   /* Printer's rule with a centre lozenge, drawn under page headings */
-  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23f2b544' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23f2b544'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23f2b544'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23ee5a40'/%3E%3C/svg%3E");
+  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23c99a3a' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23c99a3a'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23c99a3a'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23c8102e'/%3E%3C/svg%3E");
 
   /* Fluid type */
   --fs-2xs: clamp(9px,  2.2vw, 10px);
@@ -136,8 +150,8 @@
 html,body{height:100%}
 body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   max-width:680px;margin:0 auto;width:100%;min-height:100%;
-  /* Lining figures everywhere (Cormorant and Baskerville default to
-     old-style in places); SVG text inherits this. */
+  /* Lining figures everywhere (the book faces default to old-style in
+     places). */
   font-variant-numeric:lining-nums;}
 
 /* ── SHELL ──────────────────────────────────────────── */
@@ -156,57 +170,54 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .page{display:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .page.active{display:block}
 
-/* ── HEADER ─ sits at the top of the shell, nav tabs directly below it
-   (see .tabs). Compacts as the active page scrolls, via .hdr.compact
-   from JS — all the compact-mode changes below animate on one shared
-   duration/easing curve and stick to transform/opacity (GPU-composited,
-   no per-frame layout reflow) rather than font-size/max-height, which
-   is what made the old shrink feel like it was stepping rather than
-   gliding. */
+/* ── HEADER ─ a newspaper front page: nameplate, dateline, then the
+   next-episode ticket. It is the top of the page (same ground, scrolls
+   away); the DL envelope tabs below it stay pinned. */
 .hdr{
   flex-shrink:0;position:relative;
-  padding:14px var(--px) 6px;
-  background:var(--bg);  /* identical to the page — no panel edge */
-  display:flex;align-items:center;gap:12px;overflow:hidden;
+  padding:18px var(--px) 16px;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:stretch;gap:14px;overflow:hidden;
 }
-/* The masthead scrolls away with the page now, so compact mode (set by
-   JS on scroll) deliberately changes nothing — no size jumps. */
-.hdr.compact{padding:14px var(--px) 6px}
+/* JS toggles .compact on scroll; the masthead scrolls away instead, so
+   compact mode deliberately changes nothing — no size jumps. */
+.hdr.compact{padding:18px var(--px) 16px}
 
-/* Left: brand */
-.hdr-brand{flex:1 1 auto;min-width:0;display:flex;justify-content:center}
-/* Wordmark — a two-line playbill lockup. "FANTASKY" in Rye (Victorian
-   wood type) printed cream with a flat vermilion offset, like a second
-   ink pass slightly out of register, and "TASK" picked out in marigold.
-   Beneath it "MASTER" is letter-spaced Oswald between marigold rules,
-   ending in the series number set in a marigold roundel (the tap
-   target that toggles Series 21/22). */
-.hdr-title{display:inline-flex;flex-direction:column;align-items:center;gap:7px;
-  line-height:1;white-space:nowrap;color:var(--t1);}
-.ht-word{font-family:var(--ff-mark);font-weight:400;text-transform:uppercase;
-  font-size:clamp(23px,7.4vw,42px);letter-spacing:0.02em;color:var(--cream);
-  text-shadow:0.06em 0.06em 0 var(--vermilion);}
-.ht-task{color:var(--marigold);}
-.ht-sub{display:flex;align-items:center;gap:8px;align-self:stretch;
+/* Nameplate — "Fantasky Master" set as one line in blackletter, both
+   words the same size, weight and gold, between thick-and-thin rules
+   the way a Victorian daily framed its title. A 2px claret-dark offset
+   gives the gold a stamped, foiled edge. */
+.hdr-brand{display:flex;flex-direction:column;align-items:stretch}
+.hdr-title{display:block;text-align:center;white-space:nowrap;
+  font-family:var(--ff-mark);font-weight:400;
+  font-size:clamp(40px,12.6vw,88px);line-height:1.05;letter-spacing:0.01em;
+  color:var(--gold2);
+  text-shadow:0 2px 0 #140305;
+  padding:8px 0 6px;
+  border-top:4px double var(--line-gold);
+  border-bottom:1px solid var(--line-gold);}
+.ht-word + .ht-word{margin-left:0.22em}
+/* Dateline under the nameplate, newspaper-style: small capitals in
+   Oswald, gold rule beneath. Holds the Series 21/22 toggle. */
+.hdr-dateline{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 2px;border-bottom:4px double var(--line-gold);
   font-family:var(--fm);font-weight:500;text-transform:uppercase;
-  font-size:clamp(11px,3.1vw,16px);letter-spacing:0.42em;color:var(--cream);}
-.ht-sub em{font-style:normal;margin-right:-0.42em;} /* cancel trailing tracking */
-.ht-rule{flex:1;height:0;border-top:1px solid var(--marigold);min-width:10px;}
-/* The "22" in the masthead doubles as the Series 21/22 toggle — tap it
-   to flip which series the whole app is showing (see toggleSeries()).
-   Its own digits swap to reflect whichever series is active, and it
-   dims/recolors on S21 so the title still reads as "you're in the
-   archive" even with no separate series badge anywhere else. */
+  font-size:clamp(10px,2.9vw,13px);letter-spacing:0.16em;color:var(--t2);}
+.hd-mid{color:var(--gold2)}
+/* The series number doubles as the Series 21/22 toggle — tap it to flip
+   which series the whole app is showing (see toggleSeries()). Its digits
+   swap to the active series; on S21 the chip turns ivory so the page
+   reads as "the archive edition". */
 .ht-series{
   display:inline-flex;align-items:center;justify-content:center;
-  width:2.3em;height:2.3em;margin-left:0.55em;border-radius:50%;
-  background:var(--marigold);color:var(--env-ink);
-  font-family:var(--ff-num);font-weight:600;letter-spacing:0;font-size:0.95em;
+  min-width:2.4em;padding:3px 6px;margin-left:5px;
+  background:var(--tm-red);color:var(--gold3);border:1px solid var(--gold);
+  font-family:var(--ff-num);font-weight:600;letter-spacing:0.04em;
   cursor:pointer;-webkit-user-select:none;user-select:none;
   transition:background 0.2s,color 0.2s,opacity 0.2s;
 }
 .ht-series:active{opacity:0.6}
-.ht-series.on-s21{background:var(--periwinkle);color:var(--env-ink)}
+.ht-series.on-s21{background:var(--paper);color:var(--ink)}
 
 /* Right: episode/countdown pill — see PILL BOX COUNTDOWN below */
 
@@ -245,7 +256,10 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   box-shadow:0 0 0 1px var(--line-gold);
   -webkit-user-select:none;user-select:none;}
 /* Flap */
-.tab::before{content:'';position:absolute;left:0;right:0;top:0;height:52%;z-index:2;
+/* The flap runs a little deeper (56%) than the pocket's V-notch (52%),
+   so its hidden tip tucks under the pocket and no sliver of the card
+   shows through the anti-aliased seam. */
+.tab::before{content:'';position:absolute;left:0;right:0;top:0;height:56%;z-index:2;
   background:var(--env-flap);
   clip-path:polygon(0 0,100% 0,50% 100%);
   transform-origin:top center;transform:perspective(600px) rotateX(0deg);
@@ -421,7 +435,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   font-family:var(--fm);font-weight:500;font-size:clamp(11px,3vw,14px);color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
   background:none;border:1px solid transparent;border-radius:0;
   transition:color 0.15s,background 0.15s,border-color 0.15s}
-.ep-tab.active{color:var(--env-ink);background:var(--marigold);border-color:var(--marigold)}
+.ep-tab.active{color:var(--ink);background:var(--gold2);border-color:var(--gold2)}
 .ep-tab.tbd{color:var(--t4)}
 .ep-tab.tbd.active{color:var(--env-ink)}
 .ep-tab:active{transform:scale(0.95)}
@@ -430,7 +444,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   background:var(--bg);position:relative}
 .ep-kicker{font-family:var(--ff-type);font-weight:400;font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.22em;text-transform:uppercase;margin-bottom:6px}
-.ep-title{font-family:var(--ff-head);font-style:italic;font-size:clamp(26px,7vw,36px);font-weight:600;
+.ep-title{font-family:var(--ff-head);font-style:italic;font-size:clamp(24px,6.6vw,34px);font-weight:600;
   line-height:1.1;letter-spacing:0.01em;margin-bottom:3px}
 .ep-winner{font-family:var(--ff);font-style:italic;font-size:var(--fs-sm);color:var(--t3)}
 /* Page headings sit on a small gilt rule */
@@ -449,12 +463,15 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 
-/* Task table: a framed flat panel — thin cream outer rule, gold hairline
-   rows, small-caps headers, scores in Cormorant. The episode's best
-   score on each task is gold, the lowest dimmed. Contestant headers keep
-   their own accent colours. */
-.tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:0;overflow:hidden;margin-bottom:16px;
-  background:var(--s1);border:1px solid var(--line-cream)}
+/* Task table: an ivory scoresheet card — hairline rows, small-caps
+   headers, scores in Oswald. The episode's best score on each task is
+   Taskmaster red, the lowest dimmed. Contestant headers keep their own
+   accent colours, darkened for paper. */
+.tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:3px;overflow:hidden;margin-bottom:18px;
+  background:var(--paper);border:1px solid var(--paper-edge);box-shadow:var(--card-shadow)}
+/* Contestant accent colours are tuned for the dark ground; darken them
+   to read on ivory (text only — the header cells have no fill). */
+.tt thead th:not(:first-child),.pod-port-name{filter:brightness(0.62) saturate(1.3)}
 .tt-wrap::-webkit-scrollbar{display:none}
 .tt{width:100%;border-collapse:collapse;min-width:min(290px,100%)}
 .tt th{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--t3);
@@ -466,7 +483,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--line-dim)}
 .tt tr:last-child td{border-bottom:none;border-top:3px double var(--line-gold)}
 .tn{display:flex;align-items:center;gap:6px}
-.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--marigold)}
+.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--tm-red)}
 .tb svg{width:15px;height:15px;display:block}
 .tt-task{font-family:var(--ff);font-size:12.5px;line-height:1.35;color:var(--t2)}
 .tt-total-lbl{font-family:var(--ff-type);font-weight:500;font-size:13px;color:var(--t3);letter-spacing:0.14em}
@@ -480,9 +497,13 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 /* Analysis & profile copy in a framed panel: a thin cream outer rule
    with a muted-gold hairline set 4px inside it (outline-offset). */
 .ep-ins,.cd-block{position:relative;
-  background:var(--s1);border:1px solid var(--line-cream);border-radius:0;
-  outline:1px solid var(--line-gold);outline-offset:-5px;
-  padding:16px 18px;margin-bottom:14px}
+  background:var(--paper);border:1px solid var(--paper-edge);border-radius:3px;
+  box-shadow:var(--card-shadow);
+  padding:18px 20px;margin-bottom:16px}
+/* Wax seal pressed onto the top corner of each analysis/profile card */
+.ep-ins::after,.cd-block::after{content:'';position:absolute;top:-9px;right:16px;
+  width:24px;height:24px;border-radius:52% 46% 50% 48%;background:var(--wax);
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,0.22),inset 2px 2px 0 rgba(255,255,255,0.22),0 2px 3px rgba(0,0,0,0.45)}
 .ep-ins-lbl{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--gold2);
   letter-spacing:0.2em;text-transform:uppercase;
   padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
@@ -555,7 +576,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
 .cd-ranks{display:flex;gap:10px;margin-top:9px;font-family:var(--fm);font-size:10px;color:var(--t2);flex-wrap:wrap}
 .cd-ranks > span{display:inline-flex;align-items:center;gap:4px}
-.cd-ranks svg{width:13px;height:13px;color:var(--marigold)}
+.cd-ranks svg{width:13px;height:13px;color:var(--gold2)}
 
 
 .cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
@@ -776,34 +797,38 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 
 /* ── MASTHEAD COUNTDOWN: NEXT EPISODE ──────────────────── */
+/* A Taskmaster-red admission ticket: a stub with the episode number,
+   a perforation with punched notches, and the time left as three big
+   gold numerals with plain labels — Days / Hours / Mins. */
 .hdr-cd{
-  margin-left:auto;flex-shrink:0;
+  align-self:center;width:min(100%,440px);
   -webkit-user-select:none;user-select:none;
-  transform-origin:right center;
-  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 .hdr.compact .hdr-cd{transform:none}
-/* Stopwatch (see stopwatchSVG()), enlarged so the digits read clearly.
-   Everything is a flat fill set here: marigold case, ultramarine bezel
-   ring, cream dial, vermilion days. Digits are SVG <tspan>s so they
-   scale with it. */
-#hdr-countdown{display:flex;align-items:center}
-.sw{display:block;width:clamp(86px,27vw,136px);height:auto;overflow:visible}
-.sw-case{fill:var(--line-gold)}
-.sw-bezel{fill:var(--bg)}
-.sw-dial{fill:var(--cream)}
-.sw-ticks{stroke:var(--env-ink)}
-.sw-ep{font-family:var(--ff-type);font-weight:500;font-size:8.5px;letter-spacing:1.6px;fill:#56639a}
-.sw-big{font-family:var(--ff-num);font-weight:600;font-size:28px;fill:var(--vermilion)}
-.sw-unit{font-family:var(--ff-num);font-weight:500;font-size:12px;fill:var(--vermilion)}
-.sw-small{font-family:var(--ff-num);font-weight:500;font-size:16px;fill:var(--env-ink);letter-spacing:0.5px}
-/* The hour ticks, second hand and hub carry crimson as SVG presentation
-   attributes; CSS outranks those, so re-ink them vermilion here. */
-.sw circle[stroke="#881337"],.sw-hand line{stroke:var(--vermilion)}
-.sw > circle:last-child{fill:var(--vermilion)}
-.sw-hand{transform-origin:50px 58px;animation:sw-sweep 60s steps(60) infinite}
-@keyframes sw-sweep{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion: reduce){.sw-hand{animation:none}}
+#hdr-countdown{display:block}
+.tkt{position:relative;display:flex;align-items:stretch;
+  background:var(--tm-red);color:var(--cream);
+  border-radius:6px;box-shadow:var(--card-shadow);
+  outline:1px solid var(--gold);outline-offset:-5px;}
+.tkt-stub{flex:0 0 26%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:12px 4px;border-right:2px dashed rgba(247,236,210,0.55);}
+.tkt-stub-l{font-family:var(--fm);font-weight:500;font-size:11px;letter-spacing:0.22em;
+  text-transform:uppercase;color:var(--gold3)}
+.tkt-stub-n{font-family:var(--ff-num);font-weight:600;font-size:clamp(34px,10vw,46px);line-height:1;color:var(--gold2)}
+/* punched notches at either end of the perforation */
+.tkt-stub::before,.tkt-stub::after{content:'';position:absolute;left:calc(26% - 9px);
+  width:18px;height:18px;border-radius:50%;background:var(--bg)}
+.tkt-stub::before{top:-9px}
+.tkt-stub::after{bottom:-9px}
+.tkt-main{flex:1;padding:10px 12px 12px;text-align:center}
+.tkt-cap{font-family:var(--fm);font-weight:500;font-size:11px;letter-spacing:0.18em;
+  text-transform:uppercase;color:var(--cream);margin-bottom:6px}
+.tkt-row{display:flex;justify-content:space-around;gap:6px}
+.tkt-u{display:flex;flex-direction:column;align-items:center;min-width:0}
+.tkt-n{font-family:var(--ff-num);font-weight:600;font-size:clamp(32px,9.5vw,44px);line-height:1;color:var(--gold2)}
+.tkt-l{font-family:var(--fm);font-weight:500;font-size:10px;letter-spacing:0.2em;
+  text-transform:uppercase;color:var(--cream);margin-top:3px}
+.tkt-done{font-family:var(--ff-head);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.05;color:var(--gold2)}
 
 
 
@@ -869,24 +894,34 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   padding: 14px var(--wall-inset) 36px;
 }
 
-/* Card shell (also the episode podium) — each player is an independent
-   flat panel framed like a printed card: a razor-thin outer rule and a
-   hairline set 4px inside it (outline-offset). */
+/* ── INDEX CARDS ──────────────────────────────────────────
+   Every surface you read — standings rows, the podium, scoresheets,
+   analysis and profile copy — is an ivory index card lifted off the
+   claret ground. Re-pointing the text/rule tokens on the card turns
+   everything inside it ink-on-paper without touching each rule. */
+.pc, .pod-portraits, .tt-wrap, .bs-wrap, .ep-ins, .cd-block {
+  --t1: var(--ink); --t2: var(--ink2); --t3: var(--ink3); --t4: var(--ink4);
+  --line-dim: var(--paper-rule); --line-gold: var(--gold4); --line-cream: var(--paper-edge);
+  --b-dim: var(--paper-rule); --b-gold: var(--paper-rule);
+  --gold2: var(--tm-red); --marigold: var(--tm-red);   /* "best" inks red on paper */
+  --up: #2f7a3e;
+  color: var(--ink);
+}
+/* Card shell (also the episode podium) — each player is its own index
+   card: ivory stock, a 1px paper edge, a ruled hairline set 5px inside
+   (outline-offset), and a soft shadow onto the claret. The top three are
+   edged in their medal colour. */
 .pc, .pod-portraits {
   position: relative;
-  border-radius: 0;
-  background: var(--s1);
-  border: 1px solid var(--line-frame);
-  outline: 1px solid var(--line-dim);
-  outline-offset: -5px;
+  border-radius: 3px;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  outline: 1px solid var(--paper-rule);
+  outline-offset: -6px;
+  box-shadow: var(--card-shadow);
 }
-/* Podium panels are framed in their medal colour; the leader's frame is
-   cream outside, marigold within. */
-.pc-rank1 {
-  border-color: var(--line-cream);
-  outline-color: var(--marigold);
-}
-.pc-podium { border-color: #dfe3ee; }
+.pc-rank1 { border-color: var(--gold); outline: 2px solid var(--gold); outline-offset: -6px; }
+.pc-podium { border-color: #b9bcc4; outline-color: #cfd2d8; }
 
 /* Last place hangs slightly crooked. Applied to the inner .pc, not
    .player-card, because card-drop's fill-mode would otherwise pin
@@ -937,8 +972,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .stand-hero-title {
   font-family: var(--ff-head);
-  font-size: clamp(38px, 10.5vw, 52px);
-  font-weight: 600;
+  font-size: clamp(36px, 10vw, 52px);
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.01em;
   margin-bottom: 3px;
@@ -1054,9 +1089,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   font-weight: 600;
   color: var(--seal-ink);
 }
-.seal-t1 { --seal-base:#f6c350; --seal-ink:#1a2340; }
-.seal-t2 { --seal-base:#dfe3ee; --seal-ink:#1a2340; }
-.seal-t3 { --seal-base:#f0a36b; --seal-ink:#1a2340; }
+.seal-t1 { --seal-base:#e0b54a; --seal-ink:#1d1512; }
+.seal-t2 { --seal-base:#c6c9d0; --seal-ink:#1d1512; }
+.seal-t3 { --seal-base:#d0935c; --seal-ink:#1d1512; }
 
 /* Name */
 .pc-name-col {
@@ -1095,9 +1130,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   line-height: 1;
   color: var(--t1);
 }
-.pc-score-t1 { color: var(--marigold); }
-.pc-score-t2 { color: #dfe3ee; }
-.pc-score-t3 { color: #f0a36b; }
+.pc-score-t1 { color: var(--tm-red); }
+.pc-score-t2 { color: #5f636c; }
+.pc-score-t3 { color: #9a5a28; }
 /* Narrow phones: the gallery-wall inset and the wider serif names leave
    too little room, so tighten the gaps and both score columns (header
    AND rows, so they stay aligned) — the column labels wrap to two lines
@@ -1115,11 +1150,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── BOX SCORE ──────────────────────────────────────── */
 .bs-wrap{
-  margin:12px var(--px) 8px;
-  border-radius:0;
+  margin:14px var(--px) 10px;
+  border-radius:3px;
   overflow:hidden;
-  background:var(--s1);
-  border:1px solid var(--line-cream);
+  background:var(--paper);
+  border:1px solid var(--paper-edge);
+  box-shadow:var(--card-shadow);
 }
 /* Expanded player card: everything else (photo, name, rank, total, avg)
    is already on the collapsed row above, so this holds only the weekly
@@ -1160,7 +1196,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   letter-spacing:0.04em;text-transform:uppercase;
   margin-bottom:3px;
 }
-/* Weekly score beneath each portrait, set in Cormorant: gold for the
+/* Weekly score beneath each portrait, set in Oswald: red for the
    best week, dimmed for the worst. */
 .pc-pick-pts{
   font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);font-weight:500;
@@ -1430,15 +1466,15 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── DELTA BESIDE RANK ──────────────────────────────── */
 /* Rank movement as a small printed figure in a hairline box rather than
-   a ticker — mint up, soft vermilion down. */
+   a ticker — green ink up, Taskmaster red down. */
 .pc-delta{font-family:var(--ff-stamp);font-size:9px;font-weight:400;line-height:1;
   letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:0;}
 .pc-delta-up{color:var(--up);}
-.pc-delta-dn{color:#ff8a73;}
+.pc-delta-dn{color:var(--tm-red);}
 .pc-delta-flat{color:var(--t4);border-color:transparent;opacity:0.6;}
 
 /* ── SCORE NUMERALS ─────────────────────────────────── */
-/* Score numbers are set in Cormorant with lining, tabular figures so
+/* Score numbers are set in Oswald with lining, tabular figures so
    columns of them line up (.sc/.bs-cell/.tt-total set this themselves). */
 .s-pts-n,.pd-pts-n,.cd-pts,.cc-pts,
 .ss-v,.cd-s-v,.cc-ep-v,.cc-stat-v,.cd-ep-v,
@@ -1510,9 +1546,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 <div class="topbar">
 <header class="hdr">
   <div class="hdr-brand">
-    <div class="hdr-title">
-      <span class="ht-word">Fan<span class="ht-task">task</span>y</span>
-      <span class="ht-sub"><span class="ht-rule" aria-hidden="true"></span><em>Master</em><span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span><span class="ht-rule" aria-hidden="true"></span></span>
+    <h1 class="hdr-title"><span class="ht-word">Fantasky</span><span class="ht-word">Master</span></h1>
+    <div class="hdr-dateline">
+      <span>Series<span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span></span>
+      <span class="hd-mid" aria-hidden="true">&#10022;</span>
+      <span>The Fantasy League</span>
     </div>
   </div>
 
@@ -2541,10 +2579,10 @@ function nav(name,btn){
 // Masthead: the "22" in the title is the Series 21/22 toggle (see
 // toggleSeries() and #ht-series in the HTML) — its own digits swap to
 // name whichever series is active, since there's no separate badge for
-// that any more. The top-right readout is a stopwatch counting
-// down Days / Hours:Minutes to the next Series 22 episode's air date
+// that any more. Below the nameplate, a red admission ticket counts
+// down Days / Hours / Mins to the next Series 22 episode's air date
 // (21:00 UK, the real broadcast slot). Series 21 is finished, so its
-// dial just reads "Time's up" instead of counting down to nothing.
+// ticket just reads "Time's up!" instead of counting down to nothing.
 let countdownTimer=null;
 function renderMasthead(){
   const toggleEl=document.getElementById('ht-series');
@@ -2569,25 +2607,6 @@ function nextEpisodeInfo(){
   return m ? {ep, date:parseEpDate(m.d)} : null; // null once there's no next episode left to name
 }
 
-// Stopwatch case wrapping the countdown — crown + two pushers on top, a
-// case, a cream dial with 60/12 tick rings (drawn as dashed circles),
-// and a crimson second hand that sweeps once a minute behind whatever
-// `face` markup is passed in. Fills are flat and set in CSS (.sw-*).
-function stopwatchSVG(face){
-  return '<svg class="sw" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg">'+
-    '<rect class="sw-case" x="44" y="1" width="12" height="11" rx="2.5"/>'+
-    '<rect class="sw-case" x="46.5" y="4" width="7" height="11" rx="1.5" transform="rotate(-40 50 58)"/>'+
-    '<rect class="sw-case" x="46.5" y="4" width="7" height="11" rx="1.5" transform="rotate(40 50 58)"/>'+
-    '<circle class="sw-case" cx="50" cy="58" r="46"/>'+
-    '<circle class="sw-bezel" cx="50" cy="58" r="41"/>'+
-    '<circle class="sw-dial" cx="50" cy="58" r="39.5"/>'+
-    '<circle class="sw-ticks" cx="50" cy="58" r="36" fill="none" stroke-width="2.4" stroke-dasharray="0.6 3.17" opacity=".6"/>'+
-    '<circle cx="50" cy="58" r="36" fill="none" stroke="#881337" stroke-width="4" stroke-dasharray="1.2 17.65" stroke-dashoffset="0.6"/>'+
-    '<g class="sw-hand"><line x1="50" y1="64" x2="50" y2="25" stroke="#881337" stroke-width=".9" stroke-linecap="round" opacity=".35"/></g>'+
-    face+
-    '<circle cx="50" cy="58" r="1.6" fill="#881337" opacity=".7"/>'+
-  '</svg>';
-}
 
 function renderCountdown(){
   if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
@@ -2595,17 +2614,20 @@ function renderCountdown(){
   if(!el) return;
   const info=nextEpisodeInfo();
   if(!info){
-    el.innerHTML=stopwatchSVG(
-      '<text class="sw-small" x="50" y="54" text-anchor="middle">TIME&#8217;S</text>'+
-      '<text class="sw-big" x="50" y="78" text-anchor="middle">UP</text>');
+    el.innerHTML='<div class="tkt"><div class="tkt-stub"><span class="tkt-stub-l">Series</span><span class="tkt-stub-n">21</span></div>'+
+      '<div class="tkt-main"><div class="tkt-cap">Series complete</div><div class="tkt-done">Time&#8217;s up!</div></div></div>';
     return;
   }
-  // Dial layout: episode number up top, days large in the middle,
-  // hours:minutes underneath. tickCountdown() fills the three tspans.
-  el.innerHTML=stopwatchSVG(
-    '<text class="sw-ep" x="50" y="40" text-anchor="middle">EP '+info.ep+'</text>'+
-    '<text x="50" y="66" text-anchor="middle"><tspan class="sw-big" id="cd-d"></tspan><tspan class="sw-unit" dx="1">d</tspan></text>'+
-    '<text class="sw-small" x="50" y="83" text-anchor="middle"><tspan id="cd-h"></tspan>:<tspan id="cd-m"></tspan></text>');
+  // Admission ticket: episode number on the stub, air date as the
+  // caption, then Days / Hours / Mins. tickCountdown() fills the numbers.
+  const when=info.date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  el.innerHTML='<div class="tkt"><div class="tkt-stub"><span class="tkt-stub-l">Episode</span><span class="tkt-stub-n">'+info.ep+'</span></div>'+
+    '<div class="tkt-main"><div class="tkt-cap">Airs '+when+' &middot; 9pm</div>'+
+    '<div class="tkt-row">'+
+      '<div class="tkt-u"><span class="tkt-n" id="cd-d"></span><span class="tkt-l">Days</span></div>'+
+      '<div class="tkt-u"><span class="tkt-n" id="cd-h"></span><span class="tkt-l">Hours</span></div>'+
+      '<div class="tkt-u"><span class="tkt-n" id="cd-m"></span><span class="tkt-l">Mins</span></div>'+
+    '</div></div></div>';
   tickCountdown(info.date);
   countdownTimer=setInterval(()=>tickCountdown(info.date),1000);
 }
