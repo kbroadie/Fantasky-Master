@@ -121,6 +121,28 @@ Contestant images are not stored in the repository. They are hosted in one Imgur
 - **External dependency.** Images are fetched from Imgur at run time. If Imgur is unreachable or an image is deleted, the system still computes everything; only the image is missing. No calculation reads `PORT`.
 - **Replacing an image.** Upload the new image to the series' album, then point that contestant's `PORT` entry at the new image's direct link. Deleting an image from the album breaks any `PORT` entry still pointing at it.
 
+### 4.3 Planned data source: `data/fantasky_master_data.csv`
+
+All hand-entered data (§4.1) also exists as one CSV file, `data/fantasky_master_data.csv`, which is intended to replace the constants in `index.html` as the single editable source. **Parsing is not integrated yet;** until it is, `index.html` remains authoritative. The file was generated from `index.html`, and rebuilding every series from the CSV alone reproduces the in-file data exactly.
+
+The CSV holds inputs only; nothing derived (§5–§6) is stored. Each row has a `record` type; columns not used by that type are blank:
+
+| `record` | Maps to | Columns |
+|---|---|---|
+| `contestant` | `NAMES`, `CONT`, `PORT` | `series`, `contestant`, `full_name`, `accent_color`, `portrait_url`, `bio`, `stat` |
+| `player` | keys of `PICKS` (the roster, including players who never vote) | `series`, `player` |
+| `episode` | `EM`, `EI` | `series`, `episode`, `title`, `air_date`, `tiebreak_winner` (→ `tb`), `analysis` |
+| `score` | `TASKS` (one row per task × contestant) | `series`, `episode`, `task_no`, `task_type`, `task_name`, `contestant`, `score` |
+| `pick` | `PICKS` | `series`, `episode`, `player`, `contestant` |
+
+Conventions:
+- **Encoding.** UTF-8 with a byte-order mark; a parser must strip it.
+- **Text.** Text fields use plain characters instead of HTML entities, and may contain `<strong>` markup.
+- **Missing picks.** A missing `pick` row means no vote.
+- **Contestant order.** Contestants are listed in seating (alphabetical) order. When the CSV becomes the source, that becomes `NAMES` order, which only matters for the fallbacks in §6.8 and §6.10 (an unrecorded top tie, or tied series totals).
+
+The editing guide is in `data/README.md`.
+
 ---
 
 ## 5. Schedule state (clock-derived)
@@ -349,7 +371,7 @@ At any time after a Series 22 episode airs, edit `index.html`:
 3. **Tiebreak:** only if contestants tied for the top score, add `tb:"Name"` to that episode's `EM_S22` entry.
 4. **Text (optional):** the episode title in `EM_S22`, analysis in `EI_S22`, and contestant `stat` / `bio` in `CONT_S22`.
 
-Everything else is derived: aired and scored weeks, totals, both boards, ranks, rank deltas, episode winners, pick-rule statuses, contestant statistics, the next episode and the current series.
+Keep `data/fantasky_master_data.csv` (§4.3) in step with the same edits; once CSV parsing is integrated it replaces these steps. Everything else is derived: aired and scored weeks, totals, both boards, ranks, rank deltas, episode winners, pick-rule statuses, contestant statistics, the next episode and the current series.
 
 **New series:**
 1. Add a `SERIES_RAW` entry keyed `"s" + number`, with the same fields and the 10 London air dates in `EM`.
