@@ -1,6 +1,6 @@
 // The sky behind the Taskmaster house: one full-screen WebGL2 fragment shader.
-// Stars, drifting cloud, chimney smoke, a lamp that follows the pointer, and
-// film grain. Rendered at reduced resolution and capped at 30fps; it pauses
+// Stars, drifting cloud, a lamp that follows the pointer, and film grain.
+// Rendered at quarter resolution as chunky pixels and capped at 30fps; it pauses
 // when the tab is hidden and renders a single still frame for reduced motion.
 
 const VERT = `#version 300 es
@@ -11,7 +11,7 @@ precision highp float;
 out vec4 o;
 uniform vec2 uRes;
 uniform float uTime, uScroll, uSteam, uNeon;
-uniform vec2 uMouse, uChimney;
+uniform vec2 uMouse;
 uniform vec3 uTop, uBot, uGlow, uLamp;
 
 float h21(vec2 p){ p = fract(p*vec2(123.34, 456.21)); p += dot(p, p+45.32); return fract(p.x*p.y); }
@@ -36,33 +36,18 @@ void main(){
   col += uNeon * vec3(1., .2, .55) * exp(-pow((uv.y-.16)*14., 2.)) * (.55 + .45*step(.08, fract(sin(floor(t*3.))*43758.)));
 
   // Stars.
-  vec2 g = p*vec2(90., 90.);
+  vec2 g = p*vec2(60., 60.);
   vec2 cell = floor(g);
   float r = h21(cell);
   vec2 sp = fract(g) - .5 - (vec2(h21(cell+3.1), h21(cell+7.7))-.5)*.6;
-  float star = smoothstep(.07, 0., length(sp)) * step(.965, r) * smoothstep(.25, .75, uv.y);
+  float star = step(length(sp), .12) * step(.965, r) * smoothstep(.25, .75, uv.y);
   star *= .55 + .45*sin(t*(1.+r*3.) + r*40.);
   col += vec3(1., .95, .85) * star * (1.-uScroll*.7);
-
-  // Moon.
-  vec2 mpos = asp < 1. ? vec2(asp*.56, .95) : vec2(asp*.82, .8);
-  float md = length(p - mpos) * (asp < 1. ? 1.35 : 1.);
-  col += vec3(1., .93, .78) * (smoothstep(.052, .048, md)*.9 + exp(-md*9.)*.22) * (1.-uScroll);
 
   // Drifting cloud / steam banks.
   float c = fbm(p*vec2(1.6, 3.) + vec2(t*.018, 0.));
   c = smoothstep(.5, .85, c) * smoothstep(.15, .7, uv.y);
   col = mix(col, uGlow*.55 + vec3(.08), c*.35*uSteam);
-
-  // Chimney smoke: a column that widens, drifts and fades as it rises.
-  vec2 q = p - vec2(uChimney.x*asp, uChimney.y);
-  float rise = max(q.y, 0.);
-  float drift = rise*rise*.3 + sin(rise*7. - t*.9)*.015*rise;
-  float w = .01 + rise*.075;
-  float n = fbm(vec2(q.x*9., q.y*5. - t*.55));
-  float plume = exp(-pow((q.x - drift)/w, 2.)) * smoothstep(0., .02, q.y) * exp(-rise*3.4);
-  plume *= smoothstep(.25, .8, n + .25);
-  col = mix(col, vec3(.5, .49, .5) + uGlow*.12, clamp(plume*uSteam*.8, 0., .6));
 
   // Lamp that follows the pointer.
   vec2 m = vec2(uMouse.x*asp, uMouse.y);
@@ -110,17 +95,16 @@ export function startSky(canvas, { reducedMotion }) {
   gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
   const U = {};
-  for (const n of ["uRes", "uTime", "uScroll", "uSteam", "uNeon", "uMouse", "uChimney", "uTop", "uBot", "uGlow", "uLamp"])
+  for (const n of ["uRes", "uTime", "uScroll", "uSteam", "uNeon", "uMouse", "uTop", "uBot", "uGlow", "uLamp"])
     U[n] = gl.getUniformLocation(prog, n);
 
   // Current and target values; themes and the pointer ease rather than snap.
   const cur = { ...structuredClone(THEMES.greek), mx: 0.5, my: 0.6, scroll: 0 };
   let target = structuredClone(THEMES.greek);
   let mouse = { x: 0.5, y: 0.6 };
-  let chimney = { x: -1, y: -1 };
   let scroll = 0;
 
-  const SCALE = 0.5;
+  const SCALE = 0.25; // chunky pixels, upscaled with image-rendering: pixelated
   function resize() {
     const w = Math.min(innerWidth, 1600), h = Math.min(innerHeight, 1000);
     canvas.width = Math.max(1, Math.round(w * SCALE));
@@ -150,7 +134,6 @@ export function startSky(canvas, { reducedMotion }) {
     gl.uniform1f(U.uSteam, cur.steam);
     gl.uniform1f(U.uNeon, cur.neon);
     gl.uniform2f(U.uMouse, cur.mx, cur.my);
-    gl.uniform2f(U.uChimney, chimney.x, chimney.y);
     gl.uniform3fv(U.uTop, cur.top);
     gl.uniform3fv(U.uBot, cur.bot);
     gl.uniform3fv(U.uGlow, cur.glow);
@@ -188,10 +171,5 @@ export function startSky(canvas, { reducedMotion }) {
   return {
     setTheme(name) { target = structuredClone(THEMES[name] || THEMES.greek); play(); settle(); still(); },
     setScroll(v) { scroll = v; settle(); still(); },
-    /** Chimney top in viewport CSS pixels. */
-    setChimney(x, y) {
-      chimney = { x: x / innerWidth, y: 1 - y / innerHeight };
-      if (reducedMotion) still();
-    },
   };
 }
