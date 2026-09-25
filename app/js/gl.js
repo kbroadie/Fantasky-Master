@@ -45,8 +45,8 @@ void main(){
   col += vec3(1., .95, .85) * star * (1.-uScroll*.7);
 
   // Moon.
-  vec2 mpos = asp < 1. ? vec2(asp*.6, .9) : vec2(asp*.82, .8);
-  float md = length(p - mpos);
+  vec2 mpos = asp < 1. ? vec2(asp*.56, .95) : vec2(asp*.82, .8);
+  float md = length(p - mpos) * (asp < 1. ? 1.35 : 1.);
   col += vec3(1., .93, .78) * (smoothstep(.052, .048, md)*.9 + exp(-md*9.)*.22) * (1.-uScroll);
 
   // Drifting cloud / steam banks.
@@ -177,9 +177,17 @@ export function startSky(canvas, { reducedMotion }) {
   resize();
   play();
 
+  // Once the house has scrolled away the sky is just a dim backdrop, so stop
+  // drawing it until it comes back (or the theme changes).
+  let idle = 0;
+  const settle = () => {
+    clearTimeout(idle);
+    if (scroll >= 1) idle = setTimeout(pause, 1200); else play();
+  };
+
   return {
-    setTheme(name) { target = structuredClone(THEMES[name] || THEMES.greek); still(); },
-    setScroll(v) { scroll = v; still(); },
+    setTheme(name) { target = structuredClone(THEMES[name] || THEMES.greek); play(); settle(); still(); },
+    setScroll(v) { scroll = v; settle(); still(); },
     /** Chimney top in viewport CSS pixels. */
     setChimney(x, y) {
       chimney = { x: x / innerWidth, y: 1 - y / innerHeight };

@@ -14,14 +14,16 @@
   <link rel="preconnect" href="https://i.imgur.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Special+Elite&family=Caveat:wght@500..700&display=swap">
   <link rel="stylesheet" href="styles.css">
-  <link rel="modulepreload" href="js/data.js">
+  <link rel="preload" href="../data/fantasky_master_data.csv" as="fetch" crossorigin>
+  <link rel="modulepreload" href="js/csv.js">
+  <link rel="modulepreload" href="js/meta.js">
   <link rel="modulepreload" href="js/league.js">
   <link rel="modulepreload" href="js/house.js">
   <link rel="modulepreload" href="js/gl.js">
   <link rel="modulepreload" href="js/fx.js">
   <script type="module" src="js/main.js"></script>
 </head>
-<body data-theme="greek">
+<body data-theme="greek" class="loading">
   <canvas id="sky" aria-hidden="true"></canvas>
   <a class="skip" href="#view">Skip to the league</a>
 
@@ -41,22 +43,25 @@
 
   <section class="hero" aria-label="This week">
     <div class="house-wrap" id="house"></div>
-    <article class="task-card" id="taskcard" data-tilt aria-live="off"></article>
+    <div class="hero-side">
+      <article class="task-card" id="taskcard" data-tilt aria-live="off"></article>
+      <div class="me" id="me"></div>
+    </div>
     <p id="quip" class="quip" role="status"></p>
-    <p class="scroll-cue" aria-hidden="true">the league ↓</p>
+    <p class="scroll-cue" aria-hidden="true">the table ↓</p>
   </section>
 
   <nav class="tabs" aria-label="Sections">
     <div class="tabs-inner">
       <span class="tab-ink" aria-hidden="true"></span>
-      <a data-view="standings" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5Z M9 9h6 M9 13h6 M9 17h4"/></svg>Standings</a>
-      <a data-view="episodes" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v13H3Z M3 6l9 7 9-7"/><circle cx="12" cy="13" r="2.4"/></svg>Episodes</a>
-      <a data-view="cast" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v14H4Z M8 7l4-4 4 4"/><circle cx="12" cy="13" r="3"/></svg>Cast</a>
-      <a data-view="lab" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 3h6 M10 3v6l-5 10a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-10V3 M7.5 15h9"/></svg>Lab</a>
+      <a data-view="standings" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h11l3 3v15H5Z M9 9h6 M9 13h6 M9 17h4"/></svg><span>Table</span></a>
+      <a data-view="player" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4.5 4.5-7 8-7s7 2.5 8 7"/></svg><span>You</span></a>
+      <a data-view="episodes" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v13H3Z M3 6l9 7 9-7"/><circle cx="12" cy="13" r="2.4"/></svg><span>Episodes</span></a>
+      <a data-view="cast" href="#/"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v14H4Z M8 7l4-4 4 4"/><circle cx="12" cy="13" r="3"/></svg><span>Cast</span></a>
     </div>
   </nav>
 
-  <main id="view" tabindex="-1"></main>
+  <main id="view" tabindex="-1"><p class="loading-msg">Opening the envelopes…</p></main>
 
   <footer class="rules">
     <article class="rule-card paper">

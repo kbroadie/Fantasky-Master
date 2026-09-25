@@ -97,8 +97,8 @@ export function derive(raw, now = new Date()) {
     winners[e] = { winner, tiebreak: tied.length > 1, tied, top: EPS[tied[0]][e] };
   }
 
-  // Players
-  const allPlayers = Object.keys(raw.picks);
+  // Players: the roster plus anyone with picks.
+  const allPlayers = [...new Set([...(raw.players || []), ...Object.keys(raw.picks)])];
   const pickOf = (p, e) => raw.picks[p]?.[e - 1] || null;
   const active = allPlayers.filter((p) => (raw.picks[p] || []).some(Boolean));
   const inactive = allPlayers.filter((p) => !active.includes(p));
@@ -120,8 +120,10 @@ export function derive(raw, now = new Date()) {
     return { show, league, showRank: rank(show), leagueRank: rank(league) };
   }
 
-  const cur = boardsAsOf(weeksScored);
-  const prev = weeksScored > 1 ? boardsAsOf(weeksScored - 1) : cur;
+  const history = Array.from({ length: weeksScored }, (_, i) => boardsAsOf(i + 1));
+  const cur = weeksScored ? history.at(-1) : boardsAsOf(0);
+  const prev = weeksScored > 1 ? history.at(-2) : cur;
+  const topScore = (e) => Math.max(...names.map((n) => EPS[n][e]));
 
   const players = active.map((p) => {
     const weeks = [];
@@ -133,17 +135,42 @@ export function derive(raw, now = new Date()) {
         show: c && scored ? EPS[c][e] : null,
         league: c && scored ? rankPts[e][c] : null,
         place: c && scored ? placing[e][c] : null,
+        won: !!(c && scored && winners[e].winner === c),
+        missed: scored ? topScore(e) - (c ? EPS[c][e] : 0) : null,
       });
     }
+    const played = weeks.filter((w) => w.show != null);
+    const byShow = [...played].sort((a, b) => b.show - a.show);
     return {
       name: p, weeks,
       show: cur.show[p], league: cur.league[p],
       showRank: cur.showRank.get(p), leagueRank: cur.leagueRank.get(p),
       showDelta: prev.showRank.get(p) - cur.showRank.get(p),
       leagueDelta: prev.leagueRank.get(p) - cur.leagueRank.get(p),
+      history: history.map((h) => ({ show: h.show[p], league: h.league[p], showRank: h.showRank.get(p), leagueRank: h.leagueRank.get(p) })),
+      played: played.length,
+      hits: played.filter((w) => w.won).length,
+      best: byShow[0] || null,
+      worst: byShow.at(-1) || null,
+      missed: weeks.reduce((a, w) => a + (w.missed ?? 0), 0),
       status: pickStatus(names, weeks.filter((w) => w.ep <= weeksScored).map((w) => w.pick), weeksScored),
     };
   });
+  const byName = Object.fromEntries(players.map((p) => [p.name, p]));
+
+  // How the league fared each scored week.
+  const weekly = {};
+  for (let e = 1; e <= weeksScored; e++) {
+    const voters = players.filter((p) => p.weeks[e - 1].pick);
+    const by = Object.fromEntries(names.map((n) => [n, []]));
+    for (const p of voters) by[p.weeks[e - 1].pick].push(p.name);
+    weekly[e] = {
+      voters: voters.length,
+      avgShow: voters.length ? voters.reduce((a, p) => a + p.weeks[e - 1].show, 0) / voters.length : 0,
+      by,
+      hits: by[winners[e].winner],
+    };
+  }
 
   // Contestant stats
   const seriesTotal = Object.fromEntries(names.map((n) => [n, EPS[n].reduce((a, b) => a + b, 0)]));
@@ -154,7 +181,7 @@ export function derive(raw, now = new Date()) {
   const contestants = names.map((n) => {
     const eps = EPS[n].slice(1, weeksScored + 1);
     const i = idx[n];
-    const scores = raw.tasks.filter((t) => !t.solo).map((t) => t.s[i]);
+    const scores = raw.tasks.map((t) => t.s[i]);
     return {
       ...cast[n], key: n,
       total: seriesTotal[n],
@@ -169,12 +196,13 @@ export function derive(raw, now = new Date()) {
       fives: scores.filter((s) => s >= 5).length,
       zeros: scores.filter((s) => s === 0).length,
       pickedBy: active.reduce((a, p) => a + (raw.picks[p] || []).slice(0, weeksScored).filter((c) => c === n).length, 0),
+      deliveredTo: players.reduce((a, p) => a + p.weeks.filter((w) => w.pick === n && w.show != null).reduce((x, w) => x + w.show, 0), 0),
     };
   });
 
   return {
     raw, names, idx, cast, episodes, EPS, TY, rankPts, placing, winners,
-    weeksAired, weeksScored, nextEp, players, inactive, contestants,
+    weeksAired, weeksScored, nextEp, players, byName, inactive, contestants, weekly, allPlayers,
     complete: weeksAired === EPISODES,
     epTasks: (e) => raw.tasks.filter((t) => t.ep === e),
   };
@@ -189,16 +217,4 @@ export function pickStatus(names, knownPicks, weeksKnown) {
   if (left === 0) return { kind: "never", needed };
   if (needed.length === left) return { kind: "must", needed };
   return { kind: "cannot", needed };
-}
-
-/** Score an arbitrary set of picks (used by The Lab). */
-export function scorePicks(d, picks) {
-  let show = 0, league = 0;
-  const weeks = picks.map((c, i) => {
-    const e = i + 1;
-    if (!c || e > d.weeksScored) return { ep: e, pick: c, show: null, league: null };
-    show += d.EPS[c][e]; league += d.rankPts[e][c];
-    return { ep: e, pick: c, show: d.EPS[c][e], league: d.rankPts[e][c], place: d.placing[e][c] };
-  });
-  return { show, league, weeks };
 }
