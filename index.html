@@ -139,7 +139,7 @@
   --px: 16px;
   /* Extra margin after the Standings Rank column (header AND data rows —
      see .st-h-rank/.pc-rank-col) so the Rank↔Player gap visually matches
-     the Show Pts↔League Pts gap. */
+     the Show↔League gap. */
   --rank-col-gap: 7.5px;
   --sp-1: 4px;
   --sp-2: 8px;
@@ -1008,7 +1008,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   -webkit-user-select: none;
   user-select: none;
 }
-/* Only Show Pts/League Pts actually sort anything — Rank and Player
+/* Only Show/League actually sort anything — Rank and Player
    are plain labels, so they don't get pointer/press affordances. */
 .st-h-sortable { cursor: pointer; }
 .st-h-sortable:active { opacity: 0.7; }
@@ -1016,13 +1016,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    emphasized (brighter gold, a soft glow) instead, so which column
    you're sorted by reads as "the one that stands out" rather than
    needing a separate glyph to parse. Font-weight deliberately does NOT
-   change here (color/glow only) — Show Pts and League Pts are the
+   change here (color/glow only) — Show and League are the
    same length, and bolding one would widen its text and throw off the
    gap between the two headers depending on which was active. */
 .st-h.active { color: var(--gold2) }
 /* Rank's own text is centered in a narrow box, so it eats into the flex
    gap on both sides — a bit of extra margin here brings the visible
-   Rank↔Player gap up to match Show Pts↔League Pts' gap exactly
+   Rank↔Player gap up to match Show↔League' gap exactly
    (that one runs wider because right-aligned text inside a 90px column
    leaves slack space before the next column starts). Tuned against the
    rendered gap, not a guess — see the alignment note above .pc-score-col.
@@ -1106,7 +1106,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Two score columns — Show Pts and League Pts side by side, same
+/* Two score columns — Show and League side by side, same
    fixed width as their header cells (.st-h-num) so numbers and labels
    line up. Each badges gold/silver/bronze on its OWN top-3 status
    (PVE_RANK/PVP_RANK) independently of the other column and of
@@ -1132,8 +1132,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .pc-score-t3 { color: #9a5a28; }
 /* Narrow phones: the gallery-wall inset and the wider serif names leave
    too little room, so tighten the gaps and both score columns (header
-   AND rows, so they stay aligned) — the column labels wrap to two lines
-   ("Task / Points") to give player names the space. */
+   AND rows, so they stay aligned) to give player names the space. */
 /* Phones: two/three-digit scores don't need 90px, and the Caslon names
    do — narrow both score columns (header AND rows) to give them room. */
 @media (max-width: 420px) {
@@ -1607,8 +1606,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     <div class="stand-head" id="stand-head">
       <div class="st-h st-h-rank">Rank</div>
       <div class="st-h st-h-name">Player</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Show Pts</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">League Pts</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Show</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">League</div>
     </div>
     <div id="player-body" class="player-card-list"></div>
   </div>
@@ -1933,7 +1932,7 @@ function computeDerived(){
     NAMES.forEach(n => { rankPts[n] = 6 - ranks[n]; });
     return rankPts;
   });
-  // Only aired weeks count, same as Show Pts: a pick made ahead of
+  // Only aired weeks count, same as Show: a pick made ahead of
   // broadcast scores nothing yet. (Unaired episodes are all-zero, which
   // rankWithTies would read as a 5-way tie for 1st worth 5 points each.)
   PVP_SCORE = {};
@@ -2177,8 +2176,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
 
   // Rank + delta both live in the Rank column now, and both reflect
   // whichever column the table is CURRENTLY sorted by (boardKey, passed
-  // in from renderStandingsList) — sort by Show Pts and you see PvE
-  // rank/movement, switch to League Pts and both swap to the PvP
+  // in from renderStandingsList) — sort by Show and you see PvE
+  // rank/movement, switch to League and both swap to the PvP
   // numbers instead. Always rendered, even at zero — a dash rather than
   // an absent element, so every row's rank column is the same height.
   const rankCell = rankDisplay<=3
@@ -2193,8 +2192,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   // per week (reusing contImg's 'pod' variant — same portrait treatment
   // as the episode podium strip) with that week's points underneath.
   // Follows the same board the table is sorted by: raw PvE points when
-  // sorted by Show Pts, that week's 5..1 PvP rank-points when sorted
-  // by League Pts — so the expanded row always matches the number
+  // sorted by Show, that week's 5..1 PvP rank-points when sorted
+  // by League — so the expanded row always matches the number
   // that's actually summed into the currently-emphasized column above.
   const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const pk = p.picks[ep];
