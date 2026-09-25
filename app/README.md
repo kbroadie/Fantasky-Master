@@ -1,39 +1,49 @@
-# Fantasky Master: the new app
+# Fantasky Master: the app
 
-A ground-up rebuild of the league site, designed for phones first and built around the players. It follows the rules in [../README.md](../README.md) and the calculations in [../FANTASKY_MASTER_EXPLAINED.md](../FANTASKY_MASTER_EXPLAINED.md).
+The league site, designed for phones first and built around the players. It follows the rules in [../README.md](../README.md) and the calculations in [../FANTASKY_MASTER_EXPLAINED.md](../FANTASKY_MASTER_EXPLAINED.md).
 
-Once merged to `main`, it's served at **https://kbroadie.github.io/Fantasky-Master/app/**.
+Live at **https://kbroadie.github.io/Fantasky-Master/app/**.
 
 ## Data
 
-The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_data.csv)** every time it loads, and treats it as the only source of league data. To update the league, edit the CSV as described in [`data/README.md`](../data/README.md); there's nothing else to change in the app.
+The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_data.csv)** every time it loads. To update the league, edit that file as described in [`data/README.md`](../data/README.md); nothing in the app needs changing.
 
-- `js/csv.js` parses the CSV (UTF-8 with a byte-order mark, quoted fields, `<strong>` in text fields) and shapes it into one object per series.
-- `js/league.js` derives everything else: both boards, ranks, rank movement, tiebreak placings, winners, pick-rule status, each player's rank history, and contestant statistics.
-- `js/meta.js` only sets each series' look: Series 22 is Ancient Greek and Series 21 an American diner, from their real settings. A new series works without an entry there; it just gets the default look.
+- `js/csv.js` parses the CSV.
+- `js/league.js` derives the boards, ranks, movement, tiebreak placings, rank history, pick-rule status and contestant stats.
+- `js/meta.js` only picks each series' look: Series 22 is Ancient Greek, Series 21 an American diner.
 
-## What players see
+## Layout
 
-| Where | What |
+Tabs sit at the top: **Table · You · Episodes · Cast**, with the series seal alongside.
+
+| Tab | What's on it |
 |---|---|
-| **Front page** | Pick your name once and it's remembered on that phone. Your card shows your Show and League rank, movement, last week's result and any "Must pick" warning, above the countdown to the next poll deadline (in your time zone plus London, Eastern and Pacific). |
-| **Table** | Show and League tables with gold, silver and bronze seals and rank movement, with your row highlighted. A floating "find me" bar appears while your row is off-screen. A strip at the top says who won the latest episode and which players backed them. The last-placed player hangs crooked. |
-| **You** | Any player's season: both ranks with the gap to the players either side, a rank-history chart against the rest of the league, winner hit rate, average per pick against the league average, and points left on the table. It also has the pick-everyone tracker, week-by-week picks, and, for yourself, a planner for the remaining polls (saved on the device; you can copy it to paste into the chat). |
-| **Episodes** | Swipeable wax-sealed envelopes. Each episode opens on **how the league did that week**: every contestant in finishing order with the players who backed them. Then comes your own result, a task-by-task scoreboard replay, the host's write-up from the CSV, and the full task scores, folded away. |
-| **Cast** | A portrait wall of the contestants, each with how many league picks they got and how many points they delivered to their backers, plus the bio and stat text from the CSV. |
+| **Table** | The HD-2D scene of the house, with the next poll deadline in an RPG-style dialog box, and your own card (rank, points, movement, last result). The table below lists every player with a strip of all ten episodes: each cell is coloured by the contestant they picked and shows the points it scored, and a gold outline marks a pick that won the episode. |
+| **You** | Any player's season, as three swipeable panels: **Overview** (both ranks and the gap to the player above or below, a rank-history chart, winner hit rate, average pick against the league, points left on the table, the pick-everyone tracker), **Weeks**, and **Plan** (your remaining picks, saved on the device, with a copy button). |
+| **Episodes** | A numbered pager above swipeable episode cards. Each card has subtabs: **League** (who backed whom, in finishing order), **Scoreboard** (a task-by-task replay), **Tasks** and **Write-up**. The chosen subtab stays put as you swipe between episodes. |
+| **Cast** | A wall of gold-framed portraits above swipeable contestant cards: stats, league backing, a points-per-episode chart, and the bio and stat text from the CSV. |
 
-The **hero** is the Taskmaster house at night, drawn in SVG over a WebGL sky. Its ten windows are the ten episodes: a scored episode's window lights up with the winner's portrait, and next week's window glows like a candle. Knock on the caravan to see who answers.
+Contestants appear as their full gold-framed portraits throughout.
 
-## Built for phones
+## The scene
 
-- **Bottom tab bar** within thumb reach, respecting the safe area on notched phones. On desktop it becomes a top pill bar.
-- **Sizing:** tap targets are at least 44px, rows are compact, and the native `<select>` is used for choosing a player.
-- **Small and dependency-free:** no framework, no build step and no dependencies. It's about 40 KB of gzipped code, and the CSV is about 9 KB gzipped (preloaded alongside the scripts).
-- **Light on battery:**
-  - The WebGL sky renders at half resolution, capped at 30 fps.
-  - It stops completely once you scroll past the house or switch tabs.
-  - Portraits load as small WebP versions of the Imgur images.
-- **Motion:** respects reduced-motion settings, uses native View Transitions for tab and series changes, and uses scroll-driven animations where supported.
+The house is original pixel art, drawn in code at 480×144 pixels onto separate layers:
+
+- **Far:** hills and a landmark from the series' location (the Museum of Water & Steam's standpipe tower for Series 22, Hampton Court for Series 21).
+- **Middle:** the house, garden and caravan. Its ten windows are the ten episodes; a scored episode's window shows a pixelated crop of the winner's portrait.
+- **Light:** a glow layer.
+- **Particles:** chimney smoke and fireflies.
+- **Near:** a foreground fence.
+
+The layers sit at different depths in a CSS 3D scene. The far and near layers are blurred for a tilt-shift look, and the camera sways with your pointer, idle drift and scroll, which gives real parallax, in the style of Square Enix's HD-2D games. Tap a window to open its episode, or the caravan to hear from Alex.
+
+## Performance
+
+- **No framework, no build step, no dependencies.**
+- **The scene is cheap to run:** its layers are tiny canvases upscaled with `image-rendering: pixelated`, particles update about 15 times a second, and everything stops once the scene is off-screen.
+- **The sky:** a WebGL2 shader drawn at quarter resolution as chunky pixels, which also pauses once you scroll past.
+- **Portraits** load as small WebP versions of the Imgur images.
+- **Reduced motion** settings are respected.
 
 ## Run locally
 
