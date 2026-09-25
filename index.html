@@ -214,8 +214,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .hd-mid{color:var(--gold2)}
 /* The series number doubles as the Series 21/22 toggle — tap it to flip
    which series the whole app is showing (see toggleSeries()). Its digits
-   swap to the active series; on S21 the chip turns ivory so the page
-   reads as "the archive edition". */
+   swap to the active series; on a past series the chip turns ivory so the
+   page reads as "the archive edition". */
 .ht-series{
   display:inline-flex;align-items:center;justify-content:center;
   min-width:2.4em;padding:3px 6px;margin-left:5px;
@@ -225,7 +225,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   transition:background 0.2s,color 0.2s,opacity 0.2s;
 }
 .ht-series:active{opacity:0.6}
-.ht-series.on-s21{background:var(--paper);color:var(--ink)}
+.ht-series.is-archive{background:var(--paper);color:var(--ink)}
 
 /* Right: episode/countdown pill — see PILL BOX COUNTDOWN below */
 
@@ -1095,6 +1095,18 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   flex: 1;
   min-width: 0;
 }
+/* Pick-every-contestant reminder — only rendered when it has become
+   binding for that player (see buildPlayerSlide). */
+.pc-must {
+  font-family: var(--fm);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--tm-red);
+  margin-top: 3px;
+  line-height: 1.25;
+}
 .pc-name {
   font-family: var(--ff-name);
   font-size: clamp(17px, 4.6vw, 22px);
@@ -1550,7 +1562,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   <div class="hdr-brand">
     <h1 class="hdr-title"><span class="ht-word">Fantasky</span><span class="ht-word">Master</span></h1>
     <div class="hdr-dateline">
-      <span>Series<span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span></span>
+      <span>Series<span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Switch series">22</span></span>
       <span class="hd-mid" aria-hidden="true">&#10022;</span>
       <span>The Fantasy League</span>
     </div>
@@ -1732,10 +1744,6 @@ const PICKS_S21={
   Katherine:{1:null,2:"Amy",3:"Armando",4:"Joanna",5:"Joel",6:"Kumail",7:"Amy",8:"Joanna",9:"Kumail",10:null}
 };
 
-// Rank delta ep9→ep10 (final-week movement), PvE and PvP computed
-// separately since the two boards rank players differently.
-const RD_S21={Kevin:2,Jill:4,Emma:-2,Jamie:-1,Blinky:-1,Riley:-4,Elyse:-1,Amanda:-1,Julia:-4,"Amy D":-1,Claire:2,Melissa:1,Ellen:-2,Alex:4,Brady:4,Celia:0,Katherine:-3};
-const RD_PVP_S21={Kevin:0,Jill:4,Emma:0,Jamie:2,Blinky:-1,Riley:-2,Elyse:1,Amanda:-2,Julia:-7,"Amy D":-2,Claire:3,Melissa:0,Ellen:0,Alex:7,Brady:7,Celia:1,Katherine:-6};
 
 const EI_S21={
   8:"<strong>Amy</strong> wins ep8 with 19pts — her second win. She swept the filmed tasks. Armando and Joanna tied on 18pts with a joint live task win. Joel had a quiet episode (13pts), his joint-second-lowest of the series. Kumail won the prize task with 5pts.",
@@ -1752,10 +1760,9 @@ const EI_S21={
 // ── Series 22 — real, sourced from Channel 4/Wikipedia/British Comedy
 // Guide (episode titles, dates, task-by-task scores) plus the fantasy
 // pick polls the user shared for weeks 1-2.
-// Episodes past S22_WEEKS_AIRED render as "Awaiting broadcast" (the
-// same mechanism S21 used before it finished airing). Ep5's title/date
-// are known ahead of broadcast (as ep3-4's were before they aired).
-const S22_WEEKS_AIRED = 4;
+// Which episodes have aired and which are scored is worked out at load
+// time (see computeDerived): aired from each episode's date against the
+// clock, scored from which episodes have tasks entered below.
 const NAMES_S22=["Richard","Matt","Isy","Chloe","Nina"];
 const PORT_S22={
   // Hotlinked from an album the user curated specifically for this app.
@@ -1809,7 +1816,7 @@ const TASKS_S22=[
 ];
 const EM_S22={
   1:{t:"In My Mind There's a River",d:"3 Sep 2026"},
-  2:{t:"This Is Food Glue",d:"10 Sep 2026"},
+  2:{t:"This Is Food Glue",d:"10 Sep 2026",tb:"Richard"}, // Richard, Matt and Nina tied on 14; Richard won the tiebreak
   3:{t:"The Butterfly Centurion",d:"17 Sep 2026"},
   4:{t:"An Act of Self-Erasure",d:"24 Sep 2026"},
   5:{t:"You're Nice",d:"1 Oct 2026"},
@@ -1827,7 +1834,7 @@ const EI_S22={
 };
 // Same league carried over from Series 21. Picks below are real, from
 // the fantasy league's own voting polls ("You" = Kevin, the account
-// owner). Weeks 1-4 are all scored now (S22_WEEKS_AIRED=4). Ellen and
+// owner). Ellen and
 // Katherine haven't voted in any poll so far — left empty rather than
 // guessed at.
 const PICKS_S22={
@@ -1848,20 +1855,10 @@ const PICKS_S22={
   Celia:{1:"Matt",2:"Matt",3:"Richard",4:"Nina"},
   Alex:{1:"Matt",2:"Chloe",3:"Isy"},
 };
-// Rank delta ep3→ep4 (most recent week's movement), PvE and PvP
-// computed separately since the two boards rank players differently.
-// PvE ranks players ONLY (cast were removed from Standings entirely a
-// few rounds back) — these numbers were originally computed back when
-// cast still occupied some of the top PvE slots, which quietly went
-// stale and produced impossible deltas (e.g. Julia showing -5 while
-// sitting at rank 4, which would put her previous rank at -1). Recomputed
-// against the current players-only PVE_RANK.
-const RD_S22={Kevin:4,Jill:-3,Emma:0,Jamie:4,Riley:2,Elyse:-4,Amanda:-5,Julia:-3,"Amy D":-2,Claire:2,Melissa:-1,Brady:2,Celia:4,Alex:-1,Blinky:0,Ellen:0,Katherine:0};
-const RD_PVP_S22={Ellen:0,Katherine:0,Blinky:0,Kevin:4,Jill:-2,Emma:0,Jamie:2,Riley:0,Elyse:-2,Amanda:1,Julia:-5,"Amy D":-2,Claire:1,Melissa:-3,Brady:1,Celia:3,Alex:0};
 
 const SERIES_RAW={
-  s21:{weeksAired:10, NAMES:NAMES_S21, PORT:PORT_S21, CONT:CONT_S21, TASKS:TASKS_S21, EM:EM_S21, EI:EI_S21, PICKS:PICKS_S21, RD:RD_S21, RD_PVP:RD_PVP_S21},
-  s22:{weeksAired:S22_WEEKS_AIRED, NAMES:NAMES_S22, PORT:PORT_S22, CONT:CONT_S22, TASKS:TASKS_S22, EM:EM_S22, EI:EI_S22, PICKS:PICKS_S22, RD:RD_S22, RD_PVP:RD_PVP_S22},
+  s21:{NAMES:NAMES_S21, PORT:PORT_S21, CONT:CONT_S21, TASKS:TASKS_S21, EM:EM_S21, EI:EI_S21, PICKS:PICKS_S21},
+  s22:{NAMES:NAMES_S22, PORT:PORT_S22, CONT:CONT_S22, TASKS:TASKS_S22, EM:EM_S22, EI:EI_S22, PICKS:PICKS_S22},
 };
 
 // Rank badge formatting — the cast's own prize/filmed/live ranks. A
@@ -1884,15 +1881,56 @@ function rankWithTies(arr, keyFn, idFn){
   return ranks;
 }
 
+// ── Clock & schedule ─────────────────────────────────────────────
+// Every episode livestreams on the Taskmaster YouTube channel at 22:00
+// London time, and the league's WhatsApp polls close at that moment.
+// EM[ep].d holds the (London) date; the exact instant is worked out here,
+// DST-aware, and then shown to each viewer in their own time zone.
+const EPISODES_PER_SERIES = 10;
+const AIR_TZ = 'Europe/London', AIR_HOUR = 22, AIR_MIN = 0;
+
+// Wall-clock time in a named time zone -> the real instant, using the
+// zone's own offset on that date (so BST/GMT and every DST change are
+// handled by the browser's time-zone data, not by us).
+function zonedTimeToDate(y, mo, d, h, mi, tz){
+  const fmt = new Intl.DateTimeFormat('en-GB',{timeZone:tz,hourCycle:'h23',
+    year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const offsetAt = t => {
+    const p = Object.fromEntries(fmt.formatToParts(new Date(t)).map(x=>[x.type,x.value]));
+    return Date.UTC(+p.year, +p.month-1, +p.day, +p.hour, +p.minute) - t;
+  };
+  const wall = Date.UTC(y, mo, d, h, mi);
+  let t = wall - offsetAt(wall);
+  t = wall - offsetAt(t); // second pass settles dates right on a clock change
+  return new Date(t);
+}
+
+// Series keys are "s" + the series number ("s22" -> 22), oldest first.
+const seriesNum = key => parseInt(key.replace(/\D/g,''), 10);
+const SERIES_KEYS = Object.keys(SERIES_RAW).sort((a,b)=>seriesNum(a)-seriesNum(b));
+
+// The current series is the newest one that has premiered (by the clock);
+// a series added ahead of its premiere stays in the archive until then.
+function currentSeriesKey(){
+  const now = Date.now();
+  const started = SERIES_KEYS.filter(k => SERIES_RAW[k].EM[1] && parseEpDate(SERIES_RAW[k].EM[1].d).getTime() <= now);
+  return started.length ? started[started.length-1] : SERIES_KEYS[SERIES_KEYS.length-1];
+}
+
 // ── Active-series state ──────────────────────────────────────────
 // Everything below is reassigned by loadSeries() whenever the header
 // pill is tapped. Every build*/select* function elsewhere in the file
 // reads these bindings at call time (never caches them), so calling
 // the three build* functions again after a reassignment is enough to
 // repaint the whole app.
-let activeSeries='s22'; // overwritten by loadSeries() below regardless — just documents the default
-let NAMES,PORT,CONT,TASKS,EM,EI,PICKS,RD,RD_PVP,WEEKS_AIRED;
-let EPS,TY,PLAYERS,CAST_EP_RANK_PTS,PVP_SCORE,PVP_RANK,PVE_RANK;
+let activeSeries; // set by loadSeries(currentSeriesKey()) at startup
+let NAMES,PORT,CONT,TASKS,EM,EI,PICKS;
+// WEEKS_AIRED: episodes whose air time has passed (clock) — their polls
+//   are closed. WEEKS_SCORED: episodes with tasks entered — only these
+//   count towards any score. They differ in the gap between an episode
+//   airing and the host entering its results.
+let WEEKS_AIRED,WEEKS_SCORED;
+let EPS,TY,PLAYERS,CAST_EP_RANK_PTS,PVP_SCORE,PVP_RANK,PVE_RANK,RD,RD_PVP;
 
 function computeDerived(){
   EPS={};NAMES.forEach((n,ni)=>{EPS[n]=[1,2,3,4,5,6,7,8,9,10].map(ep=>TASKS.filter(t=>t.ep===ep).reduce((s,t)=>s+t.s[ni],0))});
@@ -1900,12 +1938,12 @@ function computeDerived(){
 
   PLAYERS=Object.keys(PICKS).map(name=>{
     const pk=PICKS[name];
-    // A pick for a week beyond WEEKS_AIRED is a real pick (made before
+    // A pick for a week beyond WEEKS_SCORED is a real pick (made before
     // that episode airs, same as any other week) but has no score yet —
     // treated as null here too, same as "no pick", so it can't silently
     // contribute a phantom 0 to the total. buildPlayerSlide tells the two
-    // apart (no pick vs pick-pending-results) via WEEKS_AIRED directly.
-    const epPts=[1,2,3,4,5,6,7,8,9,10].map(ep=>(pk[ep]&&ep<=WEEKS_AIRED)?EPS[pk[ep]][ep-1]:null);
+    // apart (no pick vs pick-pending-results) via WEEKS_SCORED directly.
+    const epPts=[1,2,3,4,5,6,7,8,9,10].map(ep=>(pk[ep]&&ep<=WEEKS_SCORED)?EPS[pk[ep]][ep-1]:null);
     const total=epPts.reduce((s,v)=>s+(v||0),0);
     const used=new Set(Object.values(pk).filter(Boolean));
     const unused=NAMES.filter(n=>!used.has(n));
@@ -1925,46 +1963,76 @@ function computeDerived(){
   // at 14pts (Richard/Matt/Nina) is exactly this case: whoever a player
   // picked among the three should score the same PvP points, since the
   // app has no real tiebreak mechanic to differentiate them by.
+  // Exception — a tie for 1st: the show settles it with a tiebreak task
+  // (recorded as EM[ep].tb). The tiebreak winner keeps 1st (5 pts) and
+  // every tiebreak loser drops to 2nd (4 pts); the rest are unaffected.
+  // Show points never change — only the League placement does.
   CAST_EP_RANK_PTS = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const order = NAMES.map(n=>({n,pts:EPS[n][ep-1]})).sort((a,b)=>b.pts-a.pts);
     const ranks = rankWithTies(order, o=>o.pts, o=>o.n);
+    const tb = EM[ep] && EM[ep].tb;
+    if(tb && ranks[tb]===1) NAMES.forEach(n => { if(n!==tb && ranks[n]===1) ranks[n] = 2; });
     const rankPts = {};
     NAMES.forEach(n => { rankPts[n] = 6 - ranks[n]; });
     return rankPts;
   });
-  // Only aired weeks count, same as Show: a pick made ahead of
-  // broadcast scores nothing yet. (Unaired episodes are all-zero, which
-  // rankWithTies would read as a 5-way tie for 1st worth 5 points each.)
-  PVP_SCORE = {};
-  PLAYERS.forEach(p => {
-    let s = 0;
-    for(let ep=1; ep<=WEEKS_AIRED; ep++){
-      const pk = p.picks[ep];
-      if(pk) s += CAST_EP_RANK_PTS[ep-1][pk] || 0;
-    }
-    PVP_SCORE[p.name] = s;
+  // Both boards as they stand now, and as they stood a week earlier —
+  // the difference in rank is each player's weekly movement (RD/RD_PVP).
+  const cur = boardsAsOf(WEEKS_SCORED);
+  PVP_SCORE = cur.pvp;
+  PVE_RANK = cur.pveRank;   // Show board
+  PVP_RANK = cur.pvpRank;   // League board
+  const prev = WEEKS_SCORED > 1 ? boardsAsOf(WEEKS_SCORED - 1) : cur;
+  RD = {}; RD_PVP = {};
+  Object.keys(PICKS).forEach(n => {
+    RD[n] = prev.pveRank[n] - cur.pveRank[n];
+    RD_PVP[n] = prev.pvpRank[n] - cur.pvpRank[n];
   });
+}
 
-  // Each player's PvP rank, fixed regardless of which column the standings
-  // list is currently sorted by — this is what badges the top-3 PvP number
-  // on every row, not just when PvP is the active sort. Players only —
-  // cast don't appear in Standings at all (see renderStandingsList).
-  PVP_RANK = rankWithTies([...PLAYERS].sort((a,b)=>PVP_SCORE[b.name]-PVP_SCORE[a.name]), p=>PVP_SCORE[p.name]);
+// Show and League totals and tie-aware ranks counting only episodes
+// 1..weeks. Only scored weeks ever count (a pick made ahead of broadcast
+// scores nothing yet). Every player in PICKS is ranked, including those
+// with no picks; they sit at the bottom and are hidden from Standings.
+function boardsAsOf(weeks){
+  const names = Object.keys(PICKS), pve = {}, pvp = {};
+  names.forEach(n => {
+    let a = 0, b = 0;
+    for(let ep=1; ep<=weeks; ep++){
+      const pk = PICKS[n][ep];
+      if(pk){ a += EPS[pk][ep-1]; b += CAST_EP_RANK_PTS[ep-1][pk] || 0; }
+    }
+    pve[n] = a; pvp[n] = b;
+  });
+  return {
+    pve, pvp,
+    pveRank: rankWithTies([...names].sort((x,y)=>pve[y]-pve[x]), n=>pve[n], n=>n),
+    pvpRank: rankWithTies([...names].sort((x,y)=>pvp[y]-pvp[x]), n=>pvp[n], n=>n),
+  };
+}
 
-  // PvE board: raw point totals. Players only — cast don't appear in
-  // Standings at all (see renderStandingsList); they still show up on
-  // the Cast tab with their own totals, computed straight off EPS there.
-  PVE_RANK = rankWithTies([...PLAYERS].sort((a,b)=>b.total-a.total), p=>p.total);
+// The episode's winner: highest total, with a tie for 1st settled by the
+// recorded tiebreak (EM[ep].tb). Returns {name, tiebreak}.
+function episodeWinner(ep){
+  const tots = NAMES.map(n => EPS[n][ep-1]);
+  const top = Math.max(...tots);
+  const tied = NAMES.filter(n => EPS[n][ep-1] === top);
+  const tb = EM[ep] && EM[ep].tb;
+  if(tied.length > 1 && tied.includes(tb)) return {name: tb, tiebreak: true};
+  return {name: tied[0], tiebreak: tied.length > 1};
 }
 
 // Swap in a series' raw data, recompute everything derived from it, and
-// repaint the three tabs plus the header pill. Called once at startup
-// (loadSeries('s21')) and again every time the pill is tapped.
+// repaint the three tabs plus the header chip. Called once at startup
+// (with the current series) and again every time the chip is tapped.
 function loadSeries(key){
   activeSeries = key;
   const raw = SERIES_RAW[key];
   NAMES=raw.NAMES; PORT=raw.PORT; CONT=raw.CONT; TASKS=raw.TASKS;
-  EM=raw.EM; EI=raw.EI; PICKS=raw.PICKS; RD=raw.RD; RD_PVP=raw.RD_PVP; WEEKS_AIRED=raw.weeksAired;
+  EM=raw.EM; EI=raw.EI; PICKS=raw.PICKS;
+  const now = Date.now();
+  WEEKS_AIRED = [1,2,3,4,5,6,7,8,9,10].filter(ep => EM[ep] && parseEpDate(EM[ep].d).getTime() <= now).length;
+  WEEKS_SCORED = TASKS.length ? Math.max(...TASKS.map(t => t.ep)) : 0;
   computeDerived();
   updateCastOrder();
   buildStandings();
@@ -1972,8 +2040,10 @@ function loadSeries(key){
   buildCast();
   renderMasthead();
 }
+// Steps through every series in SERIES_RAW, oldest to newest, wrapping.
 function toggleSeries(){
-  loadSeries(activeSeries==='s21' ? 's22' : 's21');
+  const i = SERIES_KEYS.indexOf(activeSeries);
+  loadSeries(SERIES_KEYS[(i + 1) % SERIES_KEYS.length]);
 }
 
 // Contestant image helper. variant:'pod' targets the episode-page podium strip;
@@ -2072,7 +2142,7 @@ function buildStandings(){
   // rather than making the reader scan the table for it.
   const kickerEl = document.getElementById('stand-hero-kicker');
   const subEl = document.getElementById('stand-hero-sub');
-  if(kickerEl) kickerEl.textContent = (activeSeries==='s22'?'Series 22':'Series 21')+' · Week '+WEEKS_AIRED;
+  if(kickerEl) kickerEl.textContent = 'Series '+seriesNum(activeSeries)+' · Week '+WEEKS_SCORED;
   if(subEl){
     const leader = PLAYERS.filter(p => p.used.size > 0).sort((a,b)=>b.total-a.total)[0];
     subEl.innerHTML = leader
@@ -2198,16 +2268,16 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const pk = p.picks[ep];
     if(!pk){
-      // A week that hasn't aired yet gets a sealed envelope; a missed
-      // pick on an aired week keeps its plain dash.
+      // A week whose poll is still open gets a sealed envelope; once the
+      // episode has aired (poll closed) an empty week is a plain dash.
       const upcoming = ep>WEEKS_AIRED;
       return `<div class="pc-pick-cell pc-pick-blank${upcoming?' pc-pick-upcoming':''}">
         <div class="pc-pick-ep">E${ep}</div>
         <div class="pc-pick-photo pc-pick-photo-blank">${upcoming?sealedEnvelope('pc-pick-envelope'):'&mdash;'}</div>
       </div>`;
     }
-    if(ep>WEEKS_AIRED){
-      // Picked before that episode has aired — real pick, no score yet.
+    if(ep>WEEKS_SCORED){
+      // Real pick, no score yet (not aired, or aired but not entered).
       // Shows who, not a fabricated/blank number.
       return `<div class="pc-pick-cell pc-pick-pending">
         <div class="pc-pick-ep">E${ep}</div>
@@ -2226,6 +2296,25 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
     </div>`;
   }).join('');
 
+  // "Pick every contestant once" — only surfaced when it has become
+  // mathematically binding: the contestants still unpicked fill every
+  // remaining poll (or no longer fit at all). Judged on the weeks the
+  // host has entered (WEEKS_SCORED): picks for an aired-but-not-entered
+  // week aren't known yet, so those weeks still count as available and
+  // can't raise a false alarm.
+  const knownPicks = new Set([1,2,3,4,5,6,7,8,9,10].filter(ep=>ep<=WEEKS_SCORED).map(ep=>p.picks[ep]).filter(Boolean));
+  const stillNeeded = NAMES.filter(n => !knownPicks.has(n)).sort((a,b)=>a.localeCompare(b));
+  const openPolls = EPISODES_PER_SERIES - WEEKS_SCORED;
+  let mustLine = '';
+  if(stillNeeded.length && stillNeeded.length >= openPolls){
+    const who = stillNeeded.map(n => CONT[n].full.split(' ')[0]).join(', ');
+    mustLine = openPolls === 0
+      ? `<div class="pc-must">Never picked: ${who}</div>`
+      : stillNeeded.length === openPolls
+        ? `<div class="pc-must">Must pick: ${who}</div>`
+        : `<div class="pc-must">Can't fit all of: ${who}</div>`;
+  }
+
   return `<div class="pc${rowAccent}">
 
     <div class="pc-head" onclick="togglePC(this)">
@@ -2235,6 +2324,7 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
       </div>
       <div class="pc-name-col">
         <div class="pc-name">${CONT[name]?.full||name}</div>
+        ${mustLine}
       </div>
       <div class="pc-score-col pc-score-pve">
         <div class="pc-total${pveTier}">${p.total}</div>
@@ -2265,7 +2355,7 @@ function buildEpTabs(){
   const tabsEl = document.getElementById('ep-tabs');
   tabsEl.innerHTML = Array.from({length:10},(_,i)=>{
     const ep=i+1;
-    return `<button class="ep-tab${ep===1?' active':''}${ep>WEEKS_AIRED?' tbd':''}" id="ep-tab-${ep}" onclick="selEp(${ep},this)">Ep ${ep}</button>`;
+    return `<button class="ep-tab${ep===1?' active':''}${ep>WEEKS_SCORED?' tbd':''}" id="ep-tab-${ep}" onclick="selEp(${ep},this)">Ep ${ep}</button>`;
   }).join('');
 
   // Only ~7 of 10 tabs fit on screen with no visible scrollbar — fade the
@@ -2353,17 +2443,19 @@ function selEp(ep, btn){
 
 function buildEpSlide(ep){
   const m=EM[ep];
-  if(ep>WEEKS_AIRED){
+  if(ep>WEEKS_SCORED){
+    const aired = ep<=WEEKS_AIRED;
     return `<div class="ep-header-box">
       <div class="ep-kicker">Episode ${ep} &middot; ${m.d}</div>
       <div class="ep-title">${m.t.replace('.','')}</div>
-      <div class="ep-winner">Awaiting broadcast</div>
+      <div class="ep-winner">${aired ? 'Aired &middot; results coming soon' : 'Awaiting broadcast'}</div>
     </div>
-    <div class="ep-sealed">${sealedEnvelope('ep-sealed-envelope')}<div class="ep-sealed-cap">Sealed until ${m.d}</div></div>`;
+    ${aired ? '' : `<div class="ep-sealed">${sealedEnvelope('ep-sealed-envelope')}<div class="ep-sealed-cap">Sealed until ${m.d}</div></div>`}`;
   }
   const epT=TASKS.filter(t=>t.ep===ep);
   const tots=NAMES.map((_,ni)=>epT.reduce((s,t)=>s+t.s[ni],0));
-  const epMax=Math.max(...tots),winner=NAMES[tots.indexOf(epMax)],wAcc=CONT[winner].acc;
+  const epMax=Math.max(...tots);
+  const {name:winner, tiebreak}=episodeWinner(ep), wAcc=CONT[winner].acc;
 
   // Podium photos and task-table columns always display alphabetically by
   // first name, independent of score — this is purely a display order.
@@ -2374,7 +2466,7 @@ function buildEpSlide(ep){
   const pods=alpha.map(({n,i})=>{
     const pts=tots[i];
     const acc=CONT[n].acc;
-    const isWinner=pts===epMax;
+    const isWinner=n===winner;
     return`<div class="pod-port-col">
       <div class="pod-port-img">
         ${contImg(n,false,'pod')}
@@ -2389,12 +2481,12 @@ function buildEpSlide(ep){
     const mx=Math.max(...t.s),mn=Math.min(...t.s);
     tbl+=`<tr><td><div class="tn"><span class="tb ${t.t}">${TASK_ICON[t.t]}</span><span class="tt-task">${cleanTask(t.n)}</span></div></td>${alpha.map(({i})=>{const s=t.s[i];return `<td class="sc ${s===mx&&mx>mn?'best':s===mn&&mx>mn?'worst':'mid'}">${s}</td>`;}).join('')}</tr>`;
   });
-  tbl+=`<tr><td class="tt-total-lbl">TOTAL</td>${alpha.map(({i})=>{const pts=tots[i];return `<td class="tt-total${pts===epMax?' win':''}">${pts}</td>`;}).join('')}</tr></tbody></table></div>`;
+  tbl+=`<tr><td class="tt-total-lbl">TOTAL</td>${alpha.map(({i})=>{const pts=tots[i];return `<td class="tt-total${NAMES[i]===winner?' win':''}">${pts}</td>`;}).join('')}</tr></tbody></table></div>`;
 
   return `<div class="ep-header-box">
     <div class="ep-kicker">Episode ${ep} &middot; ${m.d}</div>
     <div class="ep-title">${m.t.replace('.','')}</div>
-    <div class="ep-winner">Won by <span style="color:${wAcc};font-weight:700">${winner}</span> with ${epMax} points</div>
+    <div class="ep-winner">Won by <span style="color:${wAcc};font-weight:700">${winner}</span> with ${epMax} points${tiebreak?' after a tiebreak':''}</div>
   </div>
   <div class="ep-body">
     <div class="pod-portraits">${pods}</div>
@@ -2482,7 +2574,7 @@ function selCast(name, btn){
 
 function buildCastSlide(n){
   const eps=EPS[n], tot=eps.reduce((a,b)=>a+b,0);
-  const airedEps=eps.slice(0,WEEKS_AIRED);
+  const airedEps=eps.slice(0,WEEKS_SCORED);
   const mx=Math.max(...airedEps), mn=Math.min(...airedEps);
   const acc=CONT[n].acc;
   const ni=NAMES.indexOf(n);
@@ -2499,22 +2591,22 @@ function buildCastSlide(n){
   const bsHdr='<div class="bs-hcell"></div>'+ALL_EPS.map(ep=>`<div class="bs-hcell">E${ep}</div>`).join('')+'<div class="bs-hcell tot">Tot</div>';
 
   const bsP='<div class="bs-label">'+TASK_ICON.P+'</div>'+ALL_EPS.map(ep=>{
-    if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
+    if(ep>WEEKS_SCORED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&t.t==='P').reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
   }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='P').reduce((a,t)=>a+t.s[ni],0)+'</div>';
   const bsF='<div class="bs-label">'+TASK_ICON.F+'</div>'+ALL_EPS.map(ep=>{
-    if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
+    if(ep>WEEKS_SCORED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&(t.t==='F'||t.t==='T')).reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
   }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='F'||t.t==='T').reduce((a,t)=>a+t.s[ni],0)+'</div>';
   const bsL='<div class="bs-label">'+TASK_ICON.L+'</div>'+ALL_EPS.map(ep=>{
-    if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
+    if(ep>WEEKS_SCORED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&t.t==='L').reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
   }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='L').reduce((a,t)=>a+t.s[ni],0)+'</div>';
   const bsTot='<div class="bs-label">Tot</div>'+ALL_EPS.map(ep=>{
-    if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
+    if(ep>WEEKS_SCORED)return'<div class="bs-cell blank">—</div>';
     const v=eps[ep-1];
     return`<div class="bs-cell ${v===mx?'hi':v===mn?'lo':'mid'}">${v}</div>`;
   }).join('')+'<div class="bs-cell hi">'+tot+'</div>';
@@ -2529,7 +2621,7 @@ function buildCastSlide(n){
       <div class="cd-img"><div class="cd-img-frame">${imgEl}</div></div>
       <div class="cd-info">
         <div class="cd-name" style="color:${acc}">${CONT[n].full}</div>
-        <div class="cd-sub">Rank #${srank} &middot; avg ${(WEEKS_AIRED ? tot/WEEKS_AIRED : 0).toFixed(1)}/ep</div>
+        <div class="cd-sub">Rank #${srank} &middot; avg ${(WEEKS_SCORED ? tot/WEEKS_SCORED : 0).toFixed(1)}/ep</div>
         <div class="cd-pts">${tot}</div>
         <div class="cd-pts-l">total pts</div>
         <div class="cd-ranks">
@@ -2581,35 +2673,49 @@ function nav(name,btn){
 })();
 
 
-// Masthead: the "22" in the title is the Series 21/22 toggle (see
-// toggleSeries() and #ht-series in the HTML) — its own digits swap to
-// name whichever series is active, since there's no separate badge for
-// that any more. Below the nameplate, a one-line footnote counts down
-// days / hours / minutes to the next Series 22 episode's air date
-// (21:00 UK, the real broadcast slot). Series 21 is finished, so its
-// footnote just reads "Series complete." instead.
+// Masthead: the series number chip in the dateline is the series toggle
+// (see toggleSeries() and #ht-series in the HTML) — its digits name
+// whichever series is showing, and it turns ivory when that isn't the
+// current series. Below the nameplate, a one-line footnote counts down
+// to the next episode's livestream, shown in the viewer's own time zone.
+// Once every episode has aired it just reads "Series complete."
 let countdownTimer=null;
 function renderMasthead(){
   const toggleEl=document.getElementById('ht-series');
   if(toggleEl){
-    toggleEl.textContent = activeSeries==='s22' ? '22' : '21';
-    toggleEl.classList.toggle('on-s21', activeSeries==='s21');
+    toggleEl.textContent = seriesNum(activeSeries);
+    toggleEl.classList.toggle('is-archive', activeSeries!==currentSeriesKey());
+    toggleEl.setAttribute('aria-label', 'Showing Series '+seriesNum(activeSeries)+'. Switch series');
   }
   renderCountdown();
 }
 
+// "1 Oct 2026" (the London air date) -> the livestream instant, 22:00
+// London time on that date, correct across BST/GMT changes.
 function parseEpDate(d){
-  // "1 Oct 2026" -> Date at 21:00 local (the real UK broadcast slot)
   const MONTHS={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
   const [day,mon,year]=d.split(' ');
-  return new Date(Number(year),MONTHS[mon],Number(day),21,0,0);
+  return zonedTimeToDate(Number(year), MONTHS[mon], Number(day), AIR_HOUR, AIR_MIN, AIR_TZ);
 }
+// The next episode of the showing series whose livestream is still ahead
+// of the clock, or null once they have all aired.
 function nextEpisodeInfo(){
-  if(activeSeries!=='s22') return null; // Series 21 is complete
-  const raw=SERIES_RAW[activeSeries];
-  const ep=raw.weeksAired+1;
-  const m=raw.EM[ep];
-  return m ? {ep, date:parseEpDate(m.d)} : null; // null once there's no next episode left to name
+  const now=Date.now();
+  for(let ep=1; ep<=EPISODES_PER_SERIES; ep++){
+    const m=EM[ep];
+    if(m && parseEpDate(m.d).getTime() > now) return {ep, date:parseEpDate(m.d)};
+  }
+  return null;
+}
+// An instant as the viewer's own day and clock time, with their zone:
+// "Thu, 1 Oct, 2pm PDT" in Los Angeles, "Thu, 1 Oct, 10pm BST" in London.
+function localAirtimeText(date){
+  const day = date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  const h = date.getHours(), mi = date.getMinutes();
+  const clock = (h%12||12) + (mi ? ':'+String(mi).padStart(2,'0') : '') + (h<12 ? 'am' : 'pm');
+  const zone = (new Intl.DateTimeFormat(undefined,{timeZoneName:'short'}).formatToParts(date)
+    .find(x=>x.type==='timeZoneName')||{}).value;
+  return day+', '+clock+(zone ? ' '+zone : '');
 }
 
 
@@ -2623,8 +2729,7 @@ function renderCountdown(){
     return;
   }
   // A single footnote line; tickCountdown() fills the three numbers.
-  const when=info.date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-  el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Episode '+info.ep+' airs '+when+', 9pm &mdash; in '+
+  el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Episode '+info.ep+' airs '+localAirtimeText(info.date)+' &mdash; in '+
     '<span class="cd-t"><span id="cd-d"></span>d <span id="cd-h"></span>h <span id="cd-m"></span>m</span></p>';
   tickCountdown(info.date);
   countdownTimer=setInterval(()=>tickCountdown(info.date),1000);
@@ -2641,10 +2746,14 @@ function tickCountdown(target){
   dEl.textContent=String(days).padStart(2,'0');
   hEl.textContent=String(hours).padStart(2,'0');
   mEl.textContent=String(mins).padStart(2,'0');
-  if(diff<=0 && countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
+  if(diff<=0 && countdownTimer){
+    clearInterval(countdownTimer);countdownTimer=null;
+    // That episode has just gone live — move the footnote on to the next.
+    setTimeout(renderCountdown, 1000);
+  }
 }
 
-loadSeries('s22');
+loadSeries(currentSeriesKey());
 
 </script>
 </body>

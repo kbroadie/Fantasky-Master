@@ -2,7 +2,7 @@
 
 This document describes the Fantasky Master web app in full: what it is for, how its data is structured, every calculation it performs, and every screen and interaction. It is written to be read by a language model (or a new developer) who has not seen the code. Terms are defined before they are used, formulas are given explicitly, and a fully worked example is included.
 
-The document describes `index.html` as of the fixes that make early picks score nothing and compute the cast average per aired episode.
+The document describes `index.html` as of the change that derives the season state from the clock and the data (aired and scored episodes, rank changes, current series), applies episode tiebreaks to League points, shows airtimes in the viewer's time zone, and flags the pick-every-contestant rule when it becomes binding.
 
 - **Live app:** <https://kbroadie.github.io/Fantasky-Master/>
 - **Source:** <https://github.com/kbroadie/Fantasky-Master> (`index.html`)
@@ -13,7 +13,7 @@ The document describes `index.html` as of the fixes that make early picks score 
 
 ## 1. One-paragraph summary
 
-Fantasky Master is a **fantasy league for the British TV comedy panel show _Taskmaster_**. Each series of Taskmaster has 5 celebrity **contestants** who compete over 10 **episodes**; in every episode they attempt several **tasks** and each receives 0–5 points per task (occasionally 6). In the fantasy league, a group of friends (**players**) each **pick one contestant per episode**. A player earns points based on how well their picked contestant did that week. The app shows the league table (**Standings**), a breakdown of every episode (**Episodes**), and a profile of every contestant (**Cast**). It supports two series (Series 21, finished; Series 22, in progress) and a toggle between them.
+Fantasky Master is a **fantasy league for the British TV comedy panel show _Taskmaster_**. Each series of Taskmaster has 5 celebrity **contestants** who compete over 10 **episodes**; in every episode they attempt several **tasks** and each receives 0–5 points per task (occasionally 6). In the fantasy league, a group of friends (**players**) each **pick one contestant per episode**. A player earns points based on how well their picked contestant did that week. The app shows the league table (**Standings**), a breakdown of every episode (**Episodes**), and a profile of every contestant (**Cast**). It currently holds two series (Series 21, finished; Series 22, in progress), opens on whichever is current by the clock, and has a toggle to step between them.
 
 ---
 
@@ -24,10 +24,10 @@ The app does not collect votes. The league runs in a private WhatsApp group:
 1. **Polls.** At the start of each series the host posts **10 WhatsApp polls, one per episode**. Each poll lists the 5 contestants in the show's **seating order, which is always alphabetical by first name** (Series 22: Chloe, Isy, Matt, Nina, Richard).
 2. **Voting.** Each player votes for one contestant per poll and may change their vote any number of times until the poll closes.
    - **League rule — pick every contestant at least once.** Across the 10 polls of a series, each player must vote for each of the 5 contestants at least once. The other 5 picks are free, including repeats.
-   - **The app does not enforce, score or display this rule.** It does compute `PLAYERS[i].unused`, the contestants a player has not yet picked, which is exactly what the rule needs, but nothing on screen uses it.
-   - **One recorded violation.** In the recorded data, Series 21 player Riley never picked Joanna.
+   - **The app doesn't enforce or score the rule, but it flags it once it becomes binding** (§7.3): a red line under the player's name appears only when the contestants they still need fill every remaining poll.
+   - **One recorded violation.** In the recorded data, Series 21 player Riley never picked Joanna, so their Series 21 row shows "Never picked: Joanna".
 3. **Deadline.** A WhatsApp poll timer closes each poll automatically when that episode starts **livestreaming on the [Taskmaster YouTube channel](https://www.youtube.com/@Taskmaster): 22:00 London** (normally 17:00 US Eastern / 14:00 US Pacific; one hour later in the US for any episode falling between the UK and US clock changes, e.g. 29 Oct 2026).
-4. **Scoring.** After the episode airs, the host enters the task scores (`TASKS`), the poll results (`PICKS`) and the other weekly data into `index.html` (see §11), pushes it, and shares the updated page link in the group.
+4. **Scoring.** At some point after the episode airs (at the host's convenience), the host enters the task scores (`TASKS`) and the poll results (`PICKS`) into `index.html` (see §11), pushes it, and shares the updated page link in the group. Until then the app knows the episode has aired (from the clock) but not its results.
 
 So `PICKS[player][ep]` is exactly that player's final vote in the episode-`ep` poll, and a missing or `null` pick means they did not vote.
 
@@ -44,10 +44,12 @@ So `PICKS[player][ep]` is exactly that player's final vote in the episode-`ep` p
 | **Task type** | Every task is one of four types: **P** = Prize task, **F** = Filmed task, **T** = Team task, **L** = Live (studio) task. |
 | **Player** | A person in the fantasy league (e.g. Kevin, Riley, Julia). Players are *not* on the TV show. |
 | **Pick** | The contestant a player chose for a specific episode. |
-| **Weeks aired** (`WEEKS_AIRED`) | How many episodes of the active series have been broadcast and scored. Series 21 = 10, Series 22 = 4. Episodes after this number are "upcoming". |
+| **Aired weeks** (`WEEKS_AIRED`) | How many episodes of the active series have **started livestreaming**, by the clock (22:00 London on each episode's date). Their polls are closed. |
+| **Scored weeks** (`WEEKS_SCORED`) | The highest episode that has **task scores entered** in the data. Only these weeks count towards any score. Between an episode airing and the host entering its results, `WEEKS_SCORED` is one behind `WEEKS_AIRED`. |
 | **Show points** — the **Show** column (internally **PvE**, "player vs environment") | A player's raw fantasy score: the sum of the actual episode points scored by each contestant they picked. |
-| **League points** — the **League** column (internally **PvP**, "player vs player") | A player's placement score: each week the 5 contestants are ranked by that episode's score and awarded 5/4/3/2/1 "rank points"; a player earns the rank points of their pick. |
-| **Rank delta** | How many places a player moved in the standings since the previous week (positive = moved up). These are entered by hand, not computed. |
+| **League points** — the **League** column (internally **PvP**, "player vs player") | A player's placement score: each week the 5 contestants are placed 1st–5th by that episode's score (a tie for 1st is settled by the show's tiebreak) and awarded 5/4/3/2/1 "rank points"; a player earns the rank points of their pick. |
+| **Tiebreak** | When contestants tie for the top episode score, the show runs a tiebreak task. Its winner (`EM[ep].tb`) is the episode winner. The tiebreak affects **only League points**, never Show points. |
+| **Rank delta** | How many places a player moved on a board since the previous scored week (positive = moved up). Computed automatically. |
 
 ---
 
@@ -67,23 +69,22 @@ Each series is one entry in the object `SERIES_RAW`, keyed `s21` or `s22`:
 
 ```js
 SERIES_RAW = {
-  s21: { weeksAired: 10, NAMES, PORT, CONT, TASKS, EM, EI, PICKS, RD, RD_PVP },
-  s22: { weeksAired: 4,  NAMES, PORT, CONT, TASKS, EM, EI, PICKS, RD, RD_PVP },
+  s21: { NAMES, PORT, CONT, TASKS, EM, EI, PICKS },
+  s22: { NAMES, PORT, CONT, TASKS, EM, EI, PICKS },
 }
 ```
 
+The key is `"s"` plus the series number; the series number shown on screen is read from it (`seriesNum`). Adding a future series means adding another entry (e.g. `s23`) — nothing else in the code names a specific series. Nothing about progress (episodes aired or scored, rank changes) is stored: it is all derived (§5.0).
+
 | Field | Type | Meaning |
 |---|---|---|
-| `weeksAired` | integer 0–10 | Number of episodes broadcast and scored (Series 22 reads it from the constant `S22_WEEKS_AIRED`). |
-| `NAMES` | array of 5 strings | The contestants' short names. **Order matters**: every score array `s` in `TASKS` is aligned to this order, and it is the tiebreak order for "episode winner" (§5.6). |
+| `NAMES` | array of 5 strings | The contestants' short names. **Order matters**: every score array `s` in `TASKS` is aligned to this order. |
 | `PORT` | `{name: imageURL}` | Portrait image per contestant. |
 | `CONT` | `{name: {full, acc, bio, stat}}` | Full name, an accent colour (hex), a biography paragraph (HTML), and a "statistical insight" paragraph (HTML). The bio and stat texts are hand-written, not generated. |
 | `TASKS` | array of `{ep, n, t, s}` | One entry per task. `ep` = episode number; `n` = task name (may start with "Prize:", "Team:", "Live:", which is stripped for display); `t` = type `"P"`, `"F"`, `"T"` or `"L"`; `s` = array of 5 scores aligned to `NAMES`. |
-| `EM` | `{ep: {t, d}}` | Episode metadata: title `t` and air date `d` as a string like `"1 Oct 2026"`. Present for all 10 episodes, including upcoming ones. |
+| `EM` | `{ep: {t, d, tb?}}` | Episode metadata: title `t`; London air date `d` as a string like `"1 Oct 2026"` (the episode livestreams at 22:00 London that day); and, only when contestants tied for the top score, `tb`, the tiebreak winner's name. Present for all 10 episodes, including upcoming ones. Example: `EM_S22[2] = {t:"This Is Food Glue", d:"10 Sep 2026", tb:"Richard"}`. |
 | `EI` | `{ep: html}` | Hand-written "Episode Analysis" paragraph for each aired episode. |
 | `PICKS` | `{player: {ep: contestantName or null}}` | Each player's pick for each episode. A missing key or `null` means "no pick that week". A player with an empty object has never picked. |
-| `RD` | `{player: integer}` | Hand-entered rank change on the Show points board since last week. |
-| `RD_PVP` | `{player: integer}` | Hand-entered rank change on the League points board since last week. |
 
 Example task entry (Series 22, episode 1, prize task):
 
@@ -97,7 +98,17 @@ Example task entry (Series 22, episode 1, prize task):
 
 ## 5. Calculations (the core logic)
 
-All derived data is computed in `computeDerived()` every time a series is loaded. The active series' raw fields are copied into global variables (`NAMES`, `TASKS`, `PICKS`, `WEEKS_AIRED`, and so on) by `loadSeries(key)`.
+All derived data is computed every time a series is loaded. `loadSeries(key)` copies the series' raw fields into global variables (`NAMES`, `TASKS`, `EM`, `PICKS`, …), works out `WEEKS_AIRED` and `WEEKS_SCORED` (§5.0), then calls `computeDerived()`.
+
+### 5.0 Clock and season state
+
+- **Air instant of an episode:** `parseEpDate(EM[ep].d)` returns **22:00 Europe/London on that date** as a real instant. `zonedTimeToDate` computes it with the browser's time-zone database, so it's correct in both BST and GMT.
+- **`WEEKS_AIRED`** = the number of episodes whose air instant is at or before now.
+- **`WEEKS_SCORED`** = the highest `ep` appearing in `TASKS` (0 if none).
+- **Current series** (`currentSeriesKey`) = the newest series whose Episode 1 has aired. The app opens on it, and a series added ahead of its premiere stays in the archive until then.
+- **Next episode** (`nextEpisodeInfo`) = the first episode of the showing series whose air instant is still in the future, or `null` if all have aired.
+
+Rule of thumb: **anything about scores uses `WEEKS_SCORED`; anything about the schedule or open polls uses `WEEKS_AIRED`.**
 
 ### 5.1 Tie-aware ranking: `rankWithTies(sortedArray, keyFn, idFn)`
 
@@ -132,15 +143,15 @@ TY[c][type] = Σ over all tasks with task.t == type of task.s[index of c]      (
 For each player `p` (in the insertion order of `PICKS`):
 
 ```
-epPts[e] = EPS[pick_e][e]   if the player picked someone for episode e AND e ≤ WEEKS_AIRED
-         = null             otherwise (no pick, or episode not aired yet)
+epPts[e] = EPS[pick_e][e]   if the player picked someone for episode e AND e ≤ WEEKS_SCORED
+         = null             otherwise (no pick, or episode not scored yet)
 
 total (Show points) = Σ epPts[e] over e = 1..10, treating null as 0
 used   = set of contestants the player has picked at least once
 unused = contestants never picked
 ```
 
-In words: **Show points = the sum of the real episode scores of the contestants you picked, counting only aired episodes.**
+In words: **Show points = the sum of the real episode scores of the contestants you picked, counting only scored episodes.**
 
 ### 5.5 **League points** (PvP): `CAST_EP_RANK_PTS` and `PVP_SCORE`
 
@@ -150,36 +161,46 @@ Step 1: for each episode, rank the 5 contestants by that episode's total (`EPS`)
 rankPoints[e][c] = 6 − rank_of_c_in_episode_e
 ```
 
-So 1st = 5, 2nd = 4, 3rd = 3, 4th = 2, 5th = 1. **Ties share points**, and the next contestant drops accordingly. Example (Series 22 ep 2): Richard 14, Matt 14, Nina 14, Isy 13, Chloe 8 → ranks 1, 1, 1, 4, 5 → rank points 5, 5, 5, 2, 1.
+So 1st = 5, 2nd = 4, 3rd = 3, 4th = 2, 5th = 1. **Ties share points**, and the next contestant drops accordingly: two contestants tied for 4th both get 2.
+
+**Exception — a tie for 1st.** The show settles it with a tiebreak task, recorded as `EM[ep].tb`. The tiebreak winner keeps rank 1 (5 points), and every other contestant tied for 1st drops to rank 2 (4 points). Contestants below are unaffected. If no `tb` is recorded, the tie is shared.
+
+Example (Series 22 ep 2): Richard 14, Matt 14, Nina 14, Isy 13, Chloe 8, with `tb:"Richard"` → ranks 1, 2, 2, 4, 5 → rank points 5, 4, 4, 2, 1.
 
 Step 2: for each player:
 
 ```
-League points = Σ over e = 1..WEEKS_AIRED where the player has a pick of rankPoints[e][pick_e]
+League points = Σ over e = 1..WEEKS_SCORED where the player has a pick of rankPoints[e][pick_e]
 ```
 
-In words: **League points rewards picking the week's best performer**, regardless of how many raw points that performer actually scored. Like Show points, only aired episodes count; a pick made ahead of broadcast earns nothing until its episode airs.
+In words: **League points rewards picking the week's best performer**, regardless of how many raw points that performer actually scored. Like Show points, only scored episodes count; a pick made ahead of broadcast earns nothing until its episode is scored.
 
-### 5.6 Board ranks: `PVE_RANK` and `PVP_RANK`
+### 5.6 Board ranks and weekly movement: `PVE_RANK`, `PVP_RANK`, `RD`, `RD_PVP`
+
+`boardsAsOf(weeks)` computes both boards counting episodes 1..`weeks` only:
 
 ```
-PVE_RANK = rankWithTies(players sorted by Show points descending)
-PVP_RANK = rankWithTies(players sorted by League points descending)
+PVE_RANK = rankWithTies(players sorted by Show points descending)      // as of WEEKS_SCORED
+PVP_RANK = rankWithTies(players sorted by League points descending)    // as of WEEKS_SCORED
+
+RD[p]     = PVE rank as of (WEEKS_SCORED − 1)  −  PVE rank now
+RD_PVP[p] = PVP rank as of (WEEKS_SCORED − 1)  −  PVP rank now
 ```
 
-These include players who never picked (they score 0 and rank last), but those players are hidden from the Standings table, so they never affect the visible ranks of anyone else.
+Positive = moved up. With only one scored week, every delta is 0. The ranks include players who never picked (they score 0 and rank last), but those players are hidden from the Standings table, so they never affect the visible ranks of anyone else.
 
 ### 5.7 Other derived values
 
 | Value | Formula | Used on |
 |---|---|---|
-| **Episode winner** | The contestant with the highest episode total; if tied, the one that appears **first in `NAMES`**. (`NAMES_S22` deliberately lists Richard first so that ep 2, a real three-way tie Richard won on the show's tiebreak, names him.) | Episodes page ("Won by …") |
+| **Episode winner** (`episodeWinner`) | The contestant with the highest episode total. If several tie, the recorded tiebreak winner `EM[ep].tb`; the page then says "… after a tiebreak". If no `tb` is recorded, the first tied name in `NAMES` is used. | Episodes page ("Won by …") |
 | **Contestant series total** | `Σ EPS[c][1..10]` | Cast page |
 | **Cast order** | Contestants sorted by series total, descending. | Cast page tab order |
 | **Contestant series rank** ("Rank #N") | Position in that sort, **without** tie handling (ties broken by `NAMES` order). | Cast page |
-| **Contestant average** ("avg X/ep") | `series total ÷ WEEKS_AIRED`, i.e. points per aired episode (shown as 0.0 if nothing has aired). Example: Nina, 70 points after 4 episodes → 17.5. | Cast page |
+| **Contestant average** ("avg X/ep") | `series total ÷ WEEKS_SCORED`, i.e. points per scored episode (shown as 0.0 if nothing is scored). Example: Nina, 70 points after 4 episodes → 17.5. | Cast page |
 | **Category ranks** (prize / filmed / live) | `rankWithTies` over contestants by `TY.P`, by `TY.F + TY.T` (team tasks count as filmed), and by `TY.L`. | Cast page |
 | **Standings leader** | The player with the highest Show points among players with at least one pick (ties go to `PICKS` insertion order). | Standings header ("X leads with N points") |
+| **Pick-every-contestant check** | `known` = contestants the player picked in episodes 1..`WEEKS_SCORED`; `needed` = contestants not in `known`; `left` = 10 − `WEEKS_SCORED`. Shown only when `needed` is non-empty and `needed ≥ left`. The line reads "Must pick: …" when `needed = left > 0`, "Can't fit all of: …" when `needed > left > 0`, and "Never picked: …" when `left = 0`. Aired-but-unentered weeks count as still available, because their picks aren't known yet. | Standings row |
 
 ---
 
@@ -200,13 +221,13 @@ Episode totals (from `TASKS_S22`):
 
 **League points**: rank points per episode:
 - **Ep 1:** Chloe 5, Nina 4, Matt 3, Richard and Isy tied 4th, so 2 each. Riley's pick Richard = **2**.
-- **Ep 2:** Richard, Matt and Nina tied 1st, so 5 each; Isy 2; Chloe 1. Riley's pick Matt = **5**.
+- **Ep 2:** Richard, Matt and Nina tied on 14; Richard won the tiebreak, so Richard 5, Matt 4, Nina 4; Isy 2; Chloe 1. Riley's pick Matt = **4**.
 - **Ep 3:** Chloe 5, Nina 4, Matt 3, Richard 2, Isy 1. Riley's pick Chloe = **5**.
 - **Ep 4:** Isy 5, Nina 4, Chloe 3, Matt 2, Richard 1. Riley's pick Chloe = **3**.
 
-League points = 2 + 5 + 5 + 3 = **15**.
+League points = 2 + 4 + 5 + 3 = **14**.
 
-Both numbers match the app: Riley is ranked 1st on Show points with 67, and has 15 League points.
+Both numbers match the app: Riley is ranked 1st on Show points with 67, and has 14 League points. The Episode 2 tiebreak doesn't change Show points; Matt's 14 still counts in full.
 
 ---
 
@@ -217,11 +238,11 @@ The page has a masthead, a pinned navigation row of three envelope tabs, and thr
 ### 7.1 Masthead (top of page, scrolls away)
 
 - **Nameplate:** "Fantasky Master", newspaper-style.
-- **Dateline:** "Series 22 ✦ The Fantasy League". The series number is a clickable chip. **Clicking it (or pressing Enter/Space on it) toggles between Series 21 and 22** (`toggleSeries()` → `loadSeries()`), which recomputes all data and rebuilds every page.
-- **Airtime footnote:** for Series 22, a single line such as "† Episode 5 airs Thu, 1 Oct, 9pm — in 06d 09h 19m".
-  - The next episode is `weeksAired + 1`, its date comes from `EM`, and it is treated as **21:00 on that date in the viewer's local time zone** (`parseEpDate`).
-  - The remaining time is recomputed every second (`tickCountdown`) but shown to the minute, as days/hours/minutes. It stops at `00d 00h 00m`.
-  - For Series 21, or when no next episode exists, it reads "† Series complete."
+- **Dateline:** "Series 22 ✦ The Fantasy League". The series number is a clickable chip. **Clicking it (or pressing Enter/Space on it) steps to the next series**, oldest to newest and wrapping round (`toggleSeries()` → `loadSeries()`). This recomputes all data and rebuilds every page. The chip is red for the current series and ivory for a past one.
+- **Airtime footnote:** a single line such as "† Episode 5 airs Thu, 1 Oct, 2pm PDT — in 06d 00h 48m".
+  - The next episode is `nextEpisodeInfo()` (§5.0). Its 22:00-London livestream is shown **in the viewer's own time zone, with the zone's name** (`localAirtimeText`): e.g. "10pm BST" in London, "5pm EDT" in New York, "2pm PDT" in Los Angeles. Daylight-saving differences are handled automatically: Episode 9 (29 Oct 2026, after the UK clock change but before the US one) shows "10pm GMT", "6pm EDT" and "3pm PDT".
+  - The remaining time is recomputed every second (`tickCountdown`) and shown to the minute. When it reaches zero, the footnote moves on to the following episode.
+  - When every episode of the showing series has aired, it reads "† Series complete."
 
 ### 7.2 Navigation
 
@@ -234,7 +255,7 @@ The page has a masthead, a pinned navigation row of three envelope tabs, and thr
 ### 7.3 Standings page
 
 - **Header:**
-  - A kicker line, "Series 22 · Week 4" (the week is `WEEKS_AIRED`).
+  - A kicker line, "Series 22 · Week 4" (the week is `WEEKS_SCORED`).
   - The title "Standings".
   - A sub-line naming the leader and their Show points.
 - **Column headers:** Rank · Player · **Show** · **League**.
@@ -244,24 +265,26 @@ The page has a masthead, a pinned navigation row of three envelope tabs, and thr
   - The sort is by that single number; players with equal values keep their `PICKS` insertion order.
 - **Rows** (one card per player): only players with **at least one pick** are shown. Each row contains:
   - **Rank:** the tie-aware rank *on the board currently sorted by* (`PVE_RANK` or `PVP_RANK`). Ranks 1–3 are drawn on gold, silver and bronze wax seals.
-  - **Rank delta** (under the rank), from `RD` (Show points board) or `RD_PVP` (League points board), matching the active sort. Shown as "+N" (green), "−N" (red), or "—" for no change.
+  - **Rank delta** (under the rank), from `RD` (Show board) or `RD_PVP` (League board), matching the active sort (§5.6). Shown as "+N" (green), "−N" (red), or "—" for no change.
+  - **Pick-every-contestant line** (under the name, in red), only when binding (§5.7): "Must pick: Isy, Nina", "Can't fit all of: …", or "Never picked: Joanna".
   - **Name**, **Show** points and **League** points. Each number is coloured by *its own board's* top-3 rank (gold, silver or bronze tone), independent of the current sort.
   - **Card frame:** the leader on Show points gets a gold-edged card; ranks 2–3 on Show points get silver edges.
   - **Last place:** the player(s) holding the worst visible rank on the current board have their card tilted slightly (a deliberate joke).
 - **Expanding a row** (tap or click it, `togglePC`): reveals a strip of 10 weekly cells, E1–E10. Each cell shows one of:
   - **Aired week with a pick:** the picked contestant's portrait and that week's points. The points follow the active sort: raw episode points when sorted by Show points, or rank points (1–5) when sorted by League points. The player's best week is highlighted and the worst is dimmed; on League points, 5 is best and 1 is worst.
-  - **Upcoming week with a pick:** a dimmed portrait with "…".
-  - **Upcoming week with no pick:** a small sealed-envelope drawing.
-  - **Aired week with no pick:** a dash.
+  - **Unscored week with a pick:** a dimmed portrait with "…".
+  - **Week not yet aired, no pick:** a small sealed-envelope drawing (the poll is still open).
+  - **Aired week with no pick:** a dash (the poll closed without a vote).
 
 ### 7.4 Episodes page
 
-- **Sub-tabs:** Ep 1 … Ep 10. Upcoming episodes are dimmed. Clicking a sub-tab scrolls a horizontal carousel to that episode, and swiping the carousel updates the active sub-tab.
-- **Upcoming episode:** a header ("Episode N · date", title, "Awaiting broadcast") and a large sealed envelope reading "Sealed until [date]".
-- **Aired episode:**
-  1. **Header:** "Episode N · date", the episode title, and "Won by [winner] with [points] points".
-  2. **Podium strip:** all 5 contestants in **alphabetical order**, each with portrait, name and episode total. The winner's total is highlighted.
-  3. **Task table:** one row per task, with a type icon (prize, filmed, team, live), the task name (with the "Prize:/Team:/Live:" prefix removed), and each contestant's score in alphabetical column order. In each row the highest score is highlighted and the lowest dimmed, **but only if not all scores are equal**. The final row shows each contestant's episode total; every contestant tied for the top total is highlighted.
+- **Sub-tabs:** Ep 1 … Ep 10. Unscored episodes are dimmed. Clicking a sub-tab scrolls a horizontal carousel to that episode, and swiping the carousel updates the active sub-tab.
+- **Episode not yet aired:** a header ("Episode N · date", title, "Awaiting broadcast") and a large sealed envelope reading "Sealed until [date]".
+- **Aired but not yet scored:** the header only, reading "Aired · results coming soon".
+- **Scored episode:**
+  1. **Header:** "Episode N · date", the episode title, and "Won by [winner] with [points] points", plus " after a tiebreak" when the win came from one.
+  2. **Podium strip:** all 5 contestants in **alphabetical order**, each with portrait, name and episode total. Only the winner's total is highlighted.
+  3. **Task table:** one row per task, with a type icon (prize, filmed, team, live), the task name (with the "Prize:/Team:/Live:" prefix removed), and each contestant's score in alphabetical column order. In each row the highest score is highlighted and the lowest dimmed, **but only if not all scores are equal**. The final row shows each contestant's episode total; the winner's total is highlighted.
   4. **Episode Analysis:** the hand-written `EI` paragraph.
 
 ### 7.5 Cast page
@@ -278,7 +301,7 @@ The page has a masthead, a pinned navigation row of three envelope tabs, and thr
      - **Prize row:** points from prize tasks per episode.
      - **Filmed row:** points from filmed *and* team tasks.
      - **Live row:** points from live tasks.
-     - Upcoming episodes show "—".
+     - Unscored episodes show "—".
   3. **Profile:** the `CONT.bio` paragraph.
   4. **Statistical insight:** the `CONT.stat` paragraph.
 
@@ -307,13 +330,17 @@ Styling never affects the calculations.
 |---|---|
 | `*_S21`, `*_S22` constants, `SERIES_RAW` | Raw league data (§4). |
 | `rankWithTies` | Tie-aware ranking (§5.1). |
-| `computeDerived` | Builds `EPS`, `TY`, `PLAYERS`, `CAST_EP_RANK_PTS`, `PVP_SCORE`, `PVP_RANK`, `PVE_RANK` (§5). |
-| `loadSeries(key)`, `toggleSeries()` | Activate a series, recompute, rebuild all pages and the masthead. The app starts with `loadSeries('s22')`. |
+| `zonedTimeToDate`, `parseEpDate`, `EPISODES_PER_SERIES`, `AIR_TZ`/`AIR_HOUR`/`AIR_MIN` | Livestream instants, DST-aware (§5.0). |
+| `seriesNum`, `SERIES_KEYS`, `currentSeriesKey` | Series numbers and which series is current (§5.0). |
+| `computeDerived` | Builds `EPS`, `TY`, `PLAYERS`, `CAST_EP_RANK_PTS` (with tiebreaks), `PVP_SCORE`, `PVE_RANK`, `PVP_RANK`, `RD`, `RD_PVP` (§5). |
+| `boardsAsOf(weeks)` | Both boards and their ranks counting episodes 1..`weeks` (§5.6). |
+| `episodeWinner(ep)` | Episode winner, honouring the recorded tiebreak (§5.7). |
+| `loadSeries(key)`, `toggleSeries()` | Activate a series (including `WEEKS_AIRED`/`WEEKS_SCORED`), recompute, and rebuild all pages and the masthead. The app starts with `loadSeries(currentSeriesKey())`. |
 | `buildStandings`, `renderStandingsList`, `sortStandings`, `updateSortHeaderUI`, `buildPlayerSlide`, `togglePC` | Standings page (§7.3). |
 | `buildEpTabs`, `selEp`, `buildEpSlide`, `updateEpTabsFade` | Episodes page (§7.4). |
 | `buildCast`, `selCast`, `buildCastSlide`, `updateCastOrder` | Cast page (§7.5). |
 | `nav` | Main tab switching. |
-| `renderMasthead`, `parseEpDate`, `nextEpisodeInfo`, `renderCountdown`, `tickCountdown` | Series chip and airtime footnote (§7.1). |
+| `renderMasthead`, `nextEpisodeInfo`, `localAirtimeText`, `renderCountdown`, `tickCountdown` | Series chip and airtime footnote (§7.1). |
 | `contImg`, `imgFail` | Portrait image with text fallback. |
 | `TASK_ICON`, `WAX_SEAL_SVG`, `sealedEnvelope`, `cleanTask`, `rnkFmt`, `rnkCol` | Presentation helpers. |
 | `deltaHTML`, `ptColor` | Legacy helpers, defined but no longer called. |
@@ -322,25 +349,26 @@ Styling never affects the calculations.
 
 ## 10. Edge cases, conventions and known caveats
 
-1. **Early (pending) picks don't count.** A pick for an episode that has not aired yet contributes nothing to Show points or League points, and is displayed as "…" in the player's weekly strip. (League points has to skip unaired weeks explicitly: all contestants score 0 in an unaired episode, which would otherwise read as a five-way tie for 1st worth 5 rank points each.)
-2. **Contestant "avg /ep" is per aired episode.** It divides the contestant's total by `WEEKS_AIRED`, the number of episodes that produced that total.
-3. **Rank deltas are manual.** `RD` and `RD_PVP` are not computed from week-over-week standings; they must be re-entered after each episode or they go stale.
-4. **Hidden players.** Players with no picks at all (Series 22: Ellen, Katherine) are omitted from the Standings table but still exist in the data.
-5. **Ties.** Board ranks, category ranks and weekly rank points are tie-aware. The contestant series rank on the Cast page and the episode winner name are not: they fall back to `NAMES` order.
-6. **Scores above 5 are allowed.** One Series 22 task awarded a bonus point (a 6); it is kept as-is so totals match the source.
-7. **Airtime footnote vs voting deadline.** The masthead footnote counts down to **21:00 in the viewer's local time zone** on the episode date (the code comment calls 21:00 "the real UK broadcast slot"). The league's actual voting deadline is different: the YouTube livestream at **22:00 London**, enforced by the WhatsApp poll timers, not by the app. The footnote is informational only.
+1. **Only scored weeks count.** A pick for an episode that hasn't been scored yet — not aired, or aired but not entered — contributes nothing to Show points or League points, and is displayed as "…" in the player's weekly strip. This also protects League points: an unscored episode has every contestant on 0, which would otherwise read as a five-way tie for 1st worth 5 rank points each.
+2. **Contestant "avg /ep" is per scored episode.** It divides the contestant's total by `WEEKS_SCORED`, the number of episodes that produced that total.
+3. **Hidden players.** Players with no picks at all (Series 22: Ellen, Katherine) are omitted from the Standings table but still exist in the data.
+4. **Ties.** Board ranks, category ranks and weekly rank points are tie-aware, except a tie for an episode's 1st place, which the recorded tiebreak splits into 1st and 2nd for League points only (§5.5). The contestant series rank on the Cast page is not tie-aware: it falls back to `NAMES` order.
+5. **Scores above 5 are allowed.** One Series 22 task awarded a bonus point (a 6); it is kept as-is so totals match the source.
+6. **The footnote matches the voting deadline.** Both are the 22:00-London livestream. The WhatsApp poll timers enforce the deadline; the app only displays it.
+7. **The clock is the viewer's device clock.** Aired status and the countdown come from the viewer's system time. A device set to the wrong time sees the wrong aired/open state, but scores are unaffected, because they depend only on `WEEKS_SCORED`.
 
 ---
 
 ## 11. How the league is updated each week (maintenance)
 
-After a new Series 22 episode airs, edit `index.html`:
+At any time after a Series 22 episode airs, edit `index.html`:
 
-1. **Scores:** append that episode's tasks to `TASKS_S22` (`{ep, n, t, s}`, with `s` in `NAMES_S22` order).
-2. **Weeks aired:** increment `S22_WEEKS_AIRED`.
-3. **Picks:** copy each player's final vote from that episode's WhatsApp poll into `PICKS_S22` (a player who didn't vote gets no entry). Future weeks' votes can be entered early too; they won't score until that episode airs (§10.1).
-4. **Episode text:** add or confirm the episode title and date in `EM_S22`, and write an Analysis paragraph in `EI_S22`.
-5. **Rank deltas:** update `RD_S22` and `RD_PVP_S22` with each player's rank change on each board.
-6. **Contestant text (optional):** refresh `CONT_S22[name].stat` / `.bio`.
+1. **Scores:** append that episode's tasks to `TASKS_S22` (`{ep, n, t, s}`, with `s` in `NAMES_S22` order). This alone marks the episode as scored.
+2. **Picks:** copy each player's final vote from that episode's WhatsApp poll into `PICKS_S22` (a player who didn't vote gets no entry). Future weeks' votes can be entered early too; they won't score until that episode is scored (§10.1).
+3. **Tiebreak (only if contestants tied for the top score):** add `tb:"Name"` to that episode's `EM_S22` entry.
+4. **Episode text:** confirm the episode title in `EM_S22`, and write an Analysis paragraph in `EI_S22`.
+5. **Contestant text (optional):** refresh `CONT_S22[name].stat` / `.bio`.
 
-Everything else — totals, both boards, ranks, highlights, medals, the episode page, the cast box scores and the airtime footnote — recalculates automatically on page load.
+Everything else — aired and scored weeks, totals, both boards, ranks, weekly rank changes, the episode winner, highlights, medals, pick-rule lines, the cast box scores, the airtime footnote and which series is current — is derived automatically from the data and the clock.
+
+**New series:** add a `SERIES_RAW` entry keyed `"s" + number` with the same fields, and the 10 London air dates in its `EM`. It becomes the current series automatically once its Episode 1 airs.
