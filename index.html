@@ -4,92 +4,124 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fantasky Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Caveat:wght@600;700&family=Special+Elite&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  /* Gap between the gallery-wall placards and the screen edge; the
-     Standings header row adds it to its own padding to stay aligned. */
+  /* ═══ THE FANTASKY GAZETTE ════════════════════════════════
+     19th-century newsprint meets Taskmaster red-and-gold opulence.
+     The page is a deep claret ground; everything you read sits on
+     ivory index cards that stand clear of it. Colour roles:
+       claret     — the page ground (and the ink of the masthead's
+                    shadow)
+       ivory      — cards, scoresheets, envelopes
+       ink        — text on ivory
+       Taskmaster red — seals, the series chip, best scores, drops
+       gold       — the masthead, rules, leaders, active states
+     plus a spectrum of accents that each carry one meaning:
+       saffron / cobalt / emerald / plum — the four task types
+       (prize / filmed / team / live); emerald also marks rank rises;
+       teal, cobalt and plum label the three kinds of card copy
+     Surfaces are flat (no gradients or textures); cards lift off the
+     ground with a soft shadow. */
+
+  /* Gap between the standings cards and the screen edge; the Standings
+     header row adds it to its own padding to stay aligned. */
   --wall-inset: 12px;
-  /* Sealing-wax crimson — replaces the old neon #c41818 family. */
-  --red:      #9f1239;
-  --red2:     #881337;
-  --red3:     #4c0519;
-  --red4:     #2a0410;
-  --red-glow: rgba(159,18,57,0.35);
-  --red-t:    rgba(136,19,55,0.10);
-  --wax:      #881337;
-  --wax-hi:   #c2385e;
 
-  /* Stationery: manila envelopes, ivory task cards, ink */
-  --manila:   #e6d7b3;
-  --manila2:  #d6c497;
-  --manila3:  #b9a47a;
-  --ivory:    #fbf6ea;
-  --sepia:    #4a3622;
-  --ink:      #1f2a44;
-  --pencil:   #7d7262;
-  --paper:    #f3ead3;
-  --paper-line: rgba(120,90,50,0.20);
-  --margin-red: rgba(159,18,57,0.40); /* ledger margin rule */
+  /* Ground */
+  --bg:  #2e0a0f;
+  --s0:  #2e0a0f;
+  --s1:  #3a0f15;
+  --s2:  #42131a;
+  --s3:  #4b1820;
+  --s4:  #561d26;
+  --s5:  #62232d;
 
-  /* Dark study-table wood — layered as a background-image */
-  --wood-grain: repeating-linear-gradient(178deg,
-    rgba(255,214,170,0.022) 0 1px, transparent 1px 5px,
-    rgba(0,0,0,0.07) 5px 7px, transparent 7px 13px);
+  /* Paper & ink */
+  --paper:  #f7f0dd;
+  --paper-edge: #e3d5b0;
+  --paper-rule: #e6dbbf;
+  --ink:  #1d1512;
+  --ink2: #4a3b30;
+  --ink3: #6c5a4b;
+  --ink4: #8c7766;
+  --card-shadow: 0 1px 0 rgba(0,0,0,0.25), 0 10px 22px -6px rgba(0,0,0,0.55);
 
-  --gold:     #b88018;
-  --gold2:    #d4a028;
-  --gold3:    #ecc040;
-  --gold4:    #8a6010;
-  --gold-t:   rgba(184,128,24,0.12);
-  --gold-glow:rgba(212,160,40,0.14); /* was 0.28 — gilt, not neon */
-  --gold-l:   var(--gold3);
+  /* Taskmaster red & gold */
+  --tm-red:  #c8102e;
+  --tm-red-dk: #8e0b20;
+  --gold:    #d9a93d;
+  --gold2:   #e9bf55;
+  --gold3:   #f3d488;
+  --gold4:   #9c7424;
+  --gold-ink:#8a6516;   /* gold dark enough to read on ivory */
+  --gold-t:  rgba(217,169,61,0.14);
+  --gold-glow: transparent;
+  --gold-l:  var(--gold2);
+  --marigold: var(--gold2);   /* legacy alias */
+  --cream:   #f7ecd2;
 
-  /* One accent hue outside the red/gold/gray family, reserved for
-     "moving up" states (rank deltas) — everything "down" stays on the
-     existing red so red keeps its one meaning across the whole app. */
-  --up:       #34d399;
-  --up-glow:  rgba(52,211,153,0.35);
+  /* Spectrum accents — *-ink on ivory, *-lt on the claret ground */
+  --saffron-ink: #a8650f;  --saffron-lt: #f0b35e;
+  --cobalt-ink:  #2f58a6;  --cobalt-lt:  #9db8f0;
+  --emerald-ink: #23794f;  --emerald-lt: #7fd3a4;
+  --teal-ink:    #19707c;  --teal-lt:    #7ccfd6;
+  --plum-ink:    #74398f;  --plum-lt:    #caa2e3;
 
-  /* Ebony/walnut surfaces — same luminance steps as the old neutral
-     grays, shifted warm so every panel reads as dark wood. */
-  --bg:  #0a0605;
-  --s0:  #0f0a08;
-  --s1:  #150e0b;
-  --s2:  #1c140f;
-  --s3:  #241a14;
-  --s4:  #2d221a;
-  --s5:  #382a20;
+  --red:      #c8102e;
+  --red2:     #a50d26;
+  --red3:     #6e0818;
+  --red4:     #3d060f;
+  --red-glow: transparent;
+  --red-t:    transparent;
+  --wax:      #b50f2a;
 
-  --t1:  #ede8dc;
-  --t2:  #a89880;
-  --t3:  #b6977b; /* was #6a5848 — measured ~2.3-3:1 against panel bgs, failing WCAG AA text (4.5:1) */
-  --t4:  #b18367; /* was #3e2e24 — measured ~1.2-1.6:1, barely legible; now the dimmest tier that still passes */
+  --up:       #7fd49a;
+  --up-glow:  transparent;
 
-  --warn:  #c07820;
-  --warn-t:rgba(192,120,32,0.10);
+  /* Rules on the claret ground */
+  --line-cream: #f7ecd2;
+  --line-gold:  #c99a3a;
+  --line-dim:   #5a1c24;
 
-  --b-gold:  rgba(184,128,24,0.20);
-  --b-gold2: rgba(184,128,24,0.07);
-  --b-dim:   rgba(255,255,255,0.05);
-  --b-red:   rgba(196,24,24,0.35);
+  /* DL envelope stationery */
+  --env-front:  #f7efdc;
+  --env-flap:   #ecdfbd;
+  --env-inside: #cdb888;
+  --env-card:   #fffdf6;
+  --env-ink:    #1d1512;
 
-  /* Every face is vintage now: Baskerville for names, body copy and
-     numbers; Courier Prime for small labels; Playfair for headings. */
-  --ff-name: 'Libre Baskerville',Baskerville,Georgia,serif;
-  /* Victorian display serif for the masthead and page headings */
-  --ff-head: 'Playfair Display','Libre Baskerville',Georgia,serif;
-  --ff:      'Libre Baskerville',Baskerville,Georgia,serif;
-  --fm:      'Courier Prime','Courier New',Courier,monospace;
-  /* Role-specific vintage faces: serif for leaderboard names/ranks,
-     typewriter for table headers, handwriting for scores written on
-     paper, rubber-stamp for rank deltas. */
-  --ff-serif:'Libre Baskerville',Baskerville,Georgia,serif;
-  --ff-type: 'Courier Prime','Courier New',Courier,monospace;
-  --ff-hand: 'Caveat','Bradley Hand',cursive;
-  --ff-stamp:'Special Elite','Courier New',monospace;
-  /* Gilt rule with a centre lozenge, drawn under page headings */
-  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23b88018' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23b88018'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23b88018'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23d4a028'/%3E%3C/svg%3E");
+  /* Text on the claret ground */
+  --t1:  #f7ecd2;
+  --t2:  #ead6bf;
+  --t3:  #d4b8a2;
+  --t4:  #bb9a84;
+
+  --warn:  #e9bf55;
+  --warn-t:transparent;
+
+  --b-gold:  #5a1c24;
+  --b-gold2: #45141b;
+  --b-dim:   #4a161d;
+  --b-red:   #8e0b20;
+
+  /* Type: a classic newspaper pairing —
+       Libre Caslon Display — the nameplate and headlines
+       Libre Caslon Text    — names and reading copy
+       Libre Franklin       — numbers and small type (labels, tabs,
+                              column heads), after Franklin Gothic */
+  --ff-mark: 'Libre Caslon Display','Libre Caslon Text',Georgia,serif;
+  --ff-head: 'Libre Caslon Display','Libre Caslon Text',Georgia,serif;
+  --ff-num:  'Libre Franklin','Franklin Gothic Medium',Arial,sans-serif;
+  --ff-name: 'Libre Caslon Text',Georgia,serif;
+  --ff-serif:var(--ff-name);
+  --ff:      'Libre Caslon Text',Georgia,serif;
+  --fm:      'Libre Franklin','Franklin Gothic Medium',Arial,sans-serif;
+  --ff-type: var(--fm);
+  --ff-hand: var(--ff-num);
+  --ff-stamp:var(--fm);
+  /* Printer's rule with a centre lozenge, drawn under page headings */
+  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23c99a3a' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23c99a3a'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23c99a3a'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23c8102e'/%3E%3C/svg%3E");
 
   /* Fluid type */
   --fs-2xs: clamp(9px,  2.2vw, 10px);
@@ -107,7 +139,7 @@
   --px: 16px;
   /* Extra margin after the Standings Rank column (header AND data rows —
      see .st-h-rank/.pc-rank-col) so the Rank↔Player gap visually matches
-     the Task Points↔Rank Points gap. */
+     the Show Pts↔League Pts gap. */
   --rank-col-gap: 7.5px;
   --sp-1: 4px;
   --sp-2: 8px;
@@ -122,76 +154,78 @@
   --port-w: clamp(74px,19vw,90px);
   --cdp-w:  clamp(120px,28vw,160px);
 
-  --noise: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   max-width:680px;margin:0 auto;width:100%;min-height:100%;
-  /* Velvet crimson glow from above, a soft vignette, then dark wood grain */
-  background-image:var(--noise),
-    radial-gradient(ellipse 110% 55% at 50% 0%,rgba(136,19,55,0.22) 0%,transparent 65%),
-    radial-gradient(ellipse 140% 90% at 50% 45%,transparent 40%,rgba(0,0,0,0.55) 100%),
-    var(--wood-grain),
-    linear-gradient(180deg,#1a100b 0%,#120b07 60%,#0c0705 100%);}
+  /* Lining figures everywhere (the book faces default to old-style in
+     places). */
+  font-variant-numeric:lining-nums;}
 
 /* ── SHELL ──────────────────────────────────────────── */
 /* Plain responsive document flow — the whole page scrolls natively.
-   .topbar (header + tabs) stays pinned via position:sticky rather than
+   .topbar is display:contents, so the masthead is simply the top of the
+   page (it scrolls away, part of the same ground) while .tabs — the DL
+   envelopes — pin themselves via position:sticky rather than
    living inside a viewport-height frame, so document height always
    reflects real content height (full-page screenshot tools, browser
    "find on page", etc. all just work). Only the active .page renders;
    switching tabs swaps which one that is instead of scrolling sideways
    through a 3-wide strip. */
 .shell{position:relative}
-.topbar{position:sticky;top:0;z-index:5}
+.topbar{display:contents}
 .scr{position:relative}
 .page{display:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .page.active{display:block}
 
-/* ── HEADER ─ sits at the top of the shell, nav tabs directly below it
-   (see .tabs). Compacts as the active page scrolls, via .hdr.compact
-   from JS — all the compact-mode changes below animate on one shared
-   duration/easing curve and stick to transform/opacity (GPU-composited,
-   no per-frame layout reflow) rather than font-size/max-height, which
-   is what made the old shrink feel like it was stepping rather than
-   gliding. */
+/* ── HEADER ─ a newspaper front page: nameplate, dateline, and a
+   one-line footnote with the next airtime. It is the top of the page
+   (same ground, scrolls away); the DL envelope tabs below stay pinned. */
 .hdr{
-  flex-shrink:0;position:relative;z-index:5;
-  padding:8px var(--px);
-  border-bottom:1px solid var(--b-gold);
-  background:var(--noise),radial-gradient(ellipse 90% 140% at 25% 0%,rgba(136,19,55,0.55) 0%,rgba(42,4,16,0.82) 100%);
-  backdrop-filter:blur(18px) saturate(1.4);
-  -webkit-backdrop-filter:blur(18px) saturate(1.4);
-  display:flex;align-items:center;gap:10px;overflow:hidden;
-  transition:padding 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);
+  flex-shrink:0;position:relative;
+  padding:18px var(--px) 16px;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:stretch;gap:14px;overflow:hidden;
 }
-.hdr.compact{padding:4px var(--px);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
+/* JS toggles .compact on scroll; the masthead scrolls away instead, so
+   compact mode deliberately changes nothing — no size jumps. */
+.hdr.compact{padding:18px var(--px) 16px}
 
-/* Left: brand */
-.hdr-brand{flex-shrink:0;min-width:0}
-.hdr-title{font-family:var(--ff-head);font-size:clamp(15px,4.6vw,23px);font-weight:900;
-  color:var(--t1);letter-spacing:0.05em;line-height:1;white-space:nowrap;
-  text-shadow:0 1px 0 rgba(0,0,0,0.85),0 0 18px var(--red-glow);
-  transform-origin:left center;
-  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);}
-.hdr.compact .hdr-title{transform:scale(0.72)}
-.hdr-title em{color:var(--gold3);font-style:normal;text-shadow:0 0 14px var(--gold-glow);}
-/* The "22" in the masthead doubles as the Series 21/22 toggle — tap it
-   to flip which series the whole app is showing (see toggleSeries()).
-   Its own digits swap to reflect whichever series is active, and it
-   dims/recolors on S21 so the title still reads as "you're in the
-   archive" even with no separate series badge anywhere else. */
+/* Nameplate — "Fantasky Master" set as one line in Caslon Display,
+   both words the same size, weight and gold, between thick-and-thin
+   rules the way a Victorian daily framed its title. */
+.hdr-brand{display:flex;flex-direction:column;align-items:stretch}
+.hdr-title{display:block;text-align:center;white-space:nowrap;
+  font-family:var(--ff-mark);font-weight:400;
+  font-size:clamp(36px,11.6vw,80px);line-height:1.1;letter-spacing:0.005em;
+  color:var(--gold2);
+  padding:10px 0 8px;
+  border-top:4px double var(--line-gold);
+  border-bottom:1px solid var(--line-gold);}
+.ht-word + .ht-word{margin-left:0.26em}
+/* Dateline under the nameplate, newspaper-style: small capitals in
+   Franklin, gold rule beneath. Holds the Series 21/22 toggle. */
+.hdr-dateline{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 2px;border-bottom:4px double var(--line-gold);
+  font-family:var(--fm);font-weight:500;text-transform:uppercase;
+  font-size:clamp(10px,2.8vw,12px);letter-spacing:0.14em;color:var(--t2);}
+.hd-mid{color:var(--gold2)}
+/* The series number doubles as the Series 21/22 toggle — tap it to flip
+   which series the whole app is showing (see toggleSeries()). Its digits
+   swap to the active series; on S21 the chip turns ivory so the page
+   reads as "the archive edition". */
 .ht-series{
-  display:inline-block;color:var(--gold3);cursor:pointer;font-style:italic;
-  -webkit-user-select:none;user-select:none;
-  padding:0 2px;border-radius:4px;
-  text-shadow:0 0 14px var(--gold-glow);
-  transition:color 0.2s,opacity 0.2s;
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:2.4em;padding:3px 6px;margin-left:5px;
+  background:var(--tm-red);color:var(--gold3);border:1px solid var(--gold);
+  font-family:var(--ff-num);font-weight:600;letter-spacing:0.02em;
+  cursor:pointer;-webkit-user-select:none;user-select:none;
+  transition:background 0.2s,color 0.2s,opacity 0.2s;
 }
 .ht-series:active{opacity:0.6}
-.ht-series.on-s21{color:var(--t3);text-shadow:none}
+.ht-series.on-s21{background:var(--paper);color:var(--ink)}
 
 /* Right: episode/countdown pill — see PILL BOX COUNTDOWN below */
 
@@ -199,78 +233,98 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 /* ── ANIMATIONS ──────────────────────────────────────── */
 @keyframes shimmer{0%{left:-100%}100%{left:200%}}
 @keyframes pulse-glow{0%,100%{opacity:0.5}50%{opacity:1}}
-@keyframes rank-pulse{0%,100%{text-shadow:0 0 6px currentColor}50%{text-shadow:0 0 18px currentColor,0 0 36px currentColor}}
 @keyframes slide-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── TABS — Taskmaster task envelopes on a wooden rail ─────
-   Each tab is a manila envelope. Closed (inactive): flap down, sealed
-   with a crimson wax dot. Open (active): the flap flips up, the seal
-   is gone, and the ivory task card inside (.ti — carries the icon)
-   slides up out of the envelope. Layering inside each button:
-     button bg  = envelope interior (only visible once opened)
-     .ti        = the task card            z1
-     .tab-label = envelope front / pocket  z2  (V-notch where the flap sits)
-     ::before   = flap                     z3  (drops to z0 when open)
-     ::after    = wax seal                 z4
-   nav() still just toggles .active — no JS involved in the look. */
+/* ── TABS — DL envelopes ─────────────────────────────────
+   Each tab is a flat DL envelope, strictly 2:1 (12rem × 6rem, scaling
+   down proportionally on narrow screens via aspect-ratio). Closed: flap
+   down, sealed with a crimson wax dot, the destination printed on the
+   front. Hovered or active: the flap swings open on rotateX and the
+   inner card slides up out of the pocket with the same name on it.
+   Layers inside each <button> (no extra markup needed):
+     button background = envelope interior (seen once opened)
+     .tab-label        = the inner card                      (level 0)
+     ::before          = flap (rotateX) — z2 closed, z0 open
+     .ti::before       = pocket front, V-notch clipped        (z3)
+     .ti::after        = wax seal at the flap point          (z3)
+     ::after           = name printed on the front, from the button's
+                         own aria-label                      (z4)
+   nav() still just toggles .active — the look is all CSS. */
 .tabs{
-  flex-shrink:0;position:relative;
-  display:flex;align-items:flex-end;gap:10px;
-  padding:26px 14px 9px;
-  background:var(--noise),var(--wood-grain),linear-gradient(180deg,#2a1a10 0%,#1d120b 100%);
-  box-shadow:inset 0 -3px 0 #3b2616,inset 0 -4px 0 rgba(0,0,0,0.5),0 6px 14px rgba(0,0,0,0.55);}
-.tab{flex:1;position:relative;z-index:1;height:44px;padding:0;
-  display:block;border:none;border-radius:2px;cursor:pointer;
-  background:linear-gradient(180deg,#a8926a 0%,var(--manila3) 100%);
-  color:var(--wax);
-  box-shadow:0 2px 3px rgba(0,0,0,0.55),0 6px 10px rgba(0,0,0,0.3);
-  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s;
+  position:sticky;top:0;z-index:5;
+  display:flex;justify-content:center;align-items:flex-end;gap:clamp(8px,2.4vw,16px);
+  padding:clamp(34px,8.5vw,58px) 14px 14px;
+  background:var(--bg);
+  border-bottom:1px solid var(--line-gold);}
+.tab{
+  flex:0 1 auto;width:12rem;height:6rem;max-width:calc((100% - 2 * clamp(8px,2.4vw,16px)) / 3);
+  height:auto;aspect-ratio:2 / 1;   /* strict DL proportion at every width */
+  position:relative;padding:0;border:none;border-radius:0;cursor:pointer;
+  background:var(--env-inside);
+  box-shadow:0 0 0 1px var(--line-gold);
   -webkit-user-select:none;user-select:none;}
-.tab::before{content:'';position:absolute;left:0;right:0;top:0;height:50%;z-index:3;
-  background:linear-gradient(180deg,var(--manila2) 0%,#cbb786 100%);
+/* Flap */
+/* The flap runs a little deeper (56%) than the pocket's V-notch (52%),
+   so its hidden tip tucks under the pocket and no sliver of the card
+   shows through the anti-aliased seam. */
+.tab::before{content:'';position:absolute;left:0;right:0;top:0;height:56%;z-index:2;
+  background:var(--env-flap);
   clip-path:polygon(0 0,100% 0,50% 100%);
-  transform-origin:top center;transform:perspective(140px) rotateX(0deg);
-  transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);}
-.tab::after{content:'';position:absolute;z-index:4;left:50%;top:50%;
-  width:14px;height:14px;margin:-9px 0 0 -7px;
-  border-radius:52% 46% 50% 48%;
-  background:radial-gradient(circle at 34% 30%,var(--wax-hi) 0%,var(--wax) 48%,var(--red3) 100%);
-  box-shadow:0 1px 2px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(76,5,25,0.35);
-  transition:opacity 0.2s,transform 0.3s;}
-.tab .ti{position:absolute;z-index:1;left:13%;right:13%;top:6%;height:74%;
-  display:flex;align-items:flex-start;justify-content:center;padding-top:3px;
-  background:repeating-linear-gradient(180deg,transparent 0 5px,rgba(120,90,50,0.10) 5px 6px),var(--ivory);
-  box-shadow:0 1px 2px rgba(0,0,0,0.3);
-  transform:translateY(0);transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);}
-.tab .ti svg{width:17px;height:15px}
-.tab .tab-label{position:absolute;inset:0;z-index:2;
-  display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;
-  background:linear-gradient(180deg,var(--manila) 0%,#dccb9f 100%);
-  clip-path:polygon(0 0,50% 50%,100% 0,100% 100%,0 100%);
-  font-family:var(--ff-type);font-size:9px;font-weight:700;color:var(--sepia);}
-.tab.active{transform:translateY(-3px);
-  box-shadow:0 4px 6px rgba(0,0,0,0.5),0 12px 18px rgba(0,0,0,0.35);}
-.tab.active::before{z-index:0;transform:perspective(140px) rotateX(180deg);}
-.tab.active::after{opacity:0;transform:scale(1.6);}
-.tab.active .ti{transform:translateY(-58%);}
-.tab:active{transform:scale(0.96);}
+  transform-origin:top center;transform:perspective(600px) rotateX(0deg);
+  transition:transform 0.3s ease, height 0.3s ease;}
+/* Destination printed on the front */
+.tab::after{content:attr(aria-label);position:absolute;left:0;right:0;bottom:9%;z-index:4;
+  font-family:var(--fm);font-weight:500;font-size:clamp(10px,2.7vw,15px);
+  letter-spacing:0.2em;text-transform:uppercase;line-height:1;text-align:center;
+  color:var(--env-ink);
+  transition:opacity 0.3s ease;}
+/* Pocket front + seal */
+.tab .ti{position:absolute;inset:0;z-index:3;pointer-events:none;
+  display:block;padding:0;background:none;box-shadow:none;transform:none}
+.tab .ti svg{display:none}
+.tab .ti::before{content:'';position:absolute;inset:0;
+  background:var(--env-front);
+  clip-path:polygon(0 0,50% 52%,100% 0,100% 100%,0 100%);}
+.tab .ti::after{content:'';position:absolute;left:50%;top:52%;
+  width:clamp(12px,3.2vw,20px);aspect-ratio:1;border-radius:50%;
+  background:var(--wax);
+  transform:translate(-50%,-50%);
+  transition:transform 0.3s ease, opacity 0.3s ease;}
+/* Inner card */
+.tab .tab-label{position:absolute;left:7%;right:7%;top:6%;height:86%;z-index:auto;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:9%;
+  background:var(--env-card);
+  box-shadow:inset 0 0 0 1px var(--line-gold);
+  font-family:var(--fm);font-weight:500;font-size:clamp(10px,2.7vw,15px);
+  letter-spacing:0.2em;color:var(--env-ink);
+  transform:translateY(0);
+  transition:transform 0.3s ease, height 0.3s ease;}
+/* Open state — active tab, or any tab under a hovering pointer */
+.tab.active::before{z-index:0;transform:perspective(600px) rotateX(180deg);}
+.tab.active::after{opacity:0;}
+.tab.active .ti::after{opacity:0;transform:translate(-50%,-50%) scale(1.5);}
+.tab.active .tab-label{transform:translateY(-50%);}
+@media (hover: hover){
+  .tab:hover::before{z-index:0;transform:perspective(600px) rotateX(180deg);}
+  .tab:hover::after{opacity:0;}
+  .tab:hover .ti::after{opacity:0;transform:translate(-50%,-50%) scale(1.5);}
+  .tab:hover .tab-label{transform:translateY(-50%);}
+}
+.tab:active{transform:scale(0.97);}
 
 /* ── DIVIDER ────────────────────────────────────────── */
 .sh{display:flex;align-items:center;gap:8px;padding:14px var(--px) 8px}
 .sh::before,.sh::after{content:'◆';font-size:5px;color:var(--gold4);opacity:0.5;flex-shrink:0}
-.sh-line{flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--b-gold),transparent)}
+.sh-line{flex:1;height:1px;background:var(--line-gold)}
 .sh-text{font-family:var(--ff-head);font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.22em;text-transform:uppercase;white-space:nowrap}
 
 /* ── STANDINGS ───────────────────────────────────────── */
 
-.srow::after{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;
-  background:linear-gradient(90deg,rgba(184,128,24,0.04) 0%,transparent 60%);
-  opacity:0;transition:opacity 0.12s;pointer-events:none}
-.srow:active::after{opacity:1}
 
 
-.srow.rank1 .s-pts-n{color:var(--gold2);text-shadow:0 0 10px var(--gold-glow)}
+
+.srow.rank1 .s-pts-n{color:var(--gold2)}
 
 
 
@@ -310,15 +364,15 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 /* ── PLAYER DETAIL ───────────────────────────────────── */
 .pd{display:none}.pd.on{display:block}
 .pd-hero{position:relative;overflow:hidden;border-bottom:1px solid var(--b-gold);
-  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s1) 45%,var(--s0) 100%)}
+  background:var(--s2)}
 .pd-stripe{height:2px;
-  background:linear-gradient(90deg,transparent,var(--gold4) 20%,var(--gold2) 50%,var(--gold4) 80%,transparent);
-  box-shadow:0 0 6px var(--gold-glow)}
+  background:var(--line-gold);
+}
 .pd-body{padding:16px var(--px) 14px}
 .pd-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:12px}
 .pd-rank-n{font-family:var(--ff-head);font-size:clamp(48px,12vw,68px);font-weight:900;
   line-height:0.85;color:var(--red);letter-spacing:-0.04em;
-  text-shadow:0 0 24px var(--red-glow),0 2px 3px rgba(0,0,0,0.8)}
+}
 .pd-rank-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.12em;margin-top:4px}
 .pd-rank-d{font-family:var(--fm);font-size:var(--fs-sm);margin-top:5px}
 .pd-name-block{flex:1;padding-top:6px;display:flex;flex-direction:column;align-items:center;}
@@ -328,7 +382,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .pd-pts-block{text-align:right;flex-shrink:0}
 .pd-pts-n{font-family:var(--ff);font-size:clamp(38px,10vw,52px);font-weight:900;
   line-height:0.88;color:var(--gold2);letter-spacing:-0.03em;
-  text-shadow:0 0 18px var(--gold-glow),0 2px 3px rgba(0,0,0,0.8)}
+}
 .pd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.1em;margin-top:3px}
 
 /* Sparkline row in player detail */
@@ -339,8 +393,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
   background:var(--b-gold);gap:1px;border:1px solid var(--b-gold);border-radius:12px;
   overflow:hidden;margin-bottom:12px;
-  box-shadow:inset 0 0 16px rgba(0,0,0,0.2),inset 0 1px 0 rgba(255,255,255,0.07)}
-.ss-cell{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+}
+.ss-cell{background:var(--s2);
   padding:10px 4px;text-align:center}
 .ss-v{font-family:var(--ff);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;letter-spacing:-0.02em}
 .ss-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:3px;letter-spacing:0.06em;text-transform:uppercase}
@@ -356,12 +410,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 /* Insight */
 .ins{margin:0 var(--px) 10px;
-  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+  background:var(--s2);
   border:1px solid var(--b-gold);border-left:2px solid var(--gold4);
   border-radius:12px;padding:10px 14px;
-  box-shadow:inset 0 0 16px rgba(0,0,0,0.2),0 4px 14px rgba(0,0,0,0.3);position:relative}
+  position:relative}
 .ins::after{content:'';position:absolute;top:0;left:0;bottom:0;width:2px;
-  background:linear-gradient(180deg,transparent,var(--gold4),transparent);}
+  background:var(--line-gold);}
 .ins-lbl{font-family:var(--ff-head);font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.18em;text-transform:uppercase;margin-bottom:6px}
 .ins-body{font-size:var(--fs-md);line-height:1.6;color:var(--t2)}
@@ -379,59 +433,36 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .ph-pts{font-family:var(--ff);font-size:clamp(17px,4.5vw,21px);font-weight:700;line-height:1;min-width:28px;text-align:right}
 
 /* ── EPISODE PAGE ────────────────────────────────────── */
-/* Only 7 of 10 episode tabs fit on screen at once, with no scrollbar (hidden
-   below) to hint at the rest. Fade the edges toward whichever side still has
-   tabs to scroll to — JS toggles .at-start/.at-end as the strip scrolls. */
+/* Episode sub-tabs share the row equally, so all ten always fit and no
+   scroll-fade mask is needed (JS still toggles .at-start/.at-end — now
+   harmless). The selected one is a solid cream label with a gold rule. */
 .ep-tabs{display:flex;overflow-x:auto;scrollbar-width:none;position:relative;
-  border-bottom:1px solid rgba(0,0,0,0.6);padding:0 4px;
-  background:var(--noise),var(--wood-grain),linear-gradient(180deg,#1d120b 0%,#150d08 100%);
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
-  mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
-  transition:-webkit-mask-image 0.15s,mask-image 0.15s;}
-.ep-tabs.at-start{
-  -webkit-mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%);
-  mask-image:linear-gradient(90deg,#000 0,#000 calc(100% - 22px),transparent 100%);}
-.ep-tabs.at-end{
-  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 100%);
-  mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 100%);}
-.ep-tabs.at-start.at-end{-webkit-mask-image:none;mask-image:none;}
+  padding:8px 8px;gap:4px;background:var(--bg);border-bottom:1px solid var(--line-gold)}
 .ep-tabs::-webkit-scrollbar{display:none}
-/* Sub-tabs are typed labels on the wood; the selected one becomes an
-   ivory card in a brass holder. The transparent border is the gap
-   around each plate (same width on every tab, so selecting one never
-   shifts the row); background-clip keeps the ivory inside it. */
-.ep-tab{flex-shrink:0;padding:5px clamp(9px,2.6vw,14px);position:relative;
-  font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.1em;cursor:pointer;
-  background:none;border:solid transparent;border-width:7px 2px;border-radius:9px;background-clip:padding-box;
-  transition:color 0.15s,background 0.15s,box-shadow 0.15s}
-.ep-tab.active{color:var(--sepia);
-  background:linear-gradient(180deg,var(--ivory) 0%,#ebdfc2 100%) padding-box;
-  box-shadow:inset 0 0 0 1px rgba(184,128,24,0.75),inset 0 0 0 2px rgba(90,60,8,0.25),0 2px 4px rgba(0,0,0,0.45)}
-.ep-tab.tbd{color:var(--t4);opacity:0.75}
-.ep-tab.tbd.active{color:var(--pencil);opacity:1}
+.ep-tab{flex:1 1 0;min-width:0;padding:6px 0;position:relative;white-space:nowrap;
+  font-family:var(--fm);font-weight:600;font-size:clamp(10px,2.7vw,13px);color:var(--t3);letter-spacing:0.03em;text-transform:uppercase;cursor:pointer;
+  background:none;border:1px solid transparent;border-radius:0;
+  transition:color 0.15s,background 0.15s,border-color 0.15s}
+.ep-tab.active{color:var(--ink);background:var(--gold2);border-color:var(--gold2)}
+.ep-tab.tbd{color:var(--t4)}
+.ep-tab.tbd.active{color:var(--env-ink)}
 .ep-tab:active{transform:scale(0.95)}
 
-.ep-header-box{text-align:center;padding:16px var(--px) 12px;
-  border-bottom:1px solid var(--b-gold);
-  background:var(--noise),linear-gradient(180deg,var(--red-t) 0%,transparent 100%);
-  position:relative}
-.ep-header-box::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;
-  background:linear-gradient(90deg,transparent,var(--b-gold),transparent)}
-.ep-kicker{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);
+.ep-header-box{text-align:center;padding:18px var(--px) 14px;
+  background:var(--bg);position:relative}
+.ep-kicker{font-family:var(--ff-type);font-weight:400;font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.22em;text-transform:uppercase;margin-bottom:6px}
-.ep-title{font-family:var(--ff-head);font-style:italic;font-size:clamp(22px,6vw,30px);font-weight:700;
-  line-height:1.1;letter-spacing:0.01em;margin-bottom:3px;
-  text-shadow:0 1px 0 rgba(0,0,0,0.85),0 0 18px var(--red-glow)}
-.ep-winner{font-family:var(--ff-type);font-size:var(--fs-sm);color:var(--t3);letter-spacing:0.03em}
+.ep-title{font-family:var(--ff);font-style:italic;font-size:clamp(23px,6.2vw,32px);font-weight:400;
+  line-height:1.1;letter-spacing:0.01em;margin-bottom:3px}
+.ep-winner{font-family:var(--ff);font-style:italic;font-size:var(--fs-sm);color:var(--t3)}
 /* Page headings sit on a small gilt rule */
 .ep-title::after,.stand-hero-title::after{content:'';display:block;
   width:110px;height:9px;margin:8px auto 7px;background:var(--ornament) center/contain no-repeat}
 
 .ep-body{padding:14px var(--px) 22px}
 .ep-sealed{text-align:center;padding:40px var(--px) 28px}
-.ep-sealed-envelope{width:140px;height:auto;transform:rotate(-3deg);
-  filter:drop-shadow(0 10px 14px rgba(0,0,0,0.6))}
-.ep-sealed-cap{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);
+.ep-sealed-envelope{width:140px;height:auto}
+.ep-sealed-cap{font-family:var(--ff-type);font-weight:400;font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.18em;text-transform:uppercase;margin-top:18px}
 
 
@@ -440,56 +471,67 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 
-/* Task table = a paper scoresheet: ruled rows, a red ledger margin
-   after the task column, typed headers, and each score written in ink
-   (winning score circled in wax red, lowest in pencil). Contestant
-   header colours are their own accents, darkened to read on paper. */
-.tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:2px;overflow:hidden;margin-bottom:16px;
-  background:var(--noise),var(--paper);
-  box-shadow:inset 0 0 30px rgba(120,90,50,0.18),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4)}
+/* Task table: an ivory scoresheet card — hairline rows, small-caps
+   headers, scores in Franklin. The episode's best score on each task is
+   Taskmaster red, the lowest dimmed. Contestant headers keep their own
+   accent colours, darkened for paper. */
+.tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:3px;overflow:hidden;margin-bottom:18px;
+  background:var(--paper);border:1px solid var(--paper-edge);box-shadow:var(--card-shadow)}
+/* Contestant accent colours are tuned for the dark ground; darken them
+   to read on ivory (text only — the header cells have no fill). */
+.tt thead th:not(:first-child),.pod-port-name{filter:brightness(0.62) saturate(1.3)}
 .tt-wrap::-webkit-scrollbar{display:none}
 .tt{width:100%;border-collapse:collapse;min-width:min(290px,100%)}
-.tt th{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--sepia);
-  text-transform:uppercase;letter-spacing:0.1em;
-  padding:9px 6px 7px;text-align:center;border-bottom:1.5px solid rgba(74,54,34,0.55);background:transparent}
-.tt thead th:not(:first-child){filter:brightness(0.6) saturate(1.3)}
+.tt th{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--t3);
+  text-transform:uppercase;letter-spacing:0.12em;
+  padding:9px 6px 8px;text-align:center;border-bottom:1px solid var(--line-gold);background:transparent}
 .tt th:first-child{text-align:left;padding-left:10px;min-width:100px}
-.tt td{font-size:var(--fs-md);padding:6px 6px;text-align:center;color:var(--ink);
-  border-bottom:1px solid var(--paper-line);background:transparent;vertical-align:middle}
-.tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--margin-red)}
-.tt tr:last-child td{border-bottom:none;border-top:3px double rgba(74,54,34,0.45);background:rgba(120,90,50,0.07)}
-.tn{display:flex;align-items:center;gap:5px}
-.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--wax)}
+.tt td{font-size:var(--fs-md);padding:6px 6px;text-align:center;color:var(--t1);
+  border-bottom:1px solid var(--line-dim);background:transparent;vertical-align:middle}
+.tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--line-dim)}
+.tt tr:last-child td{border-bottom:none;border-top:3px double var(--line-gold)}
+.tn{display:flex;align-items:center;gap:6px}
+.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--ink3)}
+/* Task types keep one colour everywhere they appear: prize saffron,
+   filmed cobalt, team emerald, live plum. The box score and cast hero
+   match on the icon's own aria-label, so no extra markup is needed. */
+.tb.P,.bs-label svg[aria-label^="Prize"]{color:var(--saffron-ink)}
+.tb.F,.bs-label svg[aria-label^="Filmed"]{color:var(--cobalt-ink)}
+.tb.T{color:var(--emerald-ink)}
+.tb.L,.bs-label svg[aria-label^="Live"]{color:var(--plum-ink)}
+.cd-ranks svg[aria-label^="Prize"]{color:var(--saffron-lt)}
+.cd-ranks svg[aria-label^="Filmed"]{color:var(--cobalt-lt)}
+.cd-ranks svg[aria-label^="Live"]{color:var(--plum-lt)}
 .tb svg{width:15px;height:15px;display:block}
-.tt-task{font-family:var(--ff-serif);font-size:13px;line-height:1.3;color:var(--sepia)}
-.tt-total-lbl{font-family:var(--ff-type);font-weight:700;font-size:12px;color:var(--sepia);letter-spacing:0.1em}
+.tt-task{font-family:var(--ff);font-size:12.5px;line-height:1.35;color:var(--t2)}
+.tt-total-lbl{font-family:var(--ff-type);font-weight:500;font-size:13px;color:var(--t3);letter-spacing:0.14em}
 /* .tt prefix: must outrank the generic .tt td font-size above */
-.tt .sc,.tt .tt-total{font-family:var(--ff-hand);font-size:clamp(19px,5vw,23px);font-weight:700;line-height:1}
-.tt .tt-total{font-size:clamp(22px,5.8vw,26px)}
-.sc.best,.tt-total.win{color:var(--red);
-  background:radial-gradient(ellipse 14px 12px at 50% 52%,transparent 80%,rgba(159,18,57,0.55) 86%,rgba(159,18,57,0.55) 100%,transparent 108%)}
-.sc.worst{color:var(--pencil)}.sc.mid{color:var(--ink)}
+.tt .sc,.tt .tt-total{font-family:var(--ff-num);font-size:clamp(17px,4.6vw,21px);font-weight:500;line-height:1;
+  font-variant-numeric:lining-nums tabular-nums}
+.tt .tt-total{font-size:clamp(20px,5.4vw,24px);font-weight:600}
+.sc.best,.tt-total.win{color:var(--gold2)}
+.sc.worst{color:var(--t4)}.sc.mid{color:var(--t1)}
 
-/* Analysis & profile copy is printed on an ivory task card, sealed in
-   the corner — the same card the Taskmaster hands over on the show. */
+/* Analysis & profile copy in a framed panel: a thin cream outer rule
+   with a muted-gold hairline set 4px inside it (outline-offset). */
 .ep-ins,.cd-block{position:relative;
-  background:var(--noise),var(--paper);border:none;border-radius:2px;
-  padding:14px 16px;margin-bottom:14px;
-  box-shadow:inset 0 0 30px rgba(120,90,50,0.16),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4)}
-.ep-ins::after,.cd-block::after{content:'';position:absolute;top:-8px;right:14px;
-  width:22px;height:22px;border-radius:52% 46% 50% 48%;
-  background:radial-gradient(circle at 34% 30%,var(--wax-hi) 0%,var(--wax) 48%,var(--red3) 100%);
-  box-shadow:0 2px 3px rgba(0,0,0,0.5),inset 0 0 0 3px rgba(76,5,25,0.3)}
-.ep-ins-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--wax);
-  letter-spacing:0.18em;text-transform:uppercase;
-  padding-bottom:7px;margin-bottom:9px;border-bottom:1px solid var(--paper-line)}
-.ep-ins-b{font-size:var(--fs-md);line-height:1.6;color:#3b2a1a}
-.ep-ins-b strong{color:var(--ink)}
+  background:var(--paper);border:1px solid var(--paper-edge);border-radius:3px;
+  box-shadow:var(--card-shadow);
+  padding:18px 20px;margin-bottom:16px}
+/* Wax seal pressed onto the top corner of each analysis/profile card */
+.ep-ins::after,.cd-block::after{content:'';position:absolute;top:-9px;right:16px;
+  width:24px;height:24px;border-radius:52% 46% 50% 48%;background:var(--wax);
+  box-shadow:inset -3px -3px 0 rgba(0,0,0,0.22),inset 2px 2px 0 rgba(255,255,255,0.22),0 2px 3px rgba(0,0,0,0.45)}
+.ep-ins-lbl{font-family:var(--ff-type);font-weight:600;font-size:var(--fs-2xs);color:var(--cobalt-ink);
+  letter-spacing:0.2em;text-transform:uppercase;
+  padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
+.ep-ins-b{font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
+.ep-ins-b strong{color:var(--t1)}
 
 
 /* ── CAST PAGE ──────────────────────────────────────── */
 .cast-list{padding:12px var(--px) 24px;display:flex;flex-direction:column;gap:2px}
-.cc{background:var(--noise),linear-gradient(135deg,var(--s2) 0%,var(--s1) 60%,var(--s2) 100%);
+.cc{background:var(--s2);
   border:1px solid var(--b-gold);border-radius:2px;overflow:hidden;cursor:pointer;
   transition:border-color 0.18s,box-shadow 0.18s;position:relative}
 .cc+.cc{margin-top:-1px;border-radius:0}
@@ -500,7 +542,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cc-top{display:flex;align-items:stretch;min-height:clamp(86px,22vw,106px)}
 .cc-img{width:var(--port-w);flex-shrink:0;
   display:flex;align-items:center;justify-content:center;padding:4px 3px}
-.cc-portrait{width:100%;height:auto;display:block;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.7))}
+.cc-portrait{width:100%;height:auto;display:block}
 .cc-ph{width:100%;min-height:86px;display:flex;align-items:center;justify-content:center;
   background:var(--s2);font-size:var(--fs-sm);font-weight:900;letter-spacing:0.08em;opacity:0.22;text-transform:uppercase}
 
@@ -514,7 +556,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   justify-content:center;align-items:flex-end;
   border-left:1px solid rgba(184,128,24,0.10);flex-shrink:0;min-width:clamp(52px,13vw,64px)}
 .cc-pts{font-family:var(--ff);font-size:clamp(26px,6.8vw,34px);font-weight:900;
-  line-height:1;letter-spacing:-0.03em;color:var(--gold2);text-shadow:0 0 8px var(--gold-glow)}
+  line-height:1;letter-spacing:-0.03em;color:var(--gold2)}
 .cc-pts-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);letter-spacing:0.08em;margin-top:2px}
 
 /* Episode score row FIRST, stats SECOND */
@@ -523,11 +565,11 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cc-ep:last-child{border-right:none}
 .cc-ep-n{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3)}
 .cc-ep-v{font-family:var(--ff-head);font-size:clamp(14px,3.6vw,17px);font-weight:700;line-height:1;margin-top:2px}
-.cc-ep-v.hi{color:var(--gold2);text-shadow:0 0 5px var(--gold-glow)}
+.cc-ep-v.hi{color:var(--gold2)}
 .cc-ep-v.lo{color:var(--t4)}.cc-ep-v.md{color:var(--t1)}
 
 .cc-stats{display:flex;border-top:1px solid rgba(184,128,24,0.09);
-  background:var(--noise),linear-gradient(180deg,var(--s1) 0%,var(--bg) 100%)}
+  background:var(--s2)}
 .cc-stat{flex:1;text-align:center;padding:6px 3px;border-right:1px solid var(--b-dim)}
 .cc-stat:last-child{border-right:none}
 .cc-stat-v{font-family:var(--ff-head);font-size:clamp(13px,3.4vw,16px);font-weight:700;line-height:1}
@@ -536,45 +578,45 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 /* ── CAST DETAIL ─────────────────────────────────────── */
 .cd{display:none}.cd.on{display:block}
 .cd-hero{display:flex;align-items:stretch;min-height:clamp(130px,32vw,172px);
-  border-bottom:1px solid var(--b-gold);
-  background:var(--noise),linear-gradient(180deg,var(--red-t) 0%,transparent 100%)}
+  background:var(--bg)}
 .cd-img{width:var(--cdp-w);flex-shrink:0;
   display:flex;align-items:center;justify-content:center;padding:6px 0 6px var(--px)}
 .cd-img-frame{width:100%;aspect-ratio:225/266;overflow:hidden}
-.cd-portrait{width:100%;height:100%;object-fit:cover;display:block;filter:drop-shadow(0 3px 14px rgba(0,0,0,0.85))}
+.cd-portrait{width:100%;height:100%;object-fit:cover;display:block}
 .cd-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   background:var(--s2);font-size:clamp(16px,4.2vw,20px);font-weight:900;letter-spacing:0.06em;opacity:0.18;text-transform:uppercase}
 .cd-info{flex:1;padding:14px var(--px);display:flex;flex-direction:column;justify-content:center}
-.cd-name{font-family:var(--ff-head);font-size:clamp(21px,5.6vw,29px);font-weight:900;
-  line-height:1.1;letter-spacing:0.01em;text-shadow:0 1px 0 rgba(0,0,0,0.85)}
+.cd-name{font-family:var(--ff-head);font-size:clamp(28px,7.6vw,40px);font-weight:400;
+  line-height:1.05;letter-spacing:0.01em}
 .cd-sub{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:6px;letter-spacing:0.06em}
-.cd-pts{font-family:var(--ff);font-size:clamp(32px,8.5vw,48px);font-weight:900;
-  line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em;text-shadow:0 0 14px var(--gold-glow)}
+.cd-pts{font-family:var(--ff-num);font-size:clamp(38px,9.6vw,52px);font-weight:600;
+  line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em}
 .cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
 .cd-ranks{display:flex;gap:10px;margin-top:9px;font-family:var(--fm);font-size:10px;color:var(--t2);flex-wrap:wrap}
 .cd-ranks > span{display:inline-flex;align-items:center;gap:4px}
-.cd-ranks svg{width:13px;height:13px;color:var(--gold3)}
+.cd-ranks svg{width:13px;height:13px}
 
 
 .cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
   background:rgba(184,128,24,0.07);gap:1px;border-bottom:1px solid var(--b-gold);flex-shrink:0}
-.cd-s{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
+.cd-s{background:var(--s2);
   padding:10px 4px;text-align:center}
 .cd-s-v{font-family:var(--ff);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;letter-spacing:-0.02em}
 .cd-s-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
 
-.cd-block{margin:18px var(--px) 8px}
-.cd-block-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--wax);
-  letter-spacing:0.18em;text-transform:uppercase;
-  padding-bottom:7px;margin-bottom:9px;border-bottom:1px solid var(--paper-line)}
-.cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.62;color:#3b2a1a}
-.cd-block-body strong{color:var(--ink);font-weight:700}
+.cd-block{margin:14px var(--px) 8px}
+.cd-block-insight .cd-block-lbl{color:var(--plum-ink)}
+.cd-block-lbl{font-family:var(--ff-type);font-weight:600;font-size:var(--fs-2xs);color:var(--teal-ink);
+  letter-spacing:0.2em;text-transform:uppercase;
+  padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
+.cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
+.cd-block-body strong{color:var(--t1);font-weight:700}
 
 /* Episode scores strip in cast detail */
 .cd-ep-strip{display:flex;margin:6px var(--px) 8px;
   border:1px solid var(--b-gold);border-radius:2px;overflow:hidden;
   background:rgba(184,128,24,0.05);gap:1px}
-.cd-ep{flex:1;background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);padding:8px 3px;text-align:center}
+.cd-ep{flex:1;background:var(--s2);padding:8px 3px;text-align:center}
 .cd-ep-n{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3)}
 .cd-ep-v{font-family:var(--ff-head);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;margin-top:2px;letter-spacing:-0.02em}
 
@@ -601,18 +643,18 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 /* ── EPISODE PORTRAIT PODIUM ───────────────────────── */
 .pod-portraits{display:flex;align-items:flex-end;gap:6px;
-  padding:14px 10px 2px;margin:4px 0 16px}
+  padding:14px 12px 4px;margin:4px 0 16px}
 .pod-port-pts.win{color:var(--gold2)}
 .pod-port-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:8px}
 .pod-port-img{width:100%;aspect-ratio:225/266;overflow:hidden;
   transition:border-color 0.2s}
-.pod-port-photo{width:100%;height:100%;object-fit:cover;display:block;filter:drop-shadow(0 2px 6px rgba(0,0,0,0.6))}
+.pod-port-photo{width:100%;height:100%;object-fit:cover;display:block}
 .pod-port-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   background:var(--s2);font-size:10px;font-weight:900;letter-spacing:0.06em;opacity:0.3;text-transform:uppercase}
 
-.pod-port-name{font-family:var(--ff-name);font-size:clamp(9px,2.2vw,11px);letter-spacing:0.04em;
+.pod-port-name{font-family:var(--ff-name);font-weight:600;font-size:clamp(12px,3.2vw,15px);letter-spacing:0.02em;
   text-align:center;line-height:1;margin-top:2px}
-.pod-port-pts{font-family:var(--ff-head);font-size:clamp(14px,3.8vw,18px);font-weight:700;color:var(--t1);
+.pod-port-pts{font-family:var(--ff-num);font-size:clamp(19px,5vw,23px);font-weight:500;color:var(--t1);
   line-height:1;letter-spacing:-0.02em;text-align:center}
 
 /* ── EPISODE HORIZONTAL SCROLL ─────────────────────── */
@@ -653,12 +695,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 
-/* ── BRAND COLOUR SPLITS ───────────────────────────── */
-.ht-gold { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow); }
-.ht-white { color: var(--t1); text-shadow: 0 0 12px rgba(255,255,255,0.15); }
-.hdr-title em.ht-white { color: var(--t1); font-style: normal; text-shadow: none; }
 
-::selection{background:rgba(136,19,55,0.55);color:var(--ivory)}
+::selection{background:var(--wax);color:var(--cream)}
 
 /* ── ACCESSIBILITY ──────────────────────────────────── */
 /* Focus visible — keyboard nav */
@@ -778,25 +816,16 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 
 /* ── MASTHEAD COUNTDOWN: NEXT EPISODE ──────────────────── */
-.hdr-cd{
-  margin-left:auto;flex-shrink:0;
-  -webkit-user-select:none;user-select:none;
-  transform-origin:right center;
-  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);
-}
-.hdr.compact .hdr-cd{transform:scale(0.82)}
-/* Brass mechanical stopwatch (see stopwatchSVG()). Digits are SVG
-   <tspan>s inside the ivory dial, so they scale with the case. */
-#hdr-countdown{display:flex;align-items:center}
-.sw{display:block;width:60px;height:auto;overflow:visible;
-  filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6))}
-.sw-ep{font-family:var(--ff-type);font-weight:700;font-size:8.5px;letter-spacing:1.4px;fill:#6b5a44}
-.sw-big{font-family:var(--ff-serif);font-weight:700;font-size:26px;fill:var(--wax)}
-.sw-unit{font-family:var(--ff-type);font-weight:700;font-size:11px;fill:var(--wax)}
-.sw-small{font-family:var(--ff-type);font-weight:700;font-size:14px;fill:var(--red3)}
-.sw-hand{transform-origin:50px 58px;animation:sw-sweep 60s steps(60) infinite}
-@keyframes sw-sweep{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion: reduce){.sw-hand{animation:none}}
+/* The airtime is a footnote, not a feature: one quiet italic line
+   under the dateline, keyed with a gold dagger. */
+.hdr-cd{-webkit-user-select:none;user-select:none;}
+.hdr.compact .hdr-cd{transform:none}
+#hdr-countdown{display:block}
+.cd-note{font-family:var(--ff);font-style:italic;font-size:var(--fs-sm);line-height:1.4;
+  color:var(--t3);text-align:center;margin-top:-4px}
+.cd-note .cd-mark{font-style:normal;color:var(--gold2);margin-right:3px}
+.cd-note .cd-t{font-family:var(--ff-num);font-style:normal;font-weight:500;color:var(--t2);
+  font-variant-numeric:tabular-nums}
 
 
 
@@ -858,52 +887,42 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .player-card-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 16px var(--wall-inset) 36px;
+  gap: 10px;
+  padding: 14px var(--wall-inset) 36px;
 }
 
-/* Card shell (also the episode podium) — each player is a separate walnut placard hung on the
-   gallery wall: wood grain, a thin gilt fillet inset from the edge, a
-   drop shadow onto the wall, and a brass nail (::after) at top centre. */
+/* ── INDEX CARDS ──────────────────────────────────────────
+   Every surface you read — standings rows, the podium, scoresheets,
+   analysis and profile copy — is an ivory index card lifted off the
+   claret ground. Re-pointing the text/rule tokens on the card turns
+   everything inside it ink-on-paper without touching each rule. */
+.pc, .pod-portraits, .tt-wrap, .bs-wrap, .ep-ins, .cd-block {
+  --t1: var(--ink); --t2: var(--ink2); --t3: var(--ink3); --t4: var(--ink4);
+  --line-dim: var(--paper-rule); --line-gold: var(--gold4); --line-cream: var(--paper-edge);
+  --b-dim: var(--paper-rule); --b-gold: var(--paper-rule);
+  --gold2: var(--tm-red); --marigold: var(--tm-red);   /* "best" inks red on paper */
+  --up: var(--emerald-ink);
+  color: var(--ink);
+}
+/* Card shell (also the episode podium) — each player is its own index
+   card: ivory stock, a 1px paper edge, a ruled hairline set 5px inside
+   (outline-offset), and a soft shadow onto the claret. The top three are
+   edged in their medal colour. */
 .pc, .pod-portraits {
   position: relative;
   border-radius: 3px;
-  background:
-    var(--noise),
-    radial-gradient(ellipse 120% 90% at 30% 0%, rgba(255,200,140,0.06), transparent 60%),
-    var(--wood-grain),
-    linear-gradient(175deg, #3a2517 0%, #2a190f 55%, #21130b 100%);
-  box-shadow:
-    inset 0 0 0 1px rgba(236,192,64,0.28),
-    inset 0 0 0 3px #1a0f08,
-    inset 0 0 0 4px rgba(184,128,24,0.18),
-    inset 0 2px 10px rgba(0,0,0,0.35),
-    0 8px 16px -4px rgba(0,0,0,0.7),
-    0 2px 4px rgba(0,0,0,0.5);
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  outline: 1px solid var(--paper-rule);
+  outline-offset: -6px;
+  box-shadow: var(--card-shadow);
 }
-.pc::after, .pod-portraits::after {
-  content: '';
-  position: absolute; top: -4px; left: 50%; z-index: 2;
-  width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 35%, #f3dc9a, #b88018 55%, #5a3c08);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.7);
-}
+.pc-rank1 { border-color: var(--gold); outline: 2px solid var(--gold); outline-offset: -6px; }
+.pc-podium { border-color: #b9bcc4; outline-color: #cfd2d8; }
 
-/* Rank-1 placard gets a brighter, double gilt frame */
-.pc-rank1 {
-  box-shadow:
-    inset 0 0 0 1px rgba(243,211,122,0.65),
-    inset 0 0 0 3px #1a0f08,
-    inset 0 0 0 4px rgba(212,160,40,0.45),
-    inset 0 2px 10px rgba(0,0,0,0.35),
-    0 0 14px rgba(212,160,40,0.12),
-    0 8px 16px -4px rgba(0,0,0,0.7),
-    0 2px 4px rgba(0,0,0,0.5);
-}
-
-/* Last place hangs slightly crooked — pivoting on its nail. Applied to
-   the inner .pc, not .player-card, because card-drop's fill-mode would
-   otherwise pin .player-card's transform to translateY(0). */
+/* Last place hangs slightly crooked. Applied to the inner .pc, not
+   .player-card, because card-drop's fill-mode would otherwise pin
+   .player-card's transform to translateY(0). */
 .player-card.pc-last > .pc { transform: rotate(-1deg); transform-origin: 50% 0; }
 
 /* ── HEAD: rank · name · score ─── */
@@ -935,14 +954,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    direction arrow, everything else stays neutral. */
 .stand-hero {
   text-align: center;
-  padding: 16px var(--px) 14px;
-  border-bottom: 1px solid var(--b-gold);
-  background: var(--noise), linear-gradient(180deg, var(--red-t) 0%, transparent 100%);
+  padding: 18px var(--px) 14px;
+  background: var(--bg);
   position: relative;
 }
 .stand-hero-kicker {
   font-family: var(--ff-type);
-  font-weight: 700;
+  font-weight: 400;
   font-size: var(--fs-xs);
   color: var(--t3);
   letter-spacing: 0.22em;
@@ -951,16 +969,16 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .stand-hero-title {
   font-family: var(--ff-head);
-  font-size: clamp(30px, 8.5vw, 40px);
-  font-weight: 900;
-  line-height: 1.05;
+  font-size: clamp(38px, 10.5vw, 54px);
+  font-weight: 400;
+  line-height: 1;
   letter-spacing: 0.01em;
   margin-bottom: 3px;
   color: var(--t1);
-  text-shadow: 0 1px 0 rgba(0,0,0,0.85), 0 0 18px var(--red-glow);
 }
 .stand-hero-sub {
-  font-family: var(--ff-type);
+  font-family: var(--ff);
+  font-style: italic;
   font-size: var(--fs-sm);
   color: var(--t3);
   letter-spacing: 0.05em;
@@ -973,23 +991,24 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 7px calc(var(--px) + var(--wall-inset));
-  border-top: 1px solid var(--b-gold);
-  border-bottom: 3px double rgba(184,128,24,0.35);
-  background: rgba(0,0,0,0.28);
+  /* +1px: matches the rows' 1px frame so columns stay aligned */
+  padding: 8px calc(var(--px) + var(--wall-inset) + 1px);
+  border-top: 1px solid var(--line-gold);
+  border-bottom: 3px double var(--line-gold);
+  background: var(--bg);
 }
 .st-h {
   font-family: var(--ff-type);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--t3);
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.25;
   -webkit-user-select: none;
   user-select: none;
 }
-/* Only Task Points/Rank Points actually sort anything — Rank and Player
+/* Only Show Pts/League Pts actually sort anything — Rank and Player
    are plain labels, so they don't get pointer/press affordances. */
 .st-h-sortable { cursor: pointer; }
 .st-h-sortable:active { opacity: 0.7; }
@@ -997,13 +1016,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    emphasized (brighter gold, a soft glow) instead, so which column
    you're sorted by reads as "the one that stands out" rather than
    needing a separate glyph to parse. Font-weight deliberately does NOT
-   change here (color/glow only) — Task Points and Rank Points are the
+   change here (color/glow only) — Show Pts and League Pts are the
    same length, and bolding one would widen its text and throw off the
    gap between the two headers depending on which was active. */
-.st-h.active { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+.st-h.active { color: var(--gold2) }
 /* Rank's own text is centered in a narrow box, so it eats into the flex
    gap on both sides — a bit of extra margin here brings the visible
-   Rank↔Player gap up to match Task Points↔Rank Points' gap exactly
+   Rank↔Player gap up to match Show Pts↔League Pts' gap exactly
    (that one runs wider because right-aligned text inside a 90px column
    leaves slack space before the next column starts). Tuned against the
    rendered gap, not a guess — see the alignment note above .pc-score-col.
@@ -1040,12 +1059,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   gap: 2px;
 }
 .pc-rank-n {
-  font-family: var(--ff-serif);
-  font-size: 17px;
-  font-weight: 700;
+  font-family: var(--ff-num);
+  font-size: 20px;
+  font-weight: 600;
   color: var(--t2);
-  letter-spacing: -0.02em;
   line-height: 1;
+  font-variant-numeric: lining-nums;
 }
 /* Ranks 1-3 sit on a wax seal (WAX_SEAL_SVG) tinted gold/silver/bronze
    through the --seal-* custom properties, with the numeral pressed in. */
@@ -1054,22 +1073,22 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   width: 32px; height: 32px;
   display: flex; align-items: center; justify-content: center;
 }
-.pc-rank-seal svg { position: absolute; inset: 0; width: 100%; height: 100%;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.55)); }
-.pc-rank-seal .ws-drip  { fill: var(--seal-dark); }
+.pc-rank-seal svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* Flat print version: solid seal, one thin inner ring, no shine. */
+.pc-rank-seal .ws-drip  { fill: var(--seal-base); }
 .pc-rank-seal .ws-body  { fill: var(--seal-base); }
-.pc-rank-seal .ws-press { fill: var(--seal-dark); opacity: 0.28; }
-.pc-rank-seal .ws-ring  { fill: none; stroke: var(--seal-light); stroke-width: 1; opacity: 0.55; }
-.pc-rank-seal .ws-shine { fill: var(--seal-light); opacity: 0.5; }
+.pc-rank-seal .ws-press { fill: none; }
+.pc-rank-seal .ws-ring  { fill: none; stroke: var(--seal-ink); stroke-width: 0.8; opacity: 0.6; }
+.pc-rank-seal .ws-shine { display: none; }
 .pc-rank-seal span {
   position: relative;
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--seal-ink);
-  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
 }
-.seal-t1 { --seal-light:#fbe7a1; --seal-base:#d4a028; --seal-dark:#7a520a; --seal-ink:#4a3104; }
-.seal-t2 { --seal-light:#ffffff; --seal-base:#b9bec6; --seal-dark:#5d636b; --seal-ink:#2f3338; }
-.seal-t3 { --seal-light:#f2b27a; --seal-base:#b06a32; --seal-dark:#5c3212; --seal-ink:#3a1e08; }
+.seal-t1 { --seal-base:#e0b54a; --seal-ink:#1d1512; }
+.seal-t2 { --seal-base:#c6c9d0; --seal-ink:#1d1512; }
+.seal-t3 { --seal-base:#d0935c; --seal-ink:#1d1512; }
 
 /* Name */
 .pc-name-col {
@@ -1077,17 +1096,17 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   min-width: 0;
 }
 .pc-name {
-  font-family: var(--ff-serif);
-  font-size: clamp(15px, 4.1vw, 18px);
-  font-weight: 700;
+  font-family: var(--ff-name);
+  font-size: clamp(17px, 4.6vw, 22px);
+  font-weight: 600;
   color: var(--t1);
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Two score columns — Task Points and Rank Points side by side, same
+/* Two score columns — Show Pts and League Pts side by side, same
    fixed width as their header cells (.st-h-num) so numbers and labels
    line up. Each badges gold/silver/bronze on its OWN top-3 status
    (PVE_RANK/PVP_RANK) independently of the other column and of
@@ -1102,24 +1121,28 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   text-align: right;
 }
 .pc-total {
-  font-family: var(--ff);
-  font-size: clamp(16px, 4.4vw, 19px);
-  font-weight: 800;
+  font-family: var(--ff-num);
+  font-size: clamp(19px, 5vw, 23px);
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
   color: var(--t1);
 }
-/* Engraved rather than glowing: a 1px dark underside on each tier. */
-.pc-score-t1 { color: var(--gold2); text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
-.pc-score-t2 { color: #b9b2a6; text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
-.pc-score-t3 { color: #c08a4a; text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
+.pc-score-t1 { color: var(--tm-red); }
+.pc-score-t2 { color: #5f636c; }
+.pc-score-t3 { color: #9a5a28; }
 /* Narrow phones: the gallery-wall inset and the wider serif names leave
    too little room, so tighten the gaps and both score columns (header
    AND rows, so they stay aligned) — the column labels wrap to two lines
    ("Task / Points") to give player names the space. */
+/* Phones: two/three-digit scores don't need 90px, and the Caslon names
+   do — narrow both score columns (header AND rows) to give them room. */
+@media (max-width: 420px) {
+  .st-h-num, .pc-score-col { width: 76px; }
+  .st-h { font-size: 10.5px; letter-spacing: 0.04em; }
+}
 @media (max-width: 360px) {
   .stand-head, .pc-head { gap: 8px; }
-  .st-h { font-size: 10px; }
+  .st-h { font-size: 10px; letter-spacing: 0.06em; }
   .st-h-num, .pc-score-col { width: 60px; }
 }
 
@@ -1130,11 +1153,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── BOX SCORE ──────────────────────────────────────── */
 .bs-wrap{
-  margin:12px var(--px) 8px;
-  border-radius:2px;
+  margin:14px var(--px) 10px;
+  border-radius:3px;
   overflow:hidden;
-  background:var(--noise),var(--paper);
-  box-shadow:inset 0 0 30px rgba(120,90,50,0.18),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4);
+  background:var(--paper);
+  border:1px solid var(--paper-edge);
+  box-shadow:var(--card-shadow);
 }
 /* Expanded player card: everything else (photo, name, rank, total, avg)
    is already on the collapsed row above, so this holds only the weekly
@@ -1171,112 +1195,78 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   border-style:dashed;color:var(--t4);font-size:10px;
 }
 .pc-pick-ep{
-  font-family:var(--fm);font-size:6px;color:var(--t4);
+  font-family:var(--fm);font-size:7px;color:var(--t4);
   letter-spacing:0.04em;text-transform:uppercase;
   margin-bottom:3px;
 }
-/* Weekly score handwritten in ink on a small paper tag under the
-   portrait, like a gallery label: iron-gall ink normally, wax-red ink
-   for the best week, faded pencil for the worst. */
+/* Weekly score beneath each portrait, set in Franklin: red for the
+   best week, dimmed for the worst. */
 .pc-pick-pts{
-  font-family:var(--ff-hand);font-size:clamp(14px,3.8vw,17px);font-weight:700;
-  line-height:1;margin-top:4px;padding:2px 0 1px;color:var(--ink);
-  background:var(--ivory);border-radius:1px;
-  box-shadow:0 1px 2px rgba(0,0,0,0.5);
+  font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);font-weight:500;
+  line-height:1;margin-top:5px;padding-top:4px;color:var(--t1);
+  border-top:1px solid var(--line-dim);
+  font-variant-numeric:lining-nums;
 }
-.pc-pick-cell.hi .pc-pick-pts{color:var(--red)}
-.pc-pick-cell.lo .pc-pick-pts{color:var(--pencil)}
+.pc-pick-cell.hi .pc-pick-pts{color:var(--gold2)}
+.pc-pick-cell.lo .pc-pick-pts{color:var(--t4)}
 /* Upcoming week with no pick yet — a sealed task envelope instead of a
    dash. Solid (not dashed) empty frame so the envelope reads as "on the
    wall, waiting" rather than "missing". */
-.pc-pick-upcoming .pc-pick-photo-blank{border-style:solid;background:rgba(0,0,0,0.18)}
-.pc-pick-envelope{width:80%;height:auto;transform:rotate(-4deg);
-  filter:drop-shadow(0 1px 1px rgba(0,0,0,0.5))}
+.pc-pick-upcoming .pc-pick-photo-blank{border-style:solid;border-color:var(--line-dim);background:none}
+.pc-pick-envelope{width:80%;height:auto}
+/* Recolour the envelope SVG (fills are presentation attributes, which
+   CSS overrides) to the same flat stationery as the DL tabs. */
+.pc-pick-envelope rect,.ep-sealed-envelope rect{fill:var(--env-front);stroke:var(--line-gold)}
+.pc-pick-envelope path,.ep-sealed-envelope path{stroke:var(--line-gold)}
+.pc-pick-envelope path[fill],.ep-sealed-envelope path[fill]{fill:var(--env-flap)}
+.pc-pick-envelope circle:first-of-type,.ep-sealed-envelope circle:first-of-type{fill:var(--wax)}
+.pc-pick-envelope rect,.ep-sealed-envelope rect{stroke:var(--gold4)}
+.pc-pick-envelope circle:last-of-type,.ep-sealed-envelope circle:last-of-type{display:none}
 /* Picked before that week's episode has aired — real pick, no score to
    show yet, so the photo dims slightly and the points slot reads as a
    placeholder rather than a number. */
 .pc-pick-pending .pc-pick-photo{opacity:0.55}
-.pc-pick-pending .pc-pick-pts{color:var(--pencil);font-weight:600}
+.pc-pick-pending .pc-pick-pts{color:var(--t4)}
 .bs-header{
   display:flex;
-  border-bottom:1.5px solid rgba(74,54,34,0.55);
+  border-bottom:1px solid var(--line-gold);
 }
 .bs-hcell{
   flex:1;text-align:center;padding:7px 2px 6px;
-  font-family:var(--ff-type);font-weight:700;font-size:8px;color:var(--sepia);
-  letter-spacing:0.06em;border-right:1px solid var(--paper-line);
+  font-family:var(--ff-type);font-weight:500;font-size:8px;color:var(--t3);
+  letter-spacing:0.06em;border-right:1px solid var(--line-dim);
 }
 .bs-hcell:first-child{
   min-width:34px;flex:0 0 34px;text-align:left;padding-left:6px;
-  border-right:1px solid var(--margin-red);
 }
-.bs-hcell:last-child,.bs-cell:last-child{border-right:none;border-left:3px double rgba(74,54,34,0.4)}
-.bs-hcell.tot{color:var(--wax)}
+.bs-hcell:last-child,.bs-cell:last-child{border-right:none;border-left:3px double var(--line-gold)}
+.bs-hcell.tot{color:var(--gold2)}
 .bs-row{
-  display:flex;border-bottom:1px solid var(--paper-line);
+  display:flex;border-bottom:1px solid var(--line-dim);
 }
 .bs-row:last-child{border-bottom:none}
-.bs-row-tot{border-bottom:3px double rgba(74,54,34,0.4);background:rgba(120,90,50,0.07)}
+.bs-row-tot{border-bottom:3px double var(--line-gold)}
 .bs-label{
   flex:0 0 34px;min-width:34px;
-  font-family:var(--ff-type);font-weight:700;font-size:9px;color:var(--wax);
+  font-family:var(--ff-type);font-weight:500;font-size:9px;color:var(--gold2);
   padding:6px 3px 6px 6px;letter-spacing:0.03em;
   display:flex;align-items:center;
-  border-right:1px solid var(--margin-red);
+  border-right:1px solid var(--line-dim);
 }
 .bs-label svg{width:14px;height:14px;display:block}
 .bs-cell{
-  flex:1;text-align:center;padding:5px 1px 3px;
-  font-family:var(--ff-hand);font-size:clamp(15px,4.2vw,19px);
-  font-weight:700;line-height:1;color:var(--ink);
-  border-right:1px solid var(--paper-line);
+  flex:1;text-align:center;padding:5px 1px 4px;
+  font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);
+  font-weight:500;line-height:1;color:var(--t1);
+  border-right:1px solid var(--line-dim);
   display:flex;align-items:center;justify-content:center;
+  font-variant-numeric:lining-nums tabular-nums;
 }
-.bs-cell.hi{color:var(--red)}
-.bs-cell.lo{color:var(--pencil)}
-.bs-cell.mid{color:var(--ink)}
-.bs-cell.blank,.blank{color:var(--pencil);opacity:0.6}
+.bs-cell.hi{color:var(--gold2)}
+.bs-cell.lo{color:var(--t4)}
+.bs-cell.mid{color:var(--t1)}
+.bs-cell.blank,.blank{color:var(--t4);opacity:0.6}
 
-
-/* ╔═══════════════════════════════════════════════════════╗
-   ║  TASKMASTER AMBIENT SHADERS                           ║
-   ║  Wax · Candlelight · Ink · Parchment grain           ║
-   ╚═══════════════════════════════════════════════════════╝ */
-
-/* ── KEYFRAMES ────────────────────────────────────────────── */
-
-/* Candlelight surface flicker — barely perceptible brightness shift */
-@keyframes candle-flicker {
-  0%   { opacity: 0.70; }
-  18%  { opacity: 0.78; }
-  22%  { opacity: 0.68; }
-  50%  { opacity: 0.75; }
-  72%  { opacity: 0.72; }
-  79%  { opacity: 0.80; }
-  100% { opacity: 0.70; }
-}
-
-/* Ink-bleed shimmer — slow wash across section dividers */
-@keyframes ink-bleed {
-  0%   { background-position: -100% 0; opacity: 0.0; }
-  15%  { opacity: 0.6; }
-  85%  { opacity: 0.6; }
-  100% { background-position: 200% 0;  opacity: 0.0; }
-}
-
-/* Parchment breathe — very slow vignette intensity shift */
-@keyframes parchment-breathe {
-  0%   { opacity: 0.30; }
-  50%  { opacity: 0.45; }
-  100% { opacity: 0.30; }
-}
-
-/* Gold ember — gentle glow pulse on gold decorative elements */
-@keyframes ember-glow {
-  0%   { box-shadow: 0 0  6px var(--gold-glow), 0 0 12px rgba(184,128,24,0.12); }
-  50%  { box-shadow: 0 0 10px var(--gold-glow), 0 0 22px rgba(184,128,24,0.22); }
-  100% { box-shadow: 0 0  6px var(--gold-glow), 0 0 12px rgba(184,128,24,0.12); }
-}
 
 /* Stamp reveal — used on rank numbers, score cells */
 @keyframes stamp-in {
@@ -1286,93 +1276,18 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   100% { transform: scale(1); }
 }
 
-/* ── BACKGROUND VIGNETTE / PARCHMENT LAYER ───────────────── */
-/* Sits over the body radial gradient — breathes slowly */
-body::before {
-  content: '';
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse 80% 70% at 50% 50%,
-    transparent 30%,
-    rgba(10,2,2,0.45) 100%);
-  animation: parchment-breathe 9s ease-in-out infinite;
-}
-
-/* Candlelight warmth layer — upper half of screen */
-body::after {
-  content: '';
-  position: fixed; inset: 0;
-  pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse 90% 55% at 50% 0%,
-    rgba(160,60,10,0.08) 0%,
-    transparent 70%);
-  animation: candle-flicker 7s ease-in-out infinite;
-}
-
-/* ── SECTION DIVIDER INK BLEED ───────────────────────────── */
-/* The sh-line gets a slow ink shimmer */
-.sh-line {
-  position: relative; overflow: hidden;
-  contain: strict;
-}
-.sh-line::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
-  animation: ink-bleed 8s ease-in-out infinite;
-  pointer-events: none;
-}
-
-/* ── PLAYER CARD SURFACE SHADERS ─────────────────────────── */
-/* Each card has a subtle candlelight overlay */
-.pc::before {
-  content: '';
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse 120% 80% at 20% 0%,
-    rgba(200,120,30,0.05) 0%,
-    transparent 60%);
-  animation: candle-flicker 13s ease-in-out infinite;
-}
+/* Flat theme: the old vignette, candlelight and ink-shimmer overlays
+   are gone. Card children still sit above the (now plain) panel. */
 .pc > * { position: relative; z-index: 1; }
 
-/* Rank-1 card gets wax-seal intensity */
-.pc-rank1::before {
-  background: radial-gradient(ellipse 130% 80% at 15% 0%,
-    rgba(212,160,40,0.09) 0%,
-    transparent 65%);
-  animation: candle-flicker 9s ease-in-out infinite;
-}
-
 /* ── RANK NUMBER STAMP ANIMATION ─────────────────────────── */
-/* Applied via JS on slide mount — here's the class */
 .stamp {
   animation: stamp-in 0.45s cubic-bezier(0.22,1,0.36,1) both;
 }
 
-/* ── CAST/EPISODE/STANDINGS HERO SURFACE ─────────────────── */
-/* cd-hero, ep-header-box and stand-hero get a slow candle wash */
-.cd-hero::after, .ep-header-box::before, .stand-hero::before {
-  content: '';
-  position: absolute; inset: 0;
-  pointer-events: none; z-index: 0;
-  background: radial-gradient(ellipse 100% 120% at 0% 100%,
-    rgba(180,80,10,0.06) 0%,
-    transparent 70%);
-  animation: candle-flicker 15s ease-in-out infinite 3s;
-}
-
-
 /* ── REDUCE MOTION OVERRIDE ──────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
-  body::before, body::after,
-  .tabs::before, .sh-line::after,
-  .pc::before, .pc-rank1::before,
-  .cd-hero::after, .ep-header-box::before, .stand-hero::before,
-  .bs-header::after,
-  .tab.active::before {
-    animation: none !important;
-  }
+  .tab::before, .tab .tab-label, .tab .ti::after { transition: none !important; }
 }
 
 
@@ -1426,28 +1341,11 @@ body::after {
   100% { transform: scaleX(1); opacity: 0; transform-origin: left; }
 }
 
-/* Rank glow burst: rank-1 number pulses with authority */
-@keyframes rank-burst {
-  0%,100% { text-shadow: 0 0 12px var(--gold-glow), 0 0 28px rgba(212,160,40,0.3); }
-  50%      { text-shadow: 0 0 24px var(--gold-glow), 0 0 56px rgba(212,160,40,0.55), 0 0 80px rgba(212,160,40,0.2); }
-}
 
 /* ──────────────────────────────────────────────────────────
    SURFACE TEXTURE — visible, always-on
    ────────────────────────────────────────────────────────── */
 
-/* Gold vein on section dividers — periodic sweep */
-.sh-line {
-  position: relative; overflow: hidden;
-  contain: strict;
-}
-.sh-line::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg, transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
-  animation: ink-bleed 8s ease-in-out infinite;
-  pointer-events: none;
-}
 
 /* ──────────────────────────────────────────────────────────
    SLIDE REVEAL — fires when a new slide comes into view
@@ -1495,7 +1393,6 @@ body::after {
    ────────────────────────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .sh-line::after, .ep-tab.active::before,
   .pc-total, .cd-pts,
   .player-card, .slide-fresh,
   .bs-cell.hi {
@@ -1521,12 +1418,11 @@ body::after {
 
 .settings-panel {
   width: 100%; max-width: 680px; margin: 0 auto;
-  background: var(--noise), linear-gradient(180deg, var(--s3) 0%, var(--s2) 100%);
-  border-top: 2px solid var(--gold2);
+  background: var(--s2);
+  border-top: 1px solid var(--line-gold);
   border-radius: 4px 4px 0 0;
   padding: 20px 20px 32px;
   animation: slide-up 0.25s cubic-bezier(0.22,1,0.36,1);
-  box-shadow: 0 -8px 40px rgba(0,0,0,0.6);
 }
 @keyframes slide-up {
   from { transform: translateY(100%); opacity: 0; }
@@ -1572,24 +1468,21 @@ body::after {
 
 
 /* ── DELTA BESIDE RANK ──────────────────────────────── */
-/* Rank movement as a small rubber-stamp mark rather than a green/red
-   ticker: typewriter-stamp face, thin inked border, slight skew, faded
-   inks (green-black up, wax-red down). */
+/* Rank movement as a small printed figure in a hairline box rather than
+   a ticker — emerald up, Taskmaster red down. */
 .pc-delta{font-family:var(--ff-stamp);font-size:9px;font-weight:400;line-height:1;
-  letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:2px;
-  transform:rotate(-5deg);opacity:0.8;}
-.pc-delta-up{color:#8fb39a;}
-.pc-delta-dn{color:#d66a82;}
+  letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:0;}
+.pc-delta-up{color:var(--up);}
+.pc-delta-dn{color:var(--tm-red);}
 .pc-delta-flat{color:var(--t4);border-color:transparent;opacity:0.6;}
 
 /* ── SCORE NUMERALS ─────────────────────────────────── */
-/* Score numbers on the dark wood read in the body serif with lining,
-   tabular figures so columns of them line up. The paper scoresheets
-   (.sc, .bs-cell, .tt-total) are handwritten instead, so aren't here. */
+/* Score numbers are set in Franklin with lining, tabular figures so
+   columns of them line up (.sc/.bs-cell/.tt-total set this themselves). */
 .s-pts-n,.pd-pts-n,.cd-pts,.cc-pts,
 .ss-v,.cd-s-v,.cc-ep-v,.cc-stat-v,.cd-ep-v,
 .pod-port-pts,.ps-pts-n,.ps-stat-v,
-.ph-pts,.pc-total{font-family:var(--ff)!important;font-variant-numeric:lining-nums tabular-nums;}
+.ph-pts,.pc-total{font-family:var(--ff-num)!important;font-variant-numeric:lining-nums tabular-nums;}
 
 /* Active tab gold fire sweep on the indicator */
 @keyframes indicator-sweep {
@@ -1607,7 +1500,7 @@ body::after {
 
 /* ── TAB LABEL TEXT ─────────────────────────────────── */
 .tab-label {
-  font-family: var(--ff-type);
+  font-family: var(--fm);
   font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1636,9 +1529,10 @@ body::after {
 .cast-tabs {
   display: flex;
   position: relative;
-  padding: 0 4px;
-  border-bottom: 1px solid rgba(0,0,0,0.6);
-  background: var(--noise), var(--wood-grain), linear-gradient(180deg, #1d120b 0%, #150d08 100%);
+  padding: 8px;
+  gap: 4px;
+  border-bottom: 1px solid var(--line-gold);
+  background: var(--bg);
 }
 .cast-tabs .ep-tab {
   flex: 1;
@@ -1655,7 +1549,12 @@ body::after {
 <div class="topbar">
 <header class="hdr">
   <div class="hdr-brand">
-    <div class="hdr-title"><span class="ht-gold">FAN</span><span class="ht-white">TASK</span><span class="ht-gold">Y</span> <em class="ht-white">MASTER</em> <span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span></div>
+    <h1 class="hdr-title"><span class="ht-word">Fantasky</span><span class="ht-word">Master</span></h1>
+    <div class="hdr-dateline">
+      <span>Series<span class="ht-series" id="ht-series" onclick="toggleSeries()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleSeries();}" aria-label="Toggle between Series 21 and Series 22">22</span></span>
+      <span class="hd-mid" aria-hidden="true">&#10022;</span>
+      <span>The Fantasy League</span>
+    </div>
   </div>
 
   <div class="hdr-cd" id="hdr-cd" aria-label="Countdown to next episode">
@@ -1708,8 +1607,8 @@ body::after {
     <div class="stand-head" id="stand-head">
       <div class="st-h st-h-rank">Rank</div>
       <div class="st-h st-h-name">Player</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Task Points</div>
-      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">Rank Points</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pve" onclick="sortStandings('pve')">Show Pts</div>
+      <div class="st-h st-h-num st-h-sortable" data-key="pvp" onclick="sortStandings('pvp')">League Pts</div>
     </div>
     <div id="player-body" class="player-card-list"></div>
   </div>
@@ -2275,8 +2174,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
 
   // Rank + delta both live in the Rank column now, and both reflect
   // whichever column the table is CURRENTLY sorted by (boardKey, passed
-  // in from renderStandingsList) — sort by Task Points and you see PvE
-  // rank/movement, switch to Rank Points and both swap to the PvP
+  // in from renderStandingsList) — sort by Show Pts and you see PvE
+  // rank/movement, switch to League Pts and both swap to the PvP
   // numbers instead. Always rendered, even at zero — a dash rather than
   // an absent element, so every row's rank column is the same height.
   const rankCell = rankDisplay<=3
@@ -2291,8 +2190,8 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   // per week (reusing contImg's 'pod' variant — same portrait treatment
   // as the episode podium strip) with that week's points underneath.
   // Follows the same board the table is sorted by: raw PvE points when
-  // sorted by Task Points, that week's 5..1 PvP rank-points when sorted
-  // by Rank Points — so the expanded row always matches the number
+  // sorted by Show Pts, that week's 5..1 PvP rank-points when sorted
+  // by League Pts — so the expanded row always matches the number
   // that's actually summed into the currently-emphasized column above.
   const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const pk = p.picks[ep];
@@ -2683,10 +2582,10 @@ function nav(name,btn){
 // Masthead: the "22" in the title is the Series 21/22 toggle (see
 // toggleSeries() and #ht-series in the HTML) — its own digits swap to
 // name whichever series is active, since there's no separate badge for
-// that any more. The top-right readout is a brass stopwatch counting
-// down Days / Hours:Minutes to the next Series 22 episode's air date
+// that any more. Below the nameplate, a one-line footnote counts down
+// days / hours / minutes to the next Series 22 episode's air date
 // (21:00 UK, the real broadcast slot). Series 21 is finished, so its
-// dial just reads "Time's up" instead of counting down to nothing.
+// footnote just reads "Series complete." instead.
 let countdownTimer=null;
 function renderMasthead(){
   const toggleEl=document.getElementById('ht-series');
@@ -2711,29 +2610,6 @@ function nextEpisodeInfo(){
   return m ? {ep, date:parseEpDate(m.d)} : null; // null once there's no next episode left to name
 }
 
-// Brass stopwatch case wrapping the countdown — crown + two pushers on
-// top, a brass case, an ivory dial with 60/12 tick rings (drawn as
-// dashed circles), and a crimson second hand that sweeps once a minute
-// behind whatever `face` markup is passed in.
-function stopwatchSVG(face){
-  return '<svg class="sw" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg">'+
-    '<defs>'+
-      '<radialGradient id="sw-brass" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fbe7a1"/><stop offset=".45" stop-color="#c9971f"/><stop offset="1" stop-color="#6e4a08"/></radialGradient>'+
-      '<radialGradient id="sw-dial" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e2d5b8"/></radialGradient>'+
-    '</defs>'+
-    '<rect x="44" y="1" width="12" height="11" rx="2.5" fill="url(#sw-brass)"/>'+
-    '<rect x="46.5" y="4" width="7" height="11" rx="1.5" fill="url(#sw-brass)" transform="rotate(-40 50 58)"/>'+
-    '<rect x="46.5" y="4" width="7" height="11" rx="1.5" fill="url(#sw-brass)" transform="rotate(40 50 58)"/>'+
-    '<circle cx="50" cy="58" r="46" fill="url(#sw-brass)"/>'+
-    '<circle cx="50" cy="58" r="40.5" fill="#4a3004" opacity=".6"/>'+
-    '<circle cx="50" cy="58" r="39" fill="url(#sw-dial)"/>'+
-    '<circle cx="50" cy="58" r="36" fill="none" stroke="#3a2a1a" stroke-width="2.4" stroke-dasharray="0.6 3.17" opacity=".5"/>'+
-    '<circle cx="50" cy="58" r="36" fill="none" stroke="#881337" stroke-width="4" stroke-dasharray="1.2 17.65" stroke-dashoffset="0.6"/>'+
-    '<g class="sw-hand"><line x1="50" y1="64" x2="50" y2="25" stroke="#881337" stroke-width=".9" stroke-linecap="round" opacity=".35"/></g>'+
-    face+
-    '<circle cx="50" cy="58" r="1.6" fill="#881337" opacity=".7"/>'+
-  '</svg>';
-}
 
 function renderCountdown(){
   if(countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
@@ -2741,17 +2617,13 @@ function renderCountdown(){
   if(!el) return;
   const info=nextEpisodeInfo();
   if(!info){
-    el.innerHTML=stopwatchSVG(
-      '<text class="sw-small" x="50" y="54" text-anchor="middle">TIME&#8217;S</text>'+
-      '<text class="sw-big" x="50" y="78" text-anchor="middle">UP</text>');
+    el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Series complete.</p>';
     return;
   }
-  // Dial layout: episode number up top, days large in the middle,
-  // hours:minutes underneath. tickCountdown() fills the three tspans.
-  el.innerHTML=stopwatchSVG(
-    '<text class="sw-ep" x="50" y="40" text-anchor="middle">EP '+info.ep+'</text>'+
-    '<text x="50" y="66" text-anchor="middle"><tspan class="sw-big" id="cd-d"></tspan><tspan class="sw-unit" dx="1">d</tspan></text>'+
-    '<text class="sw-small" x="50" y="83" text-anchor="middle"><tspan id="cd-h"></tspan>:<tspan id="cd-m"></tspan></text>');
+  // A single footnote line; tickCountdown() fills the three numbers.
+  const when=info.date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
+  el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Episode '+info.ep+' airs '+when+', 9pm &mdash; in '+
+    '<span class="cd-t"><span id="cd-d"></span>d <span id="cd-h"></span>h <span id="cd-m"></span>m</span></p>';
   tickCountdown(info.date);
   countdownTimer=setInterval(()=>tickCountdown(info.date),1000);
 }
