@@ -23,6 +23,9 @@ The app does not collect votes. The league runs in a private WhatsApp group:
 
 1. **Polls.** At the start of each series the host posts **10 WhatsApp polls, one per episode**. Each poll lists the 5 contestants in the show's **seating order, which is always alphabetical by first name** (Series 22: Chloe, Isy, Matt, Nina, Richard).
 2. **Voting.** Each player votes for one contestant per poll and may change their vote any number of times until the poll closes.
+   - **League rule — pick every contestant at least once.** Across the 10 polls of a series, each player must vote for each of the 5 contestants at least once. The other 5 picks are free, including repeats.
+   - **The app does not enforce, score or display this rule.** It does compute `PLAYERS[i].unused`, the contestants a player has not yet picked, which is exactly what the rule needs, but nothing on screen uses it.
+   - **One recorded violation.** In the recorded data, Series 21 player Riley never picked Joanna.
 3. **Deadline.** A WhatsApp poll timer closes each poll automatically when that episode starts **livestreaming on the [Taskmaster YouTube channel](https://www.youtube.com/@Taskmaster): 22:00 London** (normally 17:00 US Eastern / 14:00 US Pacific; one hour later in the US for any episode falling between the UK and US clock changes, e.g. 29 Oct 2026).
 4. **Scoring.** After the episode airs, the host enters the task scores (`TASKS`), the poll results (`PICKS`) and the other weekly data into `index.html` (see §11), pushes it, and shares the updated page link in the group.
 

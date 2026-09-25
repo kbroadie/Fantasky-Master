@@ -27,8 +27,9 @@ Everything happens in our WhatsApp group. There's nothing to sign up for.
    > ⏰ **Heads-up for Episode 9 (Thu 29 Oct):** UK clocks go back on 25 Oct, but US clocks don't change until 1 Nov. That week the poll closes at **10pm London = 6pm Eastern = 3pm Pacific**, an hour later than usual for US players.
 
 6. **No vote = no points** for that episode, so don't forget the later weeks.
+7. **Pick every contestant at least once.** Across the series' 10 polls you must vote for **each of the 5 contestants at least once**. That leaves 5 picks free to use however you like, including backing a favourite several times.
 
-You can back the same contestant in more than one week.
+   > 💡 Plan ahead: each poll you miss is one fewer week to fit everyone in, so don't leave a contestant until the last episode.
 
 ---
 
