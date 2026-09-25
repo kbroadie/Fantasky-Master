@@ -4,11 +4,29 @@ This document describes the Fantasky Master web app in full: what it is for, how
 
 The document describes `index.html` as of the fixes that make early picks score nothing and compute the cast average per aired episode.
 
+- **Live app:** <https://kbroadie.github.io/Fantasky-Master/>
+- **Source:** <https://github.com/kbroadie/Fantasky-Master> (`index.html`)
+- **Taskmaster YouTube channel** (where episodes livestream): <https://www.youtube.com/@Taskmaster>
+- **Player-facing rules and how to vote:** [README.md](README.md)
+
 ---
 
 ## 1. One-paragraph summary
 
 Fantasky Master is a **fantasy league for the British TV comedy panel show _Taskmaster_**. Each series of Taskmaster has 5 celebrity **contestants** who compete over 10 **episodes**; in every episode they attempt several **tasks** and each receives 0–5 points per task (occasionally 6). In the fantasy league, a group of friends (**players**) each **pick one contestant per episode**. A player earns points based on how well their picked contestant did that week. The app shows the league table (**Standings**), a breakdown of every episode (**Episodes**), and a profile of every contestant (**Cast**). It supports two series (Series 21, finished; Series 22, in progress) and a toggle between them.
+
+---
+
+### How picks are collected (outside the app)
+
+The app does not collect votes. The league runs in a private WhatsApp group:
+
+1. **Polls.** At the start of each series the host posts **10 WhatsApp polls, one per episode**. Each poll lists the 5 contestants in the show's **seating order, which is always alphabetical by first name** (Series 22: Chloe, Isy, Matt, Nina, Richard).
+2. **Voting.** Each player votes for one contestant per poll and may change their vote any number of times until the poll closes.
+3. **Deadline.** A WhatsApp poll timer closes each poll automatically when that episode starts **livestreaming on the [Taskmaster YouTube channel](https://www.youtube.com/@Taskmaster): 22:00 London** (normally 17:00 US Eastern / 14:00 US Pacific; one hour later in the US for any episode falling between the UK and US clock changes, e.g. 29 Oct 2026).
+4. **Scoring.** After the episode airs, the host enters the task scores (`TASKS`), the poll results (`PICKS`) and the other weekly data into `index.html` (see §11), pushes it, and shares the updated page link in the group.
+
+So `PICKS[player][ep]` is exactly that player's final vote in the episode-`ep` poll, and a missing or `null` pick means they did not vote.
 
 ---
 
@@ -307,7 +325,7 @@ Styling never affects the calculations.
 4. **Hidden players.** Players with no picks at all (Series 22: Ellen, Katherine) are omitted from the Standings table but still exist in the data.
 5. **Ties.** Board ranks, category ranks and weekly rank points are tie-aware. The contestant series rank on the Cast page and the episode winner name are not: they fall back to `NAMES` order.
 6. **Scores above 5 are allowed.** One Series 22 task awarded a bonus point (a 6); it is kept as-is so totals match the source.
-7. **Airtime time zone.** The code comment calls 21:00 "the real UK broadcast slot", but the date is built in the viewer's local time zone, so viewers outside the UK see a countdown to 21:00 their time.
+7. **Airtime footnote vs voting deadline.** The masthead footnote counts down to **21:00 in the viewer's local time zone** on the episode date (the code comment calls 21:00 "the real UK broadcast slot"). The league's actual voting deadline is different: the YouTube livestream at **22:00 London**, enforced by the WhatsApp poll timers, not by the app. The footnote is informational only.
 
 ---
 
@@ -317,7 +335,7 @@ After a new Series 22 episode airs, edit `index.html`:
 
 1. **Scores:** append that episode's tasks to `TASKS_S22` (`{ep, n, t, s}`, with `s` in `NAMES_S22` order).
 2. **Weeks aired:** increment `S22_WEEKS_AIRED`.
-3. **Picks:** add each player's pick for the new week to `PICKS_S22`. Next week's picks can be entered early too; they won't score until that episode airs (§10.1).
+3. **Picks:** copy each player's final vote from that episode's WhatsApp poll into `PICKS_S22` (a player who didn't vote gets no entry). Future weeks' votes can be entered early too; they won't score until that episode airs (§10.1).
 4. **Episode text:** add or confirm the episode title and date in `EM_S22`, and write an Analysis paragraph in `EI_S22`.
 5. **Rank deltas:** update `RD_S22` and `RD_PVP_S22` with each player's rank change on each board.
 6. **Contestant text (optional):** refresh `CONT_S22[name].stat` / `.bio`.
