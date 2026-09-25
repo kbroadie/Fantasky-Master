@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fantasky Master</title>
-<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Bodoni+Moda:ital,wght@0,500;0,700;0,800;1,600&family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Libre+Caslon+Text:ital,wght@0,400;0,700;1,400&family=Libre+Franklin:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
   /* ═══ THE FANTASKY GAZETTE ════════════════════════════════
@@ -15,8 +15,12 @@
                     shadow)
        ivory      — cards, scoresheets, envelopes
        ink        — text on ivory
-       Taskmaster red — seals, card labels, the ticket, best scores
+       Taskmaster red — seals, the series chip, best scores, drops
        gold       — the masthead, rules, leaders, active states
+     plus a spectrum of accents that each carry one meaning:
+       saffron / cobalt / emerald / plum — the four task types
+       (prize / filmed / team / live); emerald also marks rank rises;
+       teal, cobalt and plum label the three kinds of card copy
      Surfaces are flat (no gradients or textures); cards lift off the
      ground with a soft shadow. */
 
@@ -57,6 +61,13 @@
   --marigold: var(--gold2);   /* legacy alias */
   --cream:   #f7ecd2;
 
+  /* Spectrum accents — *-ink on ivory, *-lt on the claret ground */
+  --saffron-ink: #a8650f;  --saffron-lt: #f0b35e;
+  --cobalt-ink:  #2f58a6;  --cobalt-lt:  #9db8f0;
+  --emerald-ink: #23794f;  --emerald-lt: #7fd3a4;
+  --teal-ink:    #19707c;  --teal-lt:    #7ccfd6;
+  --plum-ink:    #74398f;  --plum-lt:    #caa2e3;
+
   --red:      #c8102e;
   --red2:     #a50d26;
   --red3:     #6e0818;
@@ -94,19 +105,18 @@
   --b-dim:   #4a161d;
   --b-red:   #8e0b20;
 
-  /* Type roles:
-       UnifrakturMaguntia — the nameplate, like a Victorian daily's
-       Bodoni Moda        — headlines (Standings, episode titles, cast)
-       Old Standard TT    — names and narrative copy (19th-c. book face)
-       Oswald             — numbers and small type: a condensed gothic
-                            straight out of the headline cases */
-  --ff-mark: 'UnifrakturMaguntia','Old Standard TT',Georgia,serif;
-  --ff-head: 'Bodoni Moda','Old Standard TT',Didot,Georgia,serif;
-  --ff-num:  'Oswald','Arial Narrow',sans-serif;
-  --ff-name: 'Old Standard TT',Georgia,serif;
+  /* Type: a classic newspaper pairing —
+       Libre Caslon Display — the nameplate and headlines
+       Libre Caslon Text    — names and reading copy
+       Libre Franklin       — numbers and small type (labels, tabs,
+                              column heads), after Franklin Gothic */
+  --ff-mark: 'Libre Caslon Display','Libre Caslon Text',Georgia,serif;
+  --ff-head: 'Libre Caslon Display','Libre Caslon Text',Georgia,serif;
+  --ff-num:  'Libre Franklin','Franklin Gothic Medium',Arial,sans-serif;
+  --ff-name: 'Libre Caslon Text',Georgia,serif;
   --ff-serif:var(--ff-name);
-  --ff:      'Old Standard TT',Georgia,serif;
-  --fm:      'Oswald','Arial Narrow',sans-serif;
+  --ff:      'Libre Caslon Text',Georgia,serif;
+  --fm:      'Libre Franklin','Franklin Gothic Medium',Arial,sans-serif;
   --ff-type: var(--fm);
   --ff-hand: var(--ff-num);
   --ff-stamp:var(--fm);
@@ -170,9 +180,9 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .page{display:none;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .page.active{display:block}
 
-/* ── HEADER ─ a newspaper front page: nameplate, dateline, then the
-   next-episode ticket. It is the top of the page (same ground, scrolls
-   away); the DL envelope tabs below it stay pinned. */
+/* ── HEADER ─ a newspaper front page: nameplate, dateline, and a
+   one-line footnote with the next airtime. It is the top of the page
+   (same ground, scrolls away); the DL envelope tabs below stay pinned. */
 .hdr{
   flex-shrink:0;position:relative;
   padding:18px var(--px) 16px;
@@ -183,26 +193,24 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
    compact mode deliberately changes nothing — no size jumps. */
 .hdr.compact{padding:18px var(--px) 16px}
 
-/* Nameplate — "Fantasky Master" set as one line in blackletter, both
-   words the same size, weight and gold, between thick-and-thin rules
-   the way a Victorian daily framed its title. A 2px claret-dark offset
-   gives the gold a stamped, foiled edge. */
+/* Nameplate — "Fantasky Master" set as one line in Caslon Display,
+   both words the same size, weight and gold, between thick-and-thin
+   rules the way a Victorian daily framed its title. */
 .hdr-brand{display:flex;flex-direction:column;align-items:stretch}
 .hdr-title{display:block;text-align:center;white-space:nowrap;
   font-family:var(--ff-mark);font-weight:400;
-  font-size:clamp(40px,12.6vw,88px);line-height:1.05;letter-spacing:0.01em;
+  font-size:clamp(36px,11.6vw,80px);line-height:1.1;letter-spacing:0.005em;
   color:var(--gold2);
-  text-shadow:0 2px 0 #140305;
-  padding:8px 0 6px;
+  padding:10px 0 8px;
   border-top:4px double var(--line-gold);
   border-bottom:1px solid var(--line-gold);}
-.ht-word + .ht-word{margin-left:0.22em}
+.ht-word + .ht-word{margin-left:0.26em}
 /* Dateline under the nameplate, newspaper-style: small capitals in
-   Oswald, gold rule beneath. Holds the Series 21/22 toggle. */
+   Franklin, gold rule beneath. Holds the Series 21/22 toggle. */
 .hdr-dateline{display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:7px 2px;border-bottom:4px double var(--line-gold);
   font-family:var(--fm);font-weight:500;text-transform:uppercase;
-  font-size:clamp(10px,2.9vw,13px);letter-spacing:0.16em;color:var(--t2);}
+  font-size:clamp(10px,2.8vw,12px);letter-spacing:0.14em;color:var(--t2);}
 .hd-mid{color:var(--gold2)}
 /* The series number doubles as the Series 21/22 toggle — tap it to flip
    which series the whole app is showing (see toggleSeries()). Its digits
@@ -212,7 +220,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   display:inline-flex;align-items:center;justify-content:center;
   min-width:2.4em;padding:3px 6px;margin-left:5px;
   background:var(--tm-red);color:var(--gold3);border:1px solid var(--gold);
-  font-family:var(--ff-num);font-weight:600;letter-spacing:0.04em;
+  font-family:var(--ff-num);font-weight:600;letter-spacing:0.02em;
   cursor:pointer;-webkit-user-select:none;user-select:none;
   transition:background 0.2s,color 0.2s,opacity 0.2s;
 }
@@ -432,7 +440,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   padding:8px 8px;gap:4px;background:var(--bg);border-bottom:1px solid var(--line-gold)}
 .ep-tabs::-webkit-scrollbar{display:none}
 .ep-tab{flex:1 1 0;min-width:0;padding:6px 0;position:relative;white-space:nowrap;
-  font-family:var(--fm);font-weight:500;font-size:clamp(11px,3vw,14px);color:var(--t3);letter-spacing:0.06em;text-transform:uppercase;cursor:pointer;
+  font-family:var(--fm);font-weight:600;font-size:clamp(10px,2.7vw,13px);color:var(--t3);letter-spacing:0.03em;text-transform:uppercase;cursor:pointer;
   background:none;border:1px solid transparent;border-radius:0;
   transition:color 0.15s,background 0.15s,border-color 0.15s}
 .ep-tab.active{color:var(--ink);background:var(--gold2);border-color:var(--gold2)}
@@ -444,7 +452,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   background:var(--bg);position:relative}
 .ep-kicker{font-family:var(--ff-type);font-weight:400;font-size:var(--fs-xs);color:var(--t3);
   letter-spacing:0.22em;text-transform:uppercase;margin-bottom:6px}
-.ep-title{font-family:var(--ff-head);font-style:italic;font-size:clamp(24px,6.6vw,34px);font-weight:600;
+.ep-title{font-family:var(--ff);font-style:italic;font-size:clamp(23px,6.2vw,32px);font-weight:400;
   line-height:1.1;letter-spacing:0.01em;margin-bottom:3px}
 .ep-winner{font-family:var(--ff);font-style:italic;font-size:var(--fs-sm);color:var(--t3)}
 /* Page headings sit on a small gilt rule */
@@ -464,7 +472,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 /* Task table: an ivory scoresheet card — hairline rows, small-caps
-   headers, scores in Oswald. The episode's best score on each task is
+   headers, scores in Franklin. The episode's best score on each task is
    Taskmaster red, the lowest dimmed. Contestant headers keep their own
    accent colours, darkened for paper. */
 .tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:3px;overflow:hidden;margin-bottom:18px;
@@ -483,7 +491,17 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--line-dim)}
 .tt tr:last-child td{border-bottom:none;border-top:3px double var(--line-gold)}
 .tn{display:flex;align-items:center;gap:6px}
-.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--tm-red)}
+.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--ink3)}
+/* Task types keep one colour everywhere they appear: prize saffron,
+   filmed cobalt, team emerald, live plum. The box score and cast hero
+   match on the icon's own aria-label, so no extra markup is needed. */
+.tb.P,.bs-label svg[aria-label^="Prize"]{color:var(--saffron-ink)}
+.tb.F,.bs-label svg[aria-label^="Filmed"]{color:var(--cobalt-ink)}
+.tb.T{color:var(--emerald-ink)}
+.tb.L,.bs-label svg[aria-label^="Live"]{color:var(--plum-ink)}
+.cd-ranks svg[aria-label^="Prize"]{color:var(--saffron-lt)}
+.cd-ranks svg[aria-label^="Filmed"]{color:var(--cobalt-lt)}
+.cd-ranks svg[aria-label^="Live"]{color:var(--plum-lt)}
 .tb svg{width:15px;height:15px;display:block}
 .tt-task{font-family:var(--ff);font-size:12.5px;line-height:1.35;color:var(--t2)}
 .tt-total-lbl{font-family:var(--ff-type);font-weight:500;font-size:13px;color:var(--t3);letter-spacing:0.14em}
@@ -504,7 +522,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .ep-ins::after,.cd-block::after{content:'';position:absolute;top:-9px;right:16px;
   width:24px;height:24px;border-radius:52% 46% 50% 48%;background:var(--wax);
   box-shadow:inset -3px -3px 0 rgba(0,0,0,0.22),inset 2px 2px 0 rgba(255,255,255,0.22),0 2px 3px rgba(0,0,0,0.45)}
-.ep-ins-lbl{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--gold2);
+.ep-ins-lbl{font-family:var(--ff-type);font-weight:600;font-size:var(--fs-2xs);color:var(--cobalt-ink);
   letter-spacing:0.2em;text-transform:uppercase;
   padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
 .ep-ins-b{font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
@@ -568,15 +586,15 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   background:var(--s2);font-size:clamp(16px,4.2vw,20px);font-weight:900;letter-spacing:0.06em;opacity:0.18;text-transform:uppercase}
 .cd-info{flex:1;padding:14px var(--px);display:flex;flex-direction:column;justify-content:center}
-.cd-name{font-family:var(--ff-head);font-size:clamp(26px,7vw,36px);font-weight:700;
+.cd-name{font-family:var(--ff-head);font-size:clamp(28px,7.6vw,40px);font-weight:400;
   line-height:1.05;letter-spacing:0.01em}
 .cd-sub{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:6px;letter-spacing:0.06em}
-.cd-pts{font-family:var(--ff-num);font-size:clamp(40px,10vw,56px);font-weight:500;
+.cd-pts{font-family:var(--ff-num);font-size:clamp(38px,9.6vw,52px);font-weight:600;
   line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em}
 .cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
 .cd-ranks{display:flex;gap:10px;margin-top:9px;font-family:var(--fm);font-size:10px;color:var(--t2);flex-wrap:wrap}
 .cd-ranks > span{display:inline-flex;align-items:center;gap:4px}
-.cd-ranks svg{width:13px;height:13px;color:var(--gold2)}
+.cd-ranks svg{width:13px;height:13px}
 
 
 .cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
@@ -587,7 +605,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-s-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
 
 .cd-block{margin:14px var(--px) 8px}
-.cd-block-lbl{font-family:var(--ff-type);font-weight:500;font-size:var(--fs-2xs);color:var(--gold2);
+.cd-block-insight .cd-block-lbl{color:var(--plum-ink)}
+.cd-block-lbl{font-family:var(--ff-type);font-weight:600;font-size:var(--fs-2xs);color:var(--teal-ink);
   letter-spacing:0.2em;text-transform:uppercase;
   padding-bottom:8px;margin-bottom:10px;border-bottom:1px solid var(--line-dim)}
 .cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.65;color:var(--t2)}
@@ -797,38 +816,16 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 
 /* ── MASTHEAD COUNTDOWN: NEXT EPISODE ──────────────────── */
-/* A Taskmaster-red admission ticket: a stub with the episode number,
-   a perforation with punched notches, and the time left as three big
-   gold numerals with plain labels — Days / Hours / Mins. */
-.hdr-cd{
-  align-self:center;width:min(100%,440px);
-  -webkit-user-select:none;user-select:none;
-}
+/* The airtime is a footnote, not a feature: one quiet italic line
+   under the dateline, keyed with a gold dagger. */
+.hdr-cd{-webkit-user-select:none;user-select:none;}
 .hdr.compact .hdr-cd{transform:none}
 #hdr-countdown{display:block}
-.tkt{position:relative;display:flex;align-items:stretch;
-  background:var(--tm-red);color:var(--cream);
-  border-radius:6px;box-shadow:var(--card-shadow);
-  outline:1px solid var(--gold);outline-offset:-5px;}
-.tkt-stub{flex:0 0 26%;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:12px 4px;border-right:2px dashed rgba(247,236,210,0.55);}
-.tkt-stub-l{font-family:var(--fm);font-weight:500;font-size:11px;letter-spacing:0.22em;
-  text-transform:uppercase;color:var(--gold3)}
-.tkt-stub-n{font-family:var(--ff-num);font-weight:600;font-size:clamp(34px,10vw,46px);line-height:1;color:var(--gold2)}
-/* punched notches at either end of the perforation */
-.tkt-stub::before,.tkt-stub::after{content:'';position:absolute;left:calc(26% - 9px);
-  width:18px;height:18px;border-radius:50%;background:var(--bg)}
-.tkt-stub::before{top:-9px}
-.tkt-stub::after{bottom:-9px}
-.tkt-main{flex:1;padding:10px 12px 12px;text-align:center}
-.tkt-cap{font-family:var(--fm);font-weight:500;font-size:11px;letter-spacing:0.18em;
-  text-transform:uppercase;color:var(--cream);margin-bottom:6px}
-.tkt-row{display:flex;justify-content:space-around;gap:6px}
-.tkt-u{display:flex;flex-direction:column;align-items:center;min-width:0}
-.tkt-n{font-family:var(--ff-num);font-weight:600;font-size:clamp(32px,9.5vw,44px);line-height:1;color:var(--gold2)}
-.tkt-l{font-family:var(--fm);font-weight:500;font-size:10px;letter-spacing:0.2em;
-  text-transform:uppercase;color:var(--cream);margin-top:3px}
-.tkt-done{font-family:var(--ff-head);font-weight:800;font-size:clamp(30px,9vw,40px);line-height:1.05;color:var(--gold2)}
+.cd-note{font-family:var(--ff);font-style:italic;font-size:var(--fs-sm);line-height:1.4;
+  color:var(--t3);text-align:center;margin-top:-4px}
+.cd-note .cd-mark{font-style:normal;color:var(--gold2);margin-right:3px}
+.cd-note .cd-t{font-family:var(--ff-num);font-style:normal;font-weight:500;color:var(--t2);
+  font-variant-numeric:tabular-nums}
 
 
 
@@ -904,7 +901,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   --line-dim: var(--paper-rule); --line-gold: var(--gold4); --line-cream: var(--paper-edge);
   --b-dim: var(--paper-rule); --b-gold: var(--paper-rule);
   --gold2: var(--tm-red); --marigold: var(--tm-red);   /* "best" inks red on paper */
-  --up: #2f7a3e;
+  --up: var(--emerald-ink);
   color: var(--ink);
 }
 /* Card shell (also the episode podium) — each player is its own index
@@ -972,8 +969,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .stand-hero-title {
   font-family: var(--ff-head);
-  font-size: clamp(36px, 10vw, 52px);
-  font-weight: 700;
+  font-size: clamp(38px, 10.5vw, 54px);
+  font-weight: 400;
   line-height: 1;
   letter-spacing: 0.01em;
   margin-bottom: 3px;
@@ -1002,10 +999,10 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .st-h {
   font-family: var(--ff-type);
-  font-size: 12px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   color: var(--t3);
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   line-height: 1.25;
   -webkit-user-select: none;
@@ -1063,8 +1060,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .pc-rank-n {
   font-family: var(--ff-num);
-  font-size: 22px;
-  font-weight: 500;
+  font-size: 20px;
+  font-weight: 600;
   color: var(--t2);
   line-height: 1;
   font-variant-numeric: lining-nums;
@@ -1100,7 +1097,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .pc-name {
   font-family: var(--ff-name);
-  font-size: clamp(19px, 5vw, 23px);
+  font-size: clamp(17px, 4.6vw, 22px);
   font-weight: 600;
   color: var(--t1);
   line-height: 1.15;
@@ -1125,8 +1122,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .pc-total {
   font-family: var(--ff-num);
-  font-size: clamp(20px, 5.4vw, 25px);
-  font-weight: 500;
+  font-size: clamp(19px, 5vw, 23px);
+  font-weight: 600;
   line-height: 1;
   color: var(--t1);
 }
@@ -1137,9 +1134,15 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
    too little room, so tighten the gaps and both score columns (header
    AND rows, so they stay aligned) — the column labels wrap to two lines
    ("Task / Points") to give player names the space. */
+/* Phones: two/three-digit scores don't need 90px, and the Caslon names
+   do — narrow both score columns (header AND rows) to give them room. */
+@media (max-width: 420px) {
+  .st-h-num, .pc-score-col { width: 76px; }
+  .st-h { font-size: 10.5px; letter-spacing: 0.04em; }
+}
 @media (max-width: 360px) {
   .stand-head, .pc-head { gap: 8px; }
-  .st-h { font-size: 11px; letter-spacing: 0.08em; }
+  .st-h { font-size: 10px; letter-spacing: 0.06em; }
   .st-h-num, .pc-score-col { width: 60px; }
 }
 
@@ -1196,7 +1199,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   letter-spacing:0.04em;text-transform:uppercase;
   margin-bottom:3px;
 }
-/* Weekly score beneath each portrait, set in Oswald: red for the
+/* Weekly score beneath each portrait, set in Franklin: red for the
    best week, dimmed for the worst. */
 .pc-pick-pts{
   font-family:var(--ff-num);font-size:clamp(14px,3.9vw,17px);font-weight:500;
@@ -1466,7 +1469,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── DELTA BESIDE RANK ──────────────────────────────── */
 /* Rank movement as a small printed figure in a hairline box rather than
-   a ticker — green ink up, Taskmaster red down. */
+   a ticker — emerald up, Taskmaster red down. */
 .pc-delta{font-family:var(--ff-stamp);font-size:9px;font-weight:400;line-height:1;
   letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:0;}
 .pc-delta-up{color:var(--up);}
@@ -1474,7 +1477,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .pc-delta-flat{color:var(--t4);border-color:transparent;opacity:0.6;}
 
 /* ── SCORE NUMERALS ─────────────────────────────────── */
-/* Score numbers are set in Oswald with lining, tabular figures so
+/* Score numbers are set in Franklin with lining, tabular figures so
    columns of them line up (.sc/.bs-cell/.tt-total set this themselves). */
 .s-pts-n,.pd-pts-n,.cd-pts,.cc-pts,
 .ss-v,.cd-s-v,.cc-ep-v,.cc-stat-v,.cd-ep-v,
@@ -2579,10 +2582,10 @@ function nav(name,btn){
 // Masthead: the "22" in the title is the Series 21/22 toggle (see
 // toggleSeries() and #ht-series in the HTML) — its own digits swap to
 // name whichever series is active, since there's no separate badge for
-// that any more. Below the nameplate, a red admission ticket counts
-// down Days / Hours / Mins to the next Series 22 episode's air date
+// that any more. Below the nameplate, a one-line footnote counts down
+// days / hours / minutes to the next Series 22 episode's air date
 // (21:00 UK, the real broadcast slot). Series 21 is finished, so its
-// ticket just reads "Time's up!" instead of counting down to nothing.
+// footnote just reads "Series complete." instead.
 let countdownTimer=null;
 function renderMasthead(){
   const toggleEl=document.getElementById('ht-series');
@@ -2614,20 +2617,13 @@ function renderCountdown(){
   if(!el) return;
   const info=nextEpisodeInfo();
   if(!info){
-    el.innerHTML='<div class="tkt"><div class="tkt-stub"><span class="tkt-stub-l">Series</span><span class="tkt-stub-n">21</span></div>'+
-      '<div class="tkt-main"><div class="tkt-cap">Series complete</div><div class="tkt-done">Time&#8217;s up!</div></div></div>';
+    el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Series complete.</p>';
     return;
   }
-  // Admission ticket: episode number on the stub, air date as the
-  // caption, then Days / Hours / Mins. tickCountdown() fills the numbers.
+  // A single footnote line; tickCountdown() fills the three numbers.
   const when=info.date.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'});
-  el.innerHTML='<div class="tkt"><div class="tkt-stub"><span class="tkt-stub-l">Episode</span><span class="tkt-stub-n">'+info.ep+'</span></div>'+
-    '<div class="tkt-main"><div class="tkt-cap">Airs '+when+' &middot; 9pm</div>'+
-    '<div class="tkt-row">'+
-      '<div class="tkt-u"><span class="tkt-n" id="cd-d"></span><span class="tkt-l">Days</span></div>'+
-      '<div class="tkt-u"><span class="tkt-n" id="cd-h"></span><span class="tkt-l">Hours</span></div>'+
-      '<div class="tkt-u"><span class="tkt-n" id="cd-m"></span><span class="tkt-l">Mins</span></div>'+
-    '</div></div></div>';
+  el.innerHTML='<p class="cd-note"><span class="cd-mark">&dagger;</span>Episode '+info.ep+' airs '+when+', 9pm &mdash; in '+
+    '<span class="cd-t"><span id="cd-d"></span>d <span id="cd-h"></span>h <span id="cd-m"></span>m</span></p>';
   tickCountdown(info.date);
   countdownTimer=setInterval(()=>tickCountdown(info.date),1000);
 }
