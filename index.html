@@ -4,22 +4,45 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>Fantasky Master</title>
-<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Fredoka:wght@500;600;700&family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Caveat:wght@600;700&family=Special+Elite&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red:      #c41818;
-  --red2:     #9a0f0f;
-  --red3:     #5c0808;
-  --red4:     #2a0404;
-  --red-glow: rgba(196,24,24,0.35);
-  --red-t:    rgba(196,24,24,0.10);
+  /* Gap between the gallery-wall placards and the screen edge; the
+     Standings header row adds it to its own padding to stay aligned. */
+  --wall-inset: 12px;
+  /* Sealing-wax crimson — replaces the old neon #c41818 family. */
+  --red:      #9f1239;
+  --red2:     #881337;
+  --red3:     #4c0519;
+  --red4:     #2a0410;
+  --red-glow: rgba(159,18,57,0.35);
+  --red-t:    rgba(136,19,55,0.10);
+  --wax:      #881337;
+  --wax-hi:   #c2385e;
+
+  /* Stationery: manila envelopes, ivory task cards, ink */
+  --manila:   #e6d7b3;
+  --manila2:  #d6c497;
+  --manila3:  #b9a47a;
+  --ivory:    #fbf6ea;
+  --sepia:    #4a3622;
+  --ink:      #1f2a44;
+  --pencil:   #7d7262;
+  --paper:    #f3ead3;
+  --paper-line: rgba(120,90,50,0.20);
+  --margin-red: rgba(159,18,57,0.40); /* ledger margin rule */
+
+  /* Dark study-table wood — layered as a background-image */
+  --wood-grain: repeating-linear-gradient(178deg,
+    rgba(255,214,170,0.022) 0 1px, transparent 1px 5px,
+    rgba(0,0,0,0.07) 5px 7px, transparent 7px 13px);
 
   --gold:     #b88018;
   --gold2:    #d4a028;
   --gold3:    #ecc040;
   --gold4:    #8a6010;
   --gold-t:   rgba(184,128,24,0.12);
-  --gold-glow:rgba(212,160,40,0.28);
+  --gold-glow:rgba(212,160,40,0.14); /* was 0.28 — gilt, not neon */
   --gold-l:   var(--gold3);
 
   /* One accent hue outside the red/gold/gray family, reserved for
@@ -28,13 +51,15 @@
   --up:       #34d399;
   --up-glow:  rgba(52,211,153,0.35);
 
-  --bg:  #070507;
-  --s0:  #0b090b;
-  --s1:  #100d10;
-  --s2:  #171417;
-  --s3:  #1f1b1f;
-  --s4:  #282428;
-  --s5:  #333038;
+  /* Ebony/walnut surfaces — same luminance steps as the old neutral
+     grays, shifted warm so every panel reads as dark wood. */
+  --bg:  #0a0605;
+  --s0:  #0f0a08;
+  --s1:  #150e0b;
+  --s2:  #1c140f;
+  --s3:  #241a14;
+  --s4:  #2d221a;
+  --s5:  #382a20;
 
   --t1:  #ede8dc;
   --t2:  #a89880;
@@ -49,10 +74,22 @@
   --b-dim:   rgba(255,255,255,0.05);
   --b-red:   rgba(196,24,24,0.35);
 
-  --ff-name: 'Fredoka','Arial Rounded MT Bold',sans-serif;
-  --ff-head: 'Bungee','Arial Black',sans-serif;
-  --ff:      'Inter',sans-serif;
-  --fm:      'DM Mono',monospace;
+  /* Every face is vintage now: Baskerville for names, body copy and
+     numbers; Courier Prime for small labels; Playfair for headings. */
+  --ff-name: 'Libre Baskerville',Baskerville,Georgia,serif;
+  /* Victorian display serif for the masthead and page headings */
+  --ff-head: 'Playfair Display','Libre Baskerville',Georgia,serif;
+  --ff:      'Libre Baskerville',Baskerville,Georgia,serif;
+  --fm:      'Courier Prime','Courier New',Courier,monospace;
+  /* Role-specific vintage faces: serif for leaderboard names/ranks,
+     typewriter for table headers, handwriting for scores written on
+     paper, rubber-stamp for rank deltas. */
+  --ff-serif:'Libre Baskerville',Baskerville,Georgia,serif;
+  --ff-type: 'Courier Prime','Courier New',Courier,monospace;
+  --ff-hand: 'Caveat','Bradley Hand',cursive;
+  --ff-stamp:'Special Elite','Courier New',monospace;
+  /* Gilt rule with a centre lozenge, drawn under page headings */
+  --ornament: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 10'%3E%3Cpath d='M4 5H50M70 5H116' stroke='%23b88018' stroke-width='1'/%3E%3Ccircle cx='50' cy='5' r='1.4' fill='%23b88018'/%3E%3Ccircle cx='70' cy='5' r='1.4' fill='%23b88018'/%3E%3Cpath d='M60 0.5L64.5 5L60 9.5L55.5 5Z' fill='%23d4a028'/%3E%3C/svg%3E");
 
   /* Fluid type */
   --fs-2xs: clamp(9px,  2.2vw, 10px);
@@ -92,7 +129,12 @@
 html,body{height:100%}
 body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   max-width:680px;margin:0 auto;width:100%;min-height:100%;
-  background-image:var(--noise),radial-gradient(ellipse at 50% 0%,rgba(80,8,8,0.25) 0%,transparent 65%);}
+  /* Velvet crimson glow from above, a soft vignette, then dark wood grain */
+  background-image:var(--noise),
+    radial-gradient(ellipse 110% 55% at 50% 0%,rgba(136,19,55,0.22) 0%,transparent 65%),
+    radial-gradient(ellipse 140% 90% at 50% 45%,transparent 40%,rgba(0,0,0,0.55) 100%),
+    var(--wood-grain),
+    linear-gradient(180deg,#1a100b 0%,#120b07 60%,#0c0705 100%);}
 
 /* ── SHELL ──────────────────────────────────────────── */
 /* Plain responsive document flow — the whole page scrolls natively.
@@ -117,21 +159,21 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
    gliding. */
 .hdr{
   flex-shrink:0;position:relative;z-index:5;
-  padding:14px var(--px);
+  padding:8px var(--px);
   border-bottom:1px solid var(--b-gold);
-  background:var(--noise),rgba(70,8,8,0.5);
+  background:var(--noise),radial-gradient(ellipse 90% 140% at 25% 0%,rgba(136,19,55,0.55) 0%,rgba(42,4,16,0.82) 100%);
   backdrop-filter:blur(18px) saturate(1.4);
   -webkit-backdrop-filter:blur(18px) saturate(1.4);
   display:flex;align-items:center;gap:10px;overflow:hidden;
   transition:padding 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s cubic-bezier(0.22,1,0.36,1);
 }
-.hdr.compact{padding:7px var(--px);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
+.hdr.compact{padding:4px var(--px);box-shadow:0 4px 14px rgba(0,0,0,0.45)}
 
 /* Left: brand */
 .hdr-brand{flex-shrink:0;min-width:0}
-.hdr-title{font-family:var(--ff-head);font-size:clamp(15px,4.3vw,21px);
-  color:var(--t1);letter-spacing:0;line-height:1;white-space:nowrap;
-  text-shadow:0 0 18px var(--red-glow),0 1px 0 rgba(0,0,0,0.7);
+.hdr-title{font-family:var(--ff-head);font-size:clamp(15px,4.6vw,23px);font-weight:900;
+  color:var(--t1);letter-spacing:0.05em;line-height:1;white-space:nowrap;
+  text-shadow:0 1px 0 rgba(0,0,0,0.85),0 0 18px var(--red-glow);
   transform-origin:left center;
   transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);}
 .hdr.compact .hdr-title{transform:scale(0.72)}
@@ -142,7 +184,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
    dims/recolors on S21 so the title still reads as "you're in the
    archive" even with no separate series badge anywhere else. */
 .ht-series{
-  display:inline-block;color:var(--gold3);cursor:pointer;
+  display:inline-block;color:var(--gold3);cursor:pointer;font-style:italic;
   -webkit-user-select:none;user-select:none;
   padding:0 2px;border-radius:4px;
   text-shadow:0 0 14px var(--gold-glow);
@@ -160,37 +202,58 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 @keyframes rank-pulse{0%,100%{text-shadow:0 0 6px currentColor}50%{text-shadow:0 0 18px currentColor,0 0 36px currentColor}}
 @keyframes slide-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-/* ── TABS — floating dock, sliding gold spotlight ─────
-   Sits directly below the masthead now (was the bottom of the screen).
-   One gold panel physically slides to sit behind whichever tab is
-   active, rather than each icon restyling itself in place — state reads
-   through motion, not just color. Keeps its frosted-glass fill even
-   though it's no longer overlapping scrolling content underneath it. */
+/* ── TABS — Taskmaster task envelopes on a wooden rail ─────
+   Each tab is a manila envelope. Closed (inactive): flap down, sealed
+   with a crimson wax dot. Open (active): the flap flips up, the seal
+   is gone, and the ivory task card inside (.ti — carries the icon)
+   slides up out of the envelope. Layering inside each button:
+     button bg  = envelope interior (only visible once opened)
+     .ti        = the task card            z1
+     .tab-label = envelope front / pocket  z2  (V-notch where the flap sits)
+     ::before   = flap                     z3  (drops to z0 when open)
+     ::after    = wax seal                 z4
+   nav() still just toggles .active — no JS involved in the look. */
 .tabs{
   flex-shrink:0;position:relative;
-  margin:8px 10px;
-  display:flex;height:60px;
-  padding:5px;border-radius:18px;
-  background:var(--noise),rgba(11,9,11,0.55);
-  backdrop-filter:blur(18px) saturate(1.4);
-  -webkit-backdrop-filter:blur(18px) saturate(1.4);
-  border:1px solid var(--b-gold);
-  box-shadow:0 8px 22px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,255,255,0.05);}
-.tab-indicator{position:absolute;top:5px;bottom:5px;left:5px;
-  width:calc((100% - 10px) / 3);border-radius:13px;
-  background:linear-gradient(160deg,var(--gold3) 0%,var(--gold) 100%);
-  box-shadow:0 0 12px var(--gold-glow),inset 0 1px 1px rgba(255,255,255,0.45),inset 0 -2px 3px rgba(70,40,0,0.4);
-  transform:translateX(calc(var(--active-idx,0) * 100%));
-  transition:transform 0.32s cubic-bezier(0.22,1,0.36,1);
-  pointer-events:none;z-index:0;}
-.tab{flex:1;position:relative;z-index:1;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:2px;color:var(--t3);border:none;background:none;
-  cursor:pointer;transition:color 0.22s,transform 0.12s cubic-bezier(0.22,1,0.36,1);
+  display:flex;align-items:flex-end;gap:10px;
+  padding:26px 14px 9px;
+  background:var(--noise),var(--wood-grain),linear-gradient(180deg,#2a1a10 0%,#1d120b 100%);
+  box-shadow:inset 0 -3px 0 #3b2616,inset 0 -4px 0 rgba(0,0,0,0.5),0 6px 14px rgba(0,0,0,0.55);}
+.tab{flex:1;position:relative;z-index:1;height:44px;padding:0;
+  display:block;border:none;border-radius:2px;cursor:pointer;
+  background:linear-gradient(180deg,#a8926a 0%,var(--manila3) 100%);
+  color:var(--wax);
+  box-shadow:0 2px 3px rgba(0,0,0,0.55),0 6px 10px rgba(0,0,0,0.3);
+  transition:transform 0.3s cubic-bezier(0.22,1,0.36,1),box-shadow 0.3s;
   -webkit-user-select:none;user-select:none;}
-.tab.active{color:var(--red4);}
-.tab:active{transform:scale(0.92);}
-.ti{font-size:14px;line-height:1;display:flex;align-items:center;justify-content:center;}
+.tab::before{content:'';position:absolute;left:0;right:0;top:0;height:50%;z-index:3;
+  background:linear-gradient(180deg,var(--manila2) 0%,#cbb786 100%);
+  clip-path:polygon(0 0,100% 0,50% 100%);
+  transform-origin:top center;transform:perspective(140px) rotateX(0deg);
+  transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);}
+.tab::after{content:'';position:absolute;z-index:4;left:50%;top:50%;
+  width:14px;height:14px;margin:-9px 0 0 -7px;
+  border-radius:52% 46% 50% 48%;
+  background:radial-gradient(circle at 34% 30%,var(--wax-hi) 0%,var(--wax) 48%,var(--red3) 100%);
+  box-shadow:0 1px 2px rgba(0,0,0,0.55),inset 0 0 0 2px rgba(76,5,25,0.35);
+  transition:opacity 0.2s,transform 0.3s;}
+.tab .ti{position:absolute;z-index:1;left:13%;right:13%;top:6%;height:74%;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:3px;
+  background:repeating-linear-gradient(180deg,transparent 0 5px,rgba(120,90,50,0.10) 5px 6px),var(--ivory);
+  box-shadow:0 1px 2px rgba(0,0,0,0.3);
+  transform:translateY(0);transition:transform 0.38s cubic-bezier(0.22,1,0.36,1);}
+.tab .ti svg{width:17px;height:15px}
+.tab .tab-label{position:absolute;inset:0;z-index:2;
+  display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px;
+  background:linear-gradient(180deg,var(--manila) 0%,#dccb9f 100%);
+  clip-path:polygon(0 0,50% 50%,100% 0,100% 100%,0 100%);
+  font-family:var(--ff-type);font-size:9px;font-weight:700;color:var(--sepia);}
+.tab.active{transform:translateY(-3px);
+  box-shadow:0 4px 6px rgba(0,0,0,0.5),0 12px 18px rgba(0,0,0,0.35);}
+.tab.active::before{z-index:0;transform:perspective(140px) rotateX(180deg);}
+.tab.active::after{opacity:0;transform:scale(1.6);}
+.tab.active .ti{transform:translateY(-58%);}
+.tab:active{transform:scale(0.96);}
 
 /* ── DIVIDER ────────────────────────────────────────── */
 .sh{display:flex;align-items:center;gap:8px;padding:14px var(--px) 8px}
@@ -320,8 +383,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
    below) to hint at the rest. Fade the edges toward whichever side still has
    tabs to scroll to — JS toggles .at-start/.at-end as the strip scrolls. */
 .ep-tabs{display:flex;overflow-x:auto;scrollbar-width:none;position:relative;
-  border-bottom:1px solid var(--b-gold);
-  background:var(--noise),linear-gradient(180deg,var(--s2) 0%,var(--s1) 100%);
+  border-bottom:1px solid rgba(0,0,0,0.6);padding:0 4px;
+  background:var(--noise),var(--wood-grain),linear-gradient(180deg,#1d120b 0%,#150d08 100%);
   -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
   mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 calc(100% - 22px),transparent 100%);
   transition:-webkit-mask-image 0.15s,mask-image 0.15s;}
@@ -333,19 +396,19 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   mask-image:linear-gradient(90deg,transparent 0,#000 22px,#000 100%);}
 .ep-tabs.at-start.at-end{-webkit-mask-image:none;mask-image:none;}
 .ep-tabs::-webkit-scrollbar{display:none}
-/* Selected tab reads as a pressed-in metal button — inset shadow rather
-   than a flat color wash — instead of an idle one, the same bevel
-   language as the rank medallions above. */
-.ep-tab{flex-shrink:0;padding:10px clamp(12px,3.2vw,17px);position:relative;
-  font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.13em;cursor:pointer;
-  border:none;background:none;border-right:1px solid var(--b-dim);
-  border-bottom:2px solid transparent;margin-bottom:-1px;
+/* Sub-tabs are typed labels on the wood; the selected one becomes an
+   ivory card in a brass holder. The transparent border is the gap
+   around each plate (same width on every tab, so selecting one never
+   shifts the row); background-clip keeps the ivory inside it. */
+.ep-tab{flex-shrink:0;padding:5px clamp(9px,2.6vw,14px);position:relative;
+  font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.1em;cursor:pointer;
+  background:none;border:solid transparent;border-width:7px 2px;border-radius:9px;background-clip:padding-box;
   transition:color 0.15s,background 0.15s,box-shadow 0.15s}
-.ep-tab.active{color:var(--t1);
-  background:linear-gradient(180deg,rgba(212,160,40,0.20) 0%,rgba(212,160,40,0.05) 100%);
-  box-shadow:inset 0 2px 5px rgba(0,0,0,0.4),inset 0 -1px 0 rgba(255,255,255,0.06);
-  border-bottom:2px solid var(--gold3)}
-.ep-tab.tbd{color:var(--t4)}
+.ep-tab.active{color:var(--sepia);
+  background:linear-gradient(180deg,var(--ivory) 0%,#ebdfc2 100%) padding-box;
+  box-shadow:inset 0 0 0 1px rgba(184,128,24,0.75),inset 0 0 0 2px rgba(90,60,8,0.25),0 2px 4px rgba(0,0,0,0.45)}
+.ep-tab.tbd{color:var(--t4);opacity:0.75}
+.ep-tab.tbd.active{color:var(--pencil);opacity:1}
 .ep-tab:active{transform:scale(0.95)}
 
 .ep-header-box{text-align:center;padding:16px var(--px) 12px;
@@ -354,13 +417,22 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
   position:relative}
 .ep-header-box::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:1px;
   background:linear-gradient(90deg,transparent,var(--b-gold),transparent)}
-.ep-kicker{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);
-  letter-spacing:0.22em;text-transform:uppercase;margin-bottom:4px}
-.ep-title{font-family:var(--ff-head);font-size:clamp(19px,5vw,26px);font-weight:700;
-  line-height:1.05;letter-spacing:0.01em;margin-bottom:3px}
-.ep-winner{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.05em}
+.ep-kicker{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.22em;text-transform:uppercase;margin-bottom:6px}
+.ep-title{font-family:var(--ff-head);font-style:italic;font-size:clamp(22px,6vw,30px);font-weight:700;
+  line-height:1.1;letter-spacing:0.01em;margin-bottom:3px;
+  text-shadow:0 1px 0 rgba(0,0,0,0.85),0 0 18px var(--red-glow)}
+.ep-winner{font-family:var(--ff-type);font-size:var(--fs-sm);color:var(--t3);letter-spacing:0.03em}
+/* Page headings sit on a small gilt rule */
+.ep-title::after,.stand-hero-title::after{content:'';display:block;
+  width:110px;height:9px;margin:8px auto 7px;background:var(--ornament) center/contain no-repeat}
 
 .ep-body{padding:14px var(--px) 22px}
+.ep-sealed{text-align:center;padding:40px var(--px) 28px}
+.ep-sealed-envelope{width:140px;height:auto;transform:rotate(-3deg);
+  filter:drop-shadow(0 10px 14px rgba(0,0,0,0.6))}
+.ep-sealed-cap{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--t3);
+  letter-spacing:0.18em;text-transform:uppercase;margin-top:18px}
 
 
 
@@ -368,38 +440,51 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 
 
-.tt-wrap{overflow-x:auto;scrollbar-width:none;border:1px solid var(--b-gold);
-  border-radius:12px;overflow:hidden;margin-bottom:12px;
-  box-shadow:0 0 8px rgba(184,128,24,0.05)}
+/* Task table = a paper scoresheet: ruled rows, a red ledger margin
+   after the task column, typed headers, and each score written in ink
+   (winning score circled in wax red, lowest in pencil). Contestant
+   header colours are their own accents, darkened to read on paper. */
+.tt-wrap{overflow-x:auto;scrollbar-width:none;border-radius:2px;overflow:hidden;margin-bottom:16px;
+  background:var(--noise),var(--paper);
+  box-shadow:inset 0 0 30px rgba(120,90,50,0.18),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4)}
 .tt-wrap::-webkit-scrollbar{display:none}
 .tt{width:100%;border-collapse:collapse;min-width:min(290px,100%)}
-.tt th{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);
+.tt th{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--sepia);
   text-transform:uppercase;letter-spacing:0.1em;
-  padding:8px 6px;text-align:center;border-bottom:1px solid var(--b-gold);
-  background:var(--noise),linear-gradient(180deg,var(--s3) 0%,var(--s2) 100%)}
+  padding:9px 6px 7px;text-align:center;border-bottom:1.5px solid rgba(74,54,34,0.55);background:transparent}
+.tt thead th:not(:first-child){filter:brightness(0.6) saturate(1.3)}
 .tt th:first-child{text-align:left;padding-left:10px;min-width:100px}
-.tt td{font-size:var(--fs-md);padding:8px 6px;text-align:center;
-  border-bottom:1px solid var(--b-dim);background:var(--s2);vertical-align:middle}
-.tt td:first-child{text-align:left;padding-left:10px;
-  background:var(--noise),linear-gradient(90deg,var(--s3) 0%,var(--s2) 100%)}
-.tt tr:last-child td{border-bottom:none;background:var(--s3);font-weight:700}
+.tt td{font-size:var(--fs-md);padding:6px 6px;text-align:center;color:var(--ink);
+  border-bottom:1px solid var(--paper-line);background:transparent;vertical-align:middle}
+.tt td:first-child{text-align:left;padding-left:10px;border-right:1px solid var(--margin-red)}
+.tt tr:last-child td{border-bottom:none;border-top:3px double rgba(74,54,34,0.45);background:rgba(120,90,50,0.07)}
 .tn{display:flex;align-items:center;gap:5px}
-.tb{font-size:13px;padding:0 2px;border-radius:2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center}
-.tb.P{}
-.tb.F{}
-.tb.T{}
-.tb.L{}
-.sc{font-family:var(--ff-head);font-size:clamp(15px,4vw,19px);font-weight:700;line-height:1;letter-spacing:-0.01em}
-.sc.best{color:var(--gold2);text-shadow:0 0 6px var(--gold-glow)}
-.sc.worst{color:var(--t4)}.sc.mid{color:var(--t1)}
+.tb{padding:0 2px;flex-shrink:0;line-height:1;display:inline-flex;align-items:center;color:var(--wax)}
+.tb svg{width:15px;height:15px;display:block}
+.tt-task{font-family:var(--ff-serif);font-size:13px;line-height:1.3;color:var(--sepia)}
+.tt-total-lbl{font-family:var(--ff-type);font-weight:700;font-size:12px;color:var(--sepia);letter-spacing:0.1em}
+/* .tt prefix: must outrank the generic .tt td font-size above */
+.tt .sc,.tt .tt-total{font-family:var(--ff-hand);font-size:clamp(19px,5vw,23px);font-weight:700;line-height:1}
+.tt .tt-total{font-size:clamp(22px,5.8vw,26px)}
+.sc.best,.tt-total.win{color:var(--red);
+  background:radial-gradient(ellipse 14px 12px at 50% 52%,transparent 80%,rgba(159,18,57,0.55) 86%,rgba(159,18,57,0.55) 100%,transparent 108%)}
+.sc.worst{color:var(--pencil)}.sc.mid{color:var(--ink)}
 
-.ep-ins{background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
-  border:1px solid var(--b-gold);border-left:2px solid var(--gold4);
-  border-radius:12px;padding:10px 14px;margin-bottom:12px;box-shadow:0 4px 14px rgba(0,0,0,0.3)}
-.ep-ins-lbl{font-family:var(--fm);font-weight:600;font-size:var(--fs-xs);color:var(--t3);
-  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:5px}
-.ep-ins-b{font-size:var(--fs-md);line-height:1.6;color:var(--t2)}
-.ep-ins-b strong{color:var(--t1)}
+/* Analysis & profile copy is printed on an ivory task card, sealed in
+   the corner — the same card the Taskmaster hands over on the show. */
+.ep-ins,.cd-block{position:relative;
+  background:var(--noise),var(--paper);border:none;border-radius:2px;
+  padding:14px 16px;margin-bottom:14px;
+  box-shadow:inset 0 0 30px rgba(120,90,50,0.16),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4)}
+.ep-ins::after,.cd-block::after{content:'';position:absolute;top:-8px;right:14px;
+  width:22px;height:22px;border-radius:52% 46% 50% 48%;
+  background:radial-gradient(circle at 34% 30%,var(--wax-hi) 0%,var(--wax) 48%,var(--red3) 100%);
+  box-shadow:0 2px 3px rgba(0,0,0,0.5),inset 0 0 0 3px rgba(76,5,25,0.3)}
+.ep-ins-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--wax);
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding-bottom:7px;margin-bottom:9px;border-bottom:1px solid var(--paper-line)}
+.ep-ins-b{font-size:var(--fs-md);line-height:1.6;color:#3b2a1a}
+.ep-ins-b strong{color:var(--ink)}
 
 
 /* ── CAST PAGE ──────────────────────────────────────── */
@@ -460,12 +545,15 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
   background:var(--s2);font-size:clamp(16px,4.2vw,20px);font-weight:900;letter-spacing:0.06em;opacity:0.18;text-transform:uppercase}
 .cd-info{flex:1;padding:14px var(--px);display:flex;flex-direction:column;justify-content:center}
-.cd-name{font-family:var(--ff-name);font-size:clamp(19px,5vw,26px);font-weight:700;
-  line-height:1.1;letter-spacing:0.02em}
+.cd-name{font-family:var(--ff-head);font-size:clamp(21px,5.6vw,29px);font-weight:900;
+  line-height:1.1;letter-spacing:0.01em;text-shadow:0 1px 0 rgba(0,0,0,0.85)}
 .cd-sub{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);margin-top:6px;letter-spacing:0.06em}
 .cd-pts{font-family:var(--ff);font-size:clamp(32px,8.5vw,48px);font-weight:900;
   line-height:1;color:var(--gold2);margin-top:8px;letter-spacing:-0.03em;text-shadow:0 0 14px var(--gold-glow)}
 .cd-pts-l{font-family:var(--fm);font-size:var(--fs-xs);color:var(--t3);letter-spacing:0.08em}
+.cd-ranks{display:flex;gap:10px;margin-top:9px;font-family:var(--fm);font-size:10px;color:var(--t2);flex-wrap:wrap}
+.cd-ranks > span{display:inline-flex;align-items:center;gap:4px}
+.cd-ranks svg{width:13px;height:13px;color:var(--gold3)}
 
 
 .cd-stat-strip{display:grid;grid-template-columns:repeat(4,1fr);
@@ -475,16 +563,12 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .cd-s-v{font-family:var(--ff);font-size:clamp(17px,4.5vw,22px);font-weight:700;line-height:1;letter-spacing:-0.02em}
 .cd-s-l{font-family:var(--fm);font-size:var(--fs-2xs);color:var(--t3);margin-top:2px;letter-spacing:0.04em}
 
-.cd-block{margin:8px var(--px);
-  background:var(--noise),linear-gradient(135deg,var(--s3) 0%,var(--s2) 100%);
-  border:1px solid var(--b-gold);border-radius:12px;padding:10px var(--px);
-  box-shadow:inset 0 0 16px rgba(0,0,0,0.25),inset 0 1px 0 rgba(255,255,255,0.06),0 4px 14px rgba(0,0,0,0.3)}
-.cd-block.red-l{border-left:2px solid var(--red);border-radius:12px}
-.cd-block-insight{border-left:2px solid var(--gold4);border-radius:12px}
-.cd-block-lbl{font-family:var(--fm);font-weight:600;font-size:var(--fs-xs);color:var(--t3);
-  letter-spacing:0.18em;text-transform:uppercase;margin-bottom:5px}
-.cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.62;color:var(--t2)}
-.cd-block-body strong{color:var(--t1);font-weight:700}
+.cd-block{margin:18px var(--px) 8px}
+.cd-block-lbl{font-family:var(--ff-type);font-weight:700;font-size:var(--fs-xs);color:var(--wax);
+  letter-spacing:0.18em;text-transform:uppercase;
+  padding-bottom:7px;margin-bottom:9px;border-bottom:1px solid var(--paper-line)}
+.cd-block-body{font-family:var(--ff);font-size:var(--fs-md);line-height:1.62;color:#3b2a1a}
+.cd-block-body strong{color:var(--ink);font-weight:700}
 
 /* Episode scores strip in cast detail */
 .cd-ep-strip{display:flex;margin:6px var(--px) 8px;
@@ -517,10 +601,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 /* ── EPISODE PORTRAIT PODIUM ───────────────────────── */
 .pod-portraits{display:flex;align-items:flex-end;gap:6px;
-  padding:10px 8px 0;margin-bottom:12px;
-  border:1px solid var(--b-gold);border-radius:12px;
-  background:var(--noise),linear-gradient(180deg,var(--s3) 0%,var(--s1) 100%);
-  box-shadow:inset 0 0 24px rgba(0,0,0,0.35)}
+  padding:14px 10px 2px;margin:4px 0 16px}
+.pod-port-pts.win{color:var(--gold2)}
 .pod-port-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding-bottom:8px}
 .pod-port-img{width:100%;aspect-ratio:225/266;overflow:hidden;
   transition:border-color 0.2s}
@@ -530,7 +612,7 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 
 .pod-port-name{font-family:var(--ff-name);font-size:clamp(9px,2.2vw,11px);letter-spacing:0.04em;
   text-align:center;line-height:1;margin-top:2px}
-.pod-port-pts{font-family:var(--ff-head);font-size:clamp(14px,3.8vw,18px);font-weight:700;
+.pod-port-pts{font-family:var(--ff-head);font-size:clamp(14px,3.8vw,18px);font-weight:700;color:var(--t1);
   line-height:1;letter-spacing:-0.02em;text-align:center}
 
 /* ── EPISODE HORIZONTAL SCROLL ─────────────────────── */
@@ -575,6 +657,8 @@ body{font-family:var(--ff);background:var(--bg);color:var(--t1);
 .ht-gold { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow); }
 .ht-white { color: var(--t1); text-shadow: 0 0 12px rgba(255,255,255,0.15); }
 .hdr-title em.ht-white { color: var(--t1); font-style: normal; text-shadow: none; }
+
+::selection{background:rgba(136,19,55,0.55);color:var(--ivory)}
 
 /* ── ACCESSIBILITY ──────────────────────────────────── */
 /* Focus visible — keyboard nav */
@@ -701,38 +785,18 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   transition:transform 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 .hdr.compact .hdr-cd{transform:scale(0.82)}
-/* Label reads as a caption directly OVER the clock — one line, tight
-   against the digit row below it — rather than beside it, which forced
-   an awkward mid-phrase wrap into a narrow column. */
-#hdr-countdown{display:flex;flex-direction:column;align-items:flex-end;gap:3px}
-.cd-label{
-  font-family:var(--fm);font-size:8px;font-weight:600;color:var(--t3);
-  letter-spacing:0.08em;text-transform:uppercase;line-height:1;white-space:nowrap;
-}
-.cd-digits{display:flex;align-items:flex-start;gap:3px}
-.cd-unit{display:flex;flex-direction:column;align-items:center;gap:2px}
-.cd-nums{display:flex;gap:1px}
-.cd-lbl{font-family:var(--fm);font-size:7px;font-weight:600;color:var(--t4);
-  letter-spacing:0.1em;text-transform:uppercase;line-height:1}
-.cd-colon{display:flex;flex-direction:column;justify-content:center;gap:3px;
-  height:15px;margin:0 1px}
-.cd-colon span{width:2px;height:2px;border-radius:50%;background:#ff2f2f;
-  box-shadow:0 0 3px #ff2f2f}
-
-/* Seven-segment digit: a fixed grid of 7 bars, each toggled on/off by
-   JS (see seg7Digit()) rather than driven by CSS alone — lets the same
-   markup double as the unlit "ghost" segments a real LED digit shows,
-   which is what sells the display as a digital timer rather than text. */
-.seg7{position:relative;width:8px;height:15px;margin:0 1px}
-.sg{position:absolute;border-radius:1px;background:rgba(255,40,40,0.09);transition:background 0.1s,box-shadow 0.1s}
-.sg.on{background:#ff2f2f;box-shadow:0 0 3px #ff2f2f,0 0 6px rgba(255,47,47,0.6)}
-.sg-a{top:0;   left:1px; width:6px; height:2px}
-.sg-g{top:6.5px;left:1px; width:6px; height:2px}
-.sg-d{top:13px;left:1px; width:6px; height:2px}
-.sg-f{top:1.5px;left:0;  width:2px; height:6px}
-.sg-b{top:1.5px;left:6px;width:2px; height:6px}
-.sg-e{top:8px;  left:0;  width:2px; height:6px}
-.sg-c{top:8px;  left:6px;width:2px; height:6px}
+/* Brass mechanical stopwatch (see stopwatchSVG()). Digits are SVG
+   <tspan>s inside the ivory dial, so they scale with the case. */
+#hdr-countdown{display:flex;align-items:center}
+.sw{display:block;width:60px;height:auto;overflow:visible;
+  filter:drop-shadow(0 2px 3px rgba(0,0,0,0.6))}
+.sw-ep{font-family:var(--ff-type);font-weight:700;font-size:8.5px;letter-spacing:1.4px;fill:#6b5a44}
+.sw-big{font-family:var(--ff-serif);font-weight:700;font-size:26px;fill:var(--wax)}
+.sw-unit{font-family:var(--ff-type);font-weight:700;font-size:11px;fill:var(--wax)}
+.sw-small{font-family:var(--ff-type);font-weight:700;font-size:14px;fill:var(--red3)}
+.sw-hand{transform-origin:50px 58px;animation:sw-sweep 60s steps(60) infinite}
+@keyframes sw-sweep{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.sw-hand{animation:none}}
 
 
 
@@ -794,32 +858,53 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .player-card-list {
   display: flex;
   flex-direction: column;
-  padding: 0 0 32px;
+  gap: 14px;
+  padding: 16px var(--wall-inset) 36px;
 }
 
-/* Card shell */
-.pc {
-  background: var(--noise), linear-gradient(170deg, var(--s2) 0%, var(--s1) 100%);
-  border-bottom: 1px solid var(--b-gold);
+/* Card shell (also the episode podium) — each player is a separate walnut placard hung on the
+   gallery wall: wood grain, a thin gilt fillet inset from the edge, a
+   drop shadow onto the wall, and a brass nail (::after) at top centre. */
+.pc, .pod-portraits {
   position: relative;
+  border-radius: 3px;
+  background:
+    var(--noise),
+    radial-gradient(ellipse 120% 90% at 30% 0%, rgba(255,200,140,0.06), transparent 60%),
+    var(--wood-grain),
+    linear-gradient(175deg, #3a2517 0%, #2a190f 55%, #21130b 100%);
+  box-shadow:
+    inset 0 0 0 1px rgba(236,192,64,0.28),
+    inset 0 0 0 3px #1a0f08,
+    inset 0 0 0 4px rgba(184,128,24,0.18),
+    inset 0 2px 10px rgba(0,0,0,0.35),
+    0 8px 16px -4px rgba(0,0,0,0.7),
+    0 2px 4px rgba(0,0,0,0.5);
 }
-/* First card top border */
-.pc:first-child { border-top: 1px solid var(--b-gold); }
-
-/* Rank-1 accent */
-.pc-rank1 {
-  background: var(--noise), linear-gradient(170deg, rgba(184,128,24,0.06) 0%, var(--s1) 50%);
-}
-/* Top-3 subtle left tick */
-.pc-podium::before, .pc-rank1::before {
+.pc::after, .pod-portraits::after {
   content: '';
-  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
-  background: linear-gradient(180deg, transparent 10%, var(--gold4) 50%, transparent 90%);
+  position: absolute; top: -4px; left: 50%; z-index: 2;
+  width: 7px; height: 7px; margin-left: -3.5px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f3dc9a, #b88018 55%, #5a3c08);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.7);
 }
-.pc-rank1::before {
-  background: linear-gradient(180deg, transparent 10%, var(--gold2) 50%, transparent 90%);
-  box-shadow: 0 0 6px var(--gold-glow);
+
+/* Rank-1 placard gets a brighter, double gilt frame */
+.pc-rank1 {
+  box-shadow:
+    inset 0 0 0 1px rgba(243,211,122,0.65),
+    inset 0 0 0 3px #1a0f08,
+    inset 0 0 0 4px rgba(212,160,40,0.45),
+    inset 0 2px 10px rgba(0,0,0,0.35),
+    0 0 14px rgba(212,160,40,0.12),
+    0 8px 16px -4px rgba(0,0,0,0.7),
+    0 2px 4px rgba(0,0,0,0.5);
 }
+
+/* Last place hangs slightly crooked — pivoting on its nail. Applied to
+   the inner .pc, not .player-card, because card-drop's fill-mode would
+   otherwise pin .player-card's transform to translateY(0). */
+.player-card.pc-last > .pc { transform: rotate(-1deg); transform-origin: 50% 0; }
 
 /* ── HEAD: rank · name · score ─── */
 /* Tapping the head is what expands the card — picks + analysis were
@@ -856,7 +941,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   position: relative;
 }
 .stand-hero-kicker {
-  font-family: var(--fm);
+  font-family: var(--ff-type);
+  font-weight: 700;
   font-size: var(--fs-xs);
   color: var(--t3);
   letter-spacing: 0.22em;
@@ -865,17 +951,17 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 }
 .stand-hero-title {
   font-family: var(--ff-head);
-  font-size: clamp(24px, 7vw, 32px);
-  font-weight: 700;
+  font-size: clamp(30px, 8.5vw, 40px);
+  font-weight: 900;
   line-height: 1.05;
   letter-spacing: 0.01em;
-  margin-bottom: 5px;
+  margin-bottom: 3px;
   color: var(--t1);
-  text-shadow: 0 0 18px var(--red-glow);
+  text-shadow: 0 1px 0 rgba(0,0,0,0.85), 0 0 18px var(--red-glow);
 }
 .stand-hero-sub {
-  font-family: var(--fm);
-  font-size: var(--fs-xs);
+  font-family: var(--ff-type);
+  font-size: var(--fs-sm);
   color: var(--t3);
   letter-spacing: 0.05em;
 }
@@ -887,13 +973,13 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px var(--px);
+  padding: 7px calc(var(--px) + var(--wall-inset));
   border-top: 1px solid var(--b-gold);
-  border-bottom: 1px solid var(--b-gold);
-  background: var(--noise), linear-gradient(180deg, var(--s3) 0%, var(--s2) 100%);
+  border-bottom: 3px double rgba(184,128,24,0.35);
+  background: rgba(0,0,0,0.28);
 }
 .st-h {
-  font-family: var(--fm);
+  font-family: var(--ff-type);
   font-size: 11px;
   font-weight: 700;
   color: var(--t3);
@@ -939,17 +1025,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 .pc.expanded .pc-detail-wrap { grid-template-rows: 1fr; }
 .pc-detail-inner { overflow: hidden; min-height: 0; }
 
-.pc-delta {
-  font-family: var(--fm);
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1;
-}
-.pc-delta-up { color: var(--up); }
-.pc-delta-dn { color: var(--red); }
-.pc-delta-flat { color: var(--t4); }
-
 /* Rank + delta, stacked — both reflect whichever column the table is
    CURRENTLY sorted by (tie-aware: see renderStandingsList, which reads
    PVE_RANK/RD or PVP_RANK/RD_PVP together for that column, so ties
@@ -965,17 +1040,36 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   gap: 2px;
 }
 .pc-rank-n {
-  font-family: var(--ff);
+  font-family: var(--ff-serif);
   font-size: 17px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--t2);
   letter-spacing: -0.02em;
   line-height: 1;
 }
-/* Reuses the exact same gold/silver/bronze tiers as the score columns
-   (.pc-score-t1/2/3, applied directly to .pc-rank-n itself) rather than
-   a coarser "podium" flag, so a 2nd-place rank number and a 2nd-place
-   score number read as the identical color. */
+/* Ranks 1-3 sit on a wax seal (WAX_SEAL_SVG) tinted gold/silver/bronze
+   through the --seal-* custom properties, with the numeral pressed in. */
+.pc-rank-seal {
+  position: relative;
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pc-rank-seal svg { position: absolute; inset: 0; width: 100%; height: 100%;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,0.55)); }
+.pc-rank-seal .ws-drip  { fill: var(--seal-dark); }
+.pc-rank-seal .ws-body  { fill: var(--seal-base); }
+.pc-rank-seal .ws-press { fill: var(--seal-dark); opacity: 0.28; }
+.pc-rank-seal .ws-ring  { fill: none; stroke: var(--seal-light); stroke-width: 1; opacity: 0.55; }
+.pc-rank-seal .ws-shine { fill: var(--seal-light); opacity: 0.5; }
+.pc-rank-seal span {
+  position: relative;
+  font-size: 15px;
+  color: var(--seal-ink);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+}
+.seal-t1 { --seal-light:#fbe7a1; --seal-base:#d4a028; --seal-dark:#7a520a; --seal-ink:#4a3104; }
+.seal-t2 { --seal-light:#ffffff; --seal-base:#b9bec6; --seal-dark:#5d636b; --seal-ink:#2f3338; }
+.seal-t3 { --seal-light:#f2b27a; --seal-base:#b06a32; --seal-dark:#5c3212; --seal-ink:#3a1e08; }
 
 /* Name */
 .pc-name-col {
@@ -983,12 +1077,12 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   min-width: 0;
 }
 .pc-name {
-  font-family: var(--ff-name);
-  font-size: clamp(16px, 4.4vw, 19px);
+  font-family: var(--ff-serif);
+  font-size: clamp(15px, 4.1vw, 18px);
   font-weight: 700;
   color: var(--t1);
-  line-height: 1.1;
-  letter-spacing: 0.02em;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1015,9 +1109,19 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   letter-spacing: -0.02em;
   color: var(--t1);
 }
-.pc-score-t1 { color: var(--gold2); text-shadow: 0 0 10px var(--gold-glow); }
-.pc-score-t2 { color: #a89880; text-shadow: 0 0 8px rgba(168,152,128,0.3); }
-.pc-score-t3 { color: #b6833d; text-shadow: 0 0 8px rgba(182,131,61,0.3); }
+/* Engraved rather than glowing: a 1px dark underside on each tier. */
+.pc-score-t1 { color: var(--gold2); text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
+.pc-score-t2 { color: #b9b2a6; text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
+.pc-score-t3 { color: #c08a4a; text-shadow: 0 1px 0 rgba(0,0,0,0.8); }
+/* Narrow phones: the gallery-wall inset and the wider serif names leave
+   too little room, so tighten the gaps and both score columns (header
+   AND rows, so they stay aligned) — the column labels wrap to two lines
+   ("Task / Points") to give player names the space. */
+@media (max-width: 360px) {
+  .stand-head, .pc-head { gap: 8px; }
+  .st-h { font-size: 10px; }
+  .st-h-num, .pc-score-col { width: 60px; }
+}
 
 
 /* Hide legacy overlay */
@@ -1026,11 +1130,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
 
 /* ── BOX SCORE ──────────────────────────────────────── */
 .bs-wrap{
-  margin:6px var(--px) 8px;
-  border:1px solid var(--b-gold);
-  border-radius:12px;
+  margin:12px var(--px) 8px;
+  border-radius:2px;
   overflow:hidden;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,0.06),0 4px 14px rgba(0,0,0,0.3);
+  background:var(--noise),var(--paper);
+  box-shadow:inset 0 0 30px rgba(120,90,50,0.18),0 6px 14px rgba(0,0,0,0.5),0 1px 2px rgba(0,0,0,0.4);
 }
 /* Expanded player card: everything else (photo, name, rank, total, avg)
    is already on the collapsed row above, so this holds only the weekly
@@ -1071,72 +1175,67 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
   letter-spacing:0.04em;text-transform:uppercase;
   margin-bottom:3px;
 }
+/* Weekly score handwritten in ink on a small paper tag under the
+   portrait, like a gallery label: iron-gall ink normally, wax-red ink
+   for the best week, faded pencil for the worst. */
 .pc-pick-pts{
-  font-family:var(--ff);font-size:clamp(10px,3vw,12px);font-weight:800;
-  line-height:1;margin-top:4px;letter-spacing:-0.01em;color:var(--t1);
+  font-family:var(--ff-hand);font-size:clamp(14px,3.8vw,17px);font-weight:700;
+  line-height:1;margin-top:4px;padding:2px 0 1px;color:var(--ink);
+  background:var(--ivory);border-radius:1px;
+  box-shadow:0 1px 2px rgba(0,0,0,0.5);
 }
-.pc-pick-cell.hi .pc-pick-pts{color:var(--gold2)}
-.pc-pick-cell.lo .pc-pick-pts{color:var(--t4)}
+.pc-pick-cell.hi .pc-pick-pts{color:var(--red)}
+.pc-pick-cell.lo .pc-pick-pts{color:var(--pencil)}
+/* Upcoming week with no pick yet — a sealed task envelope instead of a
+   dash. Solid (not dashed) empty frame so the envelope reads as "on the
+   wall, waiting" rather than "missing". */
+.pc-pick-upcoming .pc-pick-photo-blank{border-style:solid;background:rgba(0,0,0,0.18)}
+.pc-pick-envelope{width:80%;height:auto;transform:rotate(-4deg);
+  filter:drop-shadow(0 1px 1px rgba(0,0,0,0.5))}
 /* Picked before that week's episode has aired — real pick, no score to
    show yet, so the photo dims slightly and the points slot reads as a
    placeholder rather than a number. */
 .pc-pick-pending .pc-pick-photo{opacity:0.55}
-.pc-pick-pending .pc-pick-pts{color:var(--t4);font-weight:600}
+.pc-pick-pending .pc-pick-pts{color:var(--pencil);font-weight:600}
 .bs-header{
   display:flex;
-  background:var(--noise),linear-gradient(180deg,var(--s3),var(--s2));
-  border-bottom:1px solid var(--b-gold);
+  border-bottom:1.5px solid rgba(74,54,34,0.55);
 }
 .bs-hcell{
-  flex:1;text-align:center;padding:6px 2px;
-  font-family:var(--fm);font-size:8px;color:var(--t3);
-  letter-spacing:0.06em;border-right:1px solid var(--b-dim);
+  flex:1;text-align:center;padding:7px 2px 6px;
+  font-family:var(--ff-type);font-weight:700;font-size:8px;color:var(--sepia);
+  letter-spacing:0.06em;border-right:1px solid var(--paper-line);
 }
 .bs-hcell:first-child{
   min-width:34px;flex:0 0 34px;text-align:left;padding-left:6px;
+  border-right:1px solid var(--margin-red);
 }
-.bs-hcell:last-child{border-right:none}
+.bs-hcell:last-child,.bs-cell:last-child{border-right:none;border-left:3px double rgba(74,54,34,0.4)}
+.bs-hcell.tot{color:var(--wax)}
 .bs-row{
-  display:flex;border-bottom:1px solid var(--b-dim);
+  display:flex;border-bottom:1px solid var(--paper-line);
 }
 .bs-row:last-child{border-bottom:none}
+.bs-row-tot{border-bottom:3px double rgba(74,54,34,0.4);background:rgba(120,90,50,0.07)}
 .bs-label{
   flex:0 0 34px;min-width:34px;
-  font-family:var(--fm);font-size:9px;color:var(--t3);
+  font-family:var(--ff-type);font-weight:700;font-size:9px;color:var(--wax);
   padding:6px 3px 6px 6px;letter-spacing:0.03em;
   display:flex;align-items:center;
-  background:var(--noise),linear-gradient(90deg,var(--s3),var(--s2));
+  border-right:1px solid var(--margin-red);
 }
+.bs-label svg{width:14px;height:14px;display:block}
 .bs-cell{
-  flex:1;text-align:center;padding:6px 2px;
-  font-family:var(--ff);font-size:clamp(11px,3vw,13px);
-  font-weight:700;line-height:1;
-  border-right:1px solid var(--b-dim);
+  flex:1;text-align:center;padding:5px 1px 3px;
+  font-family:var(--ff-hand);font-size:clamp(15px,4.2vw,19px);
+  font-weight:700;line-height:1;color:var(--ink);
+  border-right:1px solid var(--paper-line);
   display:flex;align-items:center;justify-content:center;
 }
-.bs-cell:last-child{border-right:none}
-.bs-cell.hi{color:var(--gold2)}
-.bs-cell.lo{color:var(--t4)}
-.bs-cell.mid{color:var(--t1)}
-.bs-cell.blank,.blank{color:var(--t4);font-size:9px;font-family:var(--fm)}
-.bs-rank-row{
-  display:flex;
-  background:var(--noise),linear-gradient(180deg,var(--s1),var(--bg));
-  border-top:1px solid var(--b-gold);
-}
-.bs-rank-label{
-  flex:0 0 34px;min-width:34px;
-  font-family:var(--fm);font-size:8px;color:var(--t3);
-  padding:4px 3px 4px 6px;letter-spacing:0.03em;
-  display:flex;align-items:center;
-}
-.bs-rank-cell{
-  flex:1;text-align:center;padding:4px 2px;
-  font-family:var(--fm);font-size:8px;color:var(--t3);
-  border-right:1px solid var(--b-dim);
-  display:flex;align-items:center;justify-content:center;
-}
-.bs-rank-cell:last-child{border-right:none}
+.bs-cell.hi{color:var(--red)}
+.bs-cell.lo{color:var(--pencil)}
+.bs-cell.mid{color:var(--ink)}
+.bs-cell.blank,.blank{color:var(--pencil);opacity:0.6}
 
 
 /* ╔═══════════════════════════════════════════════════════╗
@@ -1263,21 +1362,6 @@ body::after {
   animation: candle-flicker 15s ease-in-out infinite 3s;
 }
 
-/* ── SCORECARD HEADER EMBER ──────────────────────────────── */
-.bs-header {
-  position: relative; overflow: hidden;
-}
-.bs-header::after {
-  content: '';
-  position: absolute; inset: 0;
-  background: linear-gradient(90deg,
-    transparent 0%,
-    rgba(212,160,40,0.06) 50%,
-    transparent 100%);
-  background-size: 200% 100%;
-  animation: ink-bleed 12s ease-in-out infinite 4s;
-  pointer-events: none;
-}
 
 /* ── REDUCE MOTION OVERRIDE ──────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
@@ -1384,10 +1468,6 @@ body::after {
 .pc-total {
   animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s both;
 }
-.pc-rank1 .pc-score-pve .pc-total {
-  animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) 0.08s both,
-             rank-burst 3s ease-in-out infinite 0.6s;
-}
 .cd-pts {
   animation: wax-stamp 0.5s cubic-bezier(0.22,1,0.36,1) 0.1s both;
   will-change: transform;
@@ -1404,25 +1484,11 @@ body::after {
    TAB INTERACTION FEEDBACK
    ────────────────────────────────────────────────────────── */
 
-/* Active tab top bar — static gold line, no sweep, on both tab strips. */
-.ep-tab.active::before {
-  content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 2px;
-  background: linear-gradient(90deg,
-    transparent, var(--gold2), var(--gold3), var(--gold2), transparent);
-}
 
 /* ──────────────────────────────────────────────────────────
    SCORE HIGH/BEST — gold flash on top scores in box
    ────────────────────────────────────────────────────────── */
 
-@keyframes score-flash {
-  0%,100% { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
-  50%     { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow), 0 0 28px rgba(212,160,40,0.4); }
-}
-.bs-cell.hi, .pc-pts-hi {
-  animation: score-flash 2.5s ease-in-out infinite;
-}
 
 /* ──────────────────────────────────────────────────────────
    REDUCE MOTION
@@ -1506,23 +1572,24 @@ body::after {
 
 
 /* ── DELTA BESIDE RANK ──────────────────────────────── */
-.pc-delta{font-family:var(--ff);font-size:9px;font-weight:700;line-height:1;}
-.pc-delta-up{color:var(--up);text-shadow:0 0 6px var(--up-glow);}
-.pc-delta-dn{color:var(--red);text-shadow:0 0 6px var(--red-glow);}
-.pc-delta-flat{color:var(--t4);}
+/* Rank movement as a small rubber-stamp mark rather than a green/red
+   ticker: typewriter-stamp face, thin inked border, slight skew, faded
+   inks (green-black up, wax-red down). */
+.pc-delta{font-family:var(--ff-stamp);font-size:9px;font-weight:400;line-height:1;
+  letter-spacing:0.04em;padding:2px 3px 1px;border:1px solid currentColor;border-radius:2px;
+  transform:rotate(-5deg);opacity:0.8;}
+.pc-delta-up{color:#8fb39a;}
+.pc-delta-dn{color:#d66a82;}
+.pc-delta-flat{color:var(--t4);border-color:transparent;opacity:0.6;}
 
-/* ── SANS-SERIF SOME SCORES ──────────────────────────── */
-/* Dense tabular numbers stay plain/legible — Bungee is a display face,
-   great for one big hero number, cluttered across a whole grid of them.
-   .pc-total (the Standings score columns) is included here too, so a
-   score reads the same face whichever tab it's on — Episodes, Cast, or
-   Standings. .pc-rank-col (the Rank column's plain position number,
-   not a score) stays on --ff-head, same as the rank medallion always
-   has. */
+/* ── SCORE NUMERALS ─────────────────────────────────── */
+/* Score numbers on the dark wood read in the body serif with lining,
+   tabular figures so columns of them line up. The paper scoresheets
+   (.sc, .bs-cell, .tt-total) are handwritten instead, so aren't here. */
 .s-pts-n,.pd-pts-n,.cd-pts,.cc-pts,
 .ss-v,.cd-s-v,.cc-ep-v,.cc-stat-v,.cd-ep-v,
 .pod-port-pts,.ps-pts-n,.ps-stat-v,
-.ph-pts,.bs-cell,.sc,.pc-total{font-family:var(--ff)!important;}
+.ph-pts,.pc-total{font-family:var(--ff)!important;font-variant-numeric:lining-nums tabular-nums;}
 
 /* Active tab gold fire sweep on the indicator */
 @keyframes indicator-sweep {
@@ -1540,7 +1607,7 @@ body::after {
 
 /* ── TAB LABEL TEXT ─────────────────────────────────── */
 .tab-label {
-  font-family: var(--fm);
+  font-family: var(--ff-type);
   font-size: 8px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
@@ -1569,8 +1636,9 @@ body::after {
 .cast-tabs {
   display: flex;
   position: relative;
-  border-bottom: 1px solid var(--b-gold);
-  background: var(--noise), linear-gradient(180deg, var(--s2) 0%, var(--s1) 100%);
+  padding: 0 4px;
+  border-bottom: 1px solid rgba(0,0,0,0.6);
+  background: var(--noise), var(--wood-grain), linear-gradient(180deg, #1d120b 0%, #150d08 100%);
 }
 .cast-tabs .ep-tab {
   flex: 1;
@@ -1595,7 +1663,6 @@ body::after {
   </div>
 </header>
 <nav class="tabs" style="--active-idx:0">
-  <div class="tab-indicator"></div>
   <button class="tab active" onclick="nav('stand',this)" aria-label="Standings">
     <div class="ti"><svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg" class="ti-svg ti-svg--standings">
   <rect x="2" y="14" width="7" height="11" rx="1" fill="currentColor" opacity="0.7"/>
@@ -2056,7 +2123,16 @@ function updateCastOrder() {
   castOrder = [...NAMES].sort((a,b) => EPS[b].reduce((s,v)=>s+v,0) - EPS[a].reduce((s,v)=>s+v,0));
 }
 
-const TASK_ICON={P:'🏆',F:'🎬',T:'👥',L:'⚡'};
+// Task-type glyphs as ink line drawings (were emoji), stroked in
+// currentColor so each context — scoresheet, box score, cast hero —
+// tints them itself.
+const inkIcon=(label,d)=>`<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" role="img" aria-label="${label}">${d}</svg>`;
+const TASK_ICON={
+  P:inkIcon('Prize task','<path d="M5 2.5h6v3a3 3 0 0 1-6 0z"/><path d="M5 3.5H3.2a2 2 0 0 0 2 3.2M11 3.5h1.8a2 2 0 0 1-2 3.2"/><path d="M8 8.5v3M5.5 13.5h5M6.5 11.5h3"/>'),
+  F:inkIcon('Filmed task','<rect x="1.5" y="6.5" width="9" height="6.5" rx="1"/><path d="M10.5 9l4-2v6l-4-2"/><circle cx="4" cy="4.3" r="1.8"/><circle cx="8.2" cy="4.3" r="1.8"/>'),
+  T:inkIcon('Team task','<circle cx="5.5" cy="5" r="2"/><circle cx="11" cy="5.5" r="1.7"/><path d="M1.8 13c.4-2.5 1.9-3.8 3.7-3.8S8.8 10.5 9.2 13M9.8 9.5c.4-.2.8-.3 1.2-.3 1.6 0 2.8 1.1 3.1 3.3"/>'),
+  L:inkIcon('Live task','<path d="M9 1.5L3.5 9h4l-1 5.5L12.5 7h-4z"/>'),
+};
 function cleanTask(n){
   return n.replace(/^(?:Prize|Team|Live|Filmed):\s*/i,'');
 }
@@ -2134,10 +2210,14 @@ function renderStandingsList(){
   // so standSortKey is always 'pve' or 'pvp' — never anything without a
   // rank to show.
   const rankSource = standSortKey==='pve' ? PVE_RANK : PVP_RANK;
+  // Whoever holds the worst rank on the current board hangs crooked
+  // (.pc-last) — by rank, not list position, so it follows the player
+  // when the sort direction flips.
+  const lastRank = Math.max(...rows.map(r => rankSource[r.name]));
 
   rows.forEach((r,i) => {
     const card = document.createElement('div');
-    card.className = 'player-card';
+    card.className = 'player-card' + (rows.length>1 && rankSource[r.name]===lastRank ? ' pc-last' : '');
     card.style.animationDelay = `${i * 35}ms`;
     card.innerHTML = buildPlayerSlide(r.name, rankSource[r.name], standSortKey);
     container.appendChild(card);
@@ -2151,6 +2231,26 @@ function togglePC(headEl){
 }
 
 
+
+// Wax seal behind a top-3 rank numeral — colours come from CSS
+// (.seal-t1/2/3 set --seal-*), so one shape serves all three tiers.
+const WAX_SEAL_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true">
+  <path class="ws-drip" d="M37.8 20.0L38.9 22.5L38.0 24.8L35.5 26.4L33.4 27.8L32.7 29.8L32.3 32.3L31.0 34.3L28.6 34.9L26.3 35.2L24.4 36.4L22.4 38.2L20.0 38.8L17.7 37.4L15.9 35.2L14.1 34.1L11.7 34.4L8.9 34.4L7.0 33.0L6.3 30.5L5.6 28.3L4.1 26.6L2.4 24.7L2.1 22.4L3.4 20.0L4.8 18.0L4.7 15.9L3.7 13.2L3.6 10.6L5.4 8.8L8.0 8.0L10.0 7.0L11.4 5.1L13.1 3.4L15.5 3.2L17.9 4.1L20.0 4.4L22.2 3.3L24.8 2.0L27.3 2.4L28.9 4.6L29.9 7.1L31.4 8.6L33.6 9.6L35.4 11.1L35.9 13.4L35.6 15.8L36.2 17.9Z"/>
+  <path class="ws-body" d="M36.5 20.0L37.5 22.3L36.6 24.4L34.4 26.0L32.6 27.3L31.9 29.1L31.5 31.5L30.2 33.2L28.0 33.9L25.9 34.2L24.1 35.3L22.2 36.8L20.0 37.4L17.9 36.2L16.2 34.3L14.5 33.3L12.3 33.4L9.8 33.3L8.0 32.0L7.2 29.8L6.6 27.7L5.2 26.1L3.7 24.4L3.4 22.2L4.5 20.0L5.7 18.1L5.7 16.2L4.9 13.7L4.9 11.3L6.5 9.7L8.8 8.8L10.7 7.8L12.0 6.2L13.6 4.6L15.8 4.4L18.0 5.1L20.0 5.4L22.0 4.4L24.5 3.4L26.7 3.7L28.3 5.7L29.2 8.0L30.6 9.4L32.6 10.3L34.3 11.7L34.7 13.9L34.6 16.1L35.1 18.0Z"/>
+  <circle class="ws-press" cx="20" cy="20" r="11.5"/>
+  <circle class="ws-ring" cx="20" cy="20" r="11.5"/>
+  <ellipse class="ws-shine" cx="13.5" cy="11.5" rx="5" ry="2.6" transform="rotate(-35 13.5 11.5)"/>
+</svg>`;
+
+// Sealed task envelope — an upcoming week's empty pick slot, and (large)
+// an episode page that hasn't aired yet.
+const sealedEnvelope = cls => `<svg class="${cls}" viewBox="0 0 32 24" aria-hidden="true">
+  <rect x="1" y="3" width="30" height="20" rx="1.5" fill="#e6d7b3" stroke="#8a7350" stroke-width=".8"/>
+  <path d="M1.5 22.4 L12 13.5 M30.5 22.4 L20 13.5" stroke="#8a7350" stroke-width=".6" opacity=".6"/>
+  <path d="M1.5 3.6 L16 14 L30.5 3.6 Z" fill="#d6c497" stroke="#8a7350" stroke-width=".8" stroke-linejoin="round"/>
+  <circle cx="16" cy="14" r="3.6" fill="#881337"/>
+  <circle cx="15" cy="13" r="1.1" fill="#fff" opacity=".35"/>
+</svg>`;
 
 function buildPlayerSlide(name, rankDisplay, boardKey){
   const p      = PLAYERS.find(x=>x.name===name);
@@ -2179,11 +2279,13 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   // rank/movement, switch to Rank Points and both swap to the PvP
   // numbers instead. Always rendered, even at zero — a dash rather than
   // an absent element, so every row's rank column is the same height.
-  const rankTier = rankDisplay<=3 ? ' pc-score-t'+rankDisplay : '';
+  const rankCell = rankDisplay<=3
+    ? `<div class="pc-rank-n pc-rank-seal seal-t${rankDisplay}">${WAX_SEAL_SVG}<span>${rankDisplay}</span></div>`
+    : `<div class="pc-rank-n">${rankDisplay}</div>`;
   const deltaVal = boardKey==='pvp' ? (RD_PVP[name]||0) : (RD[name]||0);
   const deltaStr = deltaVal===0
     ? `<span class="pc-delta pc-delta-flat">&mdash;</span>`
-    : `<span class="pc-delta ${deltaVal>0?'pc-delta-up':'pc-delta-dn'}">${deltaVal>0?'↑':'↓'}${Math.abs(deltaVal)}</span>`;
+    : `<span class="pc-delta ${deltaVal>0?'pc-delta-up':'pc-delta-dn'}">${deltaVal>0?'+':'&minus;'}${Math.abs(deltaVal)}</span>`;
 
   // Weekly picks — a single row of all 10 episodes, one contestant photo
   // per week (reusing contImg's 'pod' variant — same portrait treatment
@@ -2195,9 +2297,12 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
   const pickCells = [1,2,3,4,5,6,7,8,9,10].map(ep=>{
     const pk = p.picks[ep];
     if(!pk){
-      return `<div class="pc-pick-cell pc-pick-blank">
+      // A week that hasn't aired yet gets a sealed envelope; a missed
+      // pick on an aired week keeps its plain dash.
+      const upcoming = ep>WEEKS_AIRED;
+      return `<div class="pc-pick-cell pc-pick-blank${upcoming?' pc-pick-upcoming':''}">
         <div class="pc-pick-ep">E${ep}</div>
-        <div class="pc-pick-photo pc-pick-photo-blank">&mdash;</div>
+        <div class="pc-pick-photo pc-pick-photo-blank">${upcoming?sealedEnvelope('pc-pick-envelope'):'&mdash;'}</div>
       </div>`;
     }
     if(ep>WEEKS_AIRED){
@@ -2224,7 +2329,7 @@ function buildPlayerSlide(name, rankDisplay, boardKey){
 
     <div class="pc-head" onclick="togglePC(this)">
       <div class="pc-rank-col">
-        <div class="pc-rank-n${rankTier}">${rankDisplay}</div>
+        ${rankCell}
         ${deltaStr}
       </div>
       <div class="pc-name-col">
@@ -2352,7 +2457,8 @@ function buildEpSlide(ep){
       <div class="ep-kicker">Episode ${ep} &middot; ${m.d}</div>
       <div class="ep-title">${m.t.replace('.','')}</div>
       <div class="ep-winner">Awaiting broadcast</div>
-    </div>`;
+    </div>
+    <div class="ep-sealed">${sealedEnvelope('ep-sealed-envelope')}<div class="ep-sealed-cap">Sealed until ${m.d}</div></div>`;
   }
   const epT=TASKS.filter(t=>t.ep===ep);
   const tots=NAMES.map((_,ni)=>epT.reduce((s,t)=>s+t.s[ni],0));
@@ -2373,16 +2479,16 @@ function buildEpSlide(ep){
         ${contImg(n,false,'pod')}
       </div>
       <div class="pod-port-name" style="color:${acc}">${CONT[n].full.split(' ')[0]}</div>
-      <div class="pod-port-pts" style="color:${isWinner?'var(--gold2)':'var(--t1)'}${isWinner?';text-shadow:0 0 8px var(--gold-glow)':''}">${pts}</div>
+      <div class="pod-port-pts${isWinner?' win':''}">${pts}</div>
     </div>`;
   }).join('');
 
   let tbl=`<div class="tt-wrap"><table class="tt"><thead><tr><th>Task</th>${alpha.map(({n})=>`<th style="color:${CONT[n].acc}">${n.slice(0,3)}</th>`).join('')}</tr></thead><tbody>`;
   epT.forEach(t=>{
     const mx=Math.max(...t.s),mn=Math.min(...t.s);
-    tbl+=`<tr><td><div class="tn"><span class="tb ${t.t}">${TASK_ICON[t.t]}</span><span style="font-size:14px;color:var(--t2)">${cleanTask(t.n)}</span></div></td>${alpha.map(({i})=>{const s=t.s[i];return `<td class="sc ${s===mx&&mx>mn?'best':s===mn&&mx>mn?'worst':'mid'}">${s}</td>`;}).join('')}</tr>`;
+    tbl+=`<tr><td><div class="tn"><span class="tb ${t.t}">${TASK_ICON[t.t]}</span><span class="tt-task">${cleanTask(t.n)}</span></div></td>${alpha.map(({i})=>{const s=t.s[i];return `<td class="sc ${s===mx&&mx>mn?'best':s===mn&&mx>mn?'worst':'mid'}">${s}</td>`;}).join('')}</tr>`;
   });
-  tbl+=`<tr><td style="font-family:var(--fm);font-size:12px;color:var(--t3);letter-spacing:.1em">TOTAL</td>${alpha.map(({i})=>{const pts=tots[i];return `<td style="font-size:22px;font-weight:800;letter-spacing:-0.02em;color:${pts===epMax?'var(--gold-l)':'var(--t1)'}">${pts}</td>`;}).join('')}</tr></tbody></table></div>`;
+  tbl+=`<tr><td class="tt-total-lbl">TOTAL</td>${alpha.map(({i})=>{const pts=tots[i];return `<td class="tt-total${pts===epMax?' win':''}">${pts}</td>`;}).join('')}</tr></tbody></table></div>`;
 
   return `<div class="ep-header-box">
     <div class="ep-kicker">Episode ${ep} &middot; ${m.d}</div>
@@ -2489,30 +2595,30 @@ function buildCastSlide(n){
   const lRankC=rankWithTies([...NAMES].map(nm=>({nm,v:TY[nm].L})).sort((a,b)=>b.v-a.v), x=>x.v, x=>x.nm)[n];
 
   const ALL_EPS=[1,2,3,4,5,6,7,8,9,10];
-  const bsHdr='<div class="bs-hcell"></div>'+ALL_EPS.map(ep=>`<div class="bs-hcell">E${ep}</div>`).join('')+'<div class="bs-hcell" style="color:var(--gold2);font-weight:700">Tot</div>';
+  const bsHdr='<div class="bs-hcell"></div>'+ALL_EPS.map(ep=>`<div class="bs-hcell">E${ep}</div>`).join('')+'<div class="bs-hcell tot">Tot</div>';
 
-  const bsP='<div class="bs-label">🏆</div>'+ALL_EPS.map(ep=>{
+  const bsP='<div class="bs-label">'+TASK_ICON.P+'</div>'+ALL_EPS.map(ep=>{
     if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&t.t==='P').reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
-  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='P').reduce((a,t)=>a+t.s[ni],0)+'</div>';
-  const bsF='<div class="bs-label">🎬</div>'+ALL_EPS.map(ep=>{
+  }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='P').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsF='<div class="bs-label">'+TASK_ICON.F+'</div>'+ALL_EPS.map(ep=>{
     if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&(t.t==='F'||t.t==='T')).reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
-  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='F'||t.t==='T').reduce((a,t)=>a+t.s[ni],0)+'</div>';
-  const bsL='<div class="bs-label">⚡</div>'+ALL_EPS.map(ep=>{
+  }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='F'||t.t==='T').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsL='<div class="bs-label">'+TASK_ICON.L+'</div>'+ALL_EPS.map(ep=>{
     if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
     const v=TASKS.filter(t=>t.ep===ep&&t.t==='L').reduce((a,t)=>a+t.s[ni],0);
     return`<div class="bs-cell mid">${v}</div>`;
-  }).join('')+'<div class="bs-cell mid" style="font-weight:600">'+TASKS.filter(t=>t.t==='L').reduce((a,t)=>a+t.s[ni],0)+'</div>';
-  const bsTot='<div class="bs-label" style="font-weight:700;color:var(--t1)">Tot</div>'+ALL_EPS.map(ep=>{
+  }).join('')+'<div class="bs-cell mid">'+TASKS.filter(t=>t.t==='L').reduce((a,t)=>a+t.s[ni],0)+'</div>';
+  const bsTot='<div class="bs-label">Tot</div>'+ALL_EPS.map(ep=>{
     if(ep>WEEKS_AIRED)return'<div class="bs-cell blank">—</div>';
     const v=eps[ep-1];
-    return`<div class="bs-cell ${v===mx?'hi':v===mn?'lo':'mid'}" style="font-weight:700">${v}</div>`;
-  }).join('')+'<div class="bs-cell hi" style="font-weight:700;color:var(--gold2)">'+tot+'</div>';
+    return`<div class="bs-cell ${v===mx?'hi':v===mn?'lo':'mid'}">${v}</div>`;
+  }).join('')+'<div class="bs-cell hi">'+tot+'</div>';
   const boxScore='<div class="bs-wrap"><div class="bs-header">'+bsHdr+'</div>'
-    +'<div class="bs-row">'+bsTot+'</div>'
+    +'<div class="bs-row bs-row-tot">'+bsTot+'</div>'
     +'<div class="bs-row">'+bsP+'</div>'
     +'<div class="bs-row">'+bsF+'</div>'
     +'<div class="bs-row">'+bsL+'</div></div>';
@@ -2525,10 +2631,10 @@ function buildCastSlide(n){
         <div class="cd-sub">Rank #${srank} &middot; avg ${(tot/eps.length).toFixed(1)}/ep</div>
         <div class="cd-pts">${tot}</div>
         <div class="cd-pts-l">total pts</div>
-        <div style="display:flex;gap:8px;margin-top:8px;font-family:var(--fm);font-size:9px;flex-wrap:wrap">
-          <span>🏆 <span style="color:${rnkCol(pRankC)}">${rnkFmt(pRankC)}</span> prize</span>
-          <span>🎬 <span style="color:${rnkCol(fRankC)}">${rnkFmt(fRankC)}</span> filmed</span>
-          <span>⚡ <span style="color:${rnkCol(lRankC)}">${rnkFmt(lRankC)}</span> live</span>
+        <div class="cd-ranks">
+          <span>${TASK_ICON.P}<span style="color:${rnkCol(pRankC)}">${rnkFmt(pRankC)}</span> prize</span>
+          <span>${TASK_ICON.F}<span style="color:${rnkCol(fRankC)}">${rnkFmt(fRankC)}</span> filmed</span>
+          <span>${TASK_ICON.L}<span style="color:${rnkCol(lRankC)}">${rnkFmt(lRankC)}</span> live</span>
         </div>
       </div>
     </div>
@@ -2577,10 +2683,10 @@ function nav(name,btn){
 // Masthead: the "22" in the title is the Series 21/22 toggle (see
 // toggleSeries() and #ht-series in the HTML) — its own digits swap to
 // name whichever series is active, since there's no separate badge for
-// that any more. The top-right readout is a red 7-segment countdown —
-// Days:Hours:Minutes, each labeled — to the next Series 22 episode's air
-// date (21:00 UK, the real broadcast slot). Series 21 is finished, so
-// it just reads "Series Complete" instead of counting down to nothing.
+// that any more. The top-right readout is a brass stopwatch counting
+// down Days / Hours:Minutes to the next Series 22 episode's air date
+// (21:00 UK, the real broadcast slot). Series 21 is finished, so its
+// dial just reads "Time's up" instead of counting down to nothing.
 let countdownTimer=null;
 function renderMasthead(){
   const toggleEl=document.getElementById('ht-series');
@@ -2605,16 +2711,28 @@ function nextEpisodeInfo(){
   return m ? {ep, date:parseEpDate(m.d)} : null; // null once there's no next episode left to name
 }
 
-// Seven-segment digit lookup — which of a/b/c/d/e/f/g are lit for each
-// numeral (standard LED layout: a=top, g=middle, d=bottom, b/c=right
-// side, f/e=left side, reading clockwise from the top).
-const SEG_MAP={'0':'abcdef','1':'bc','2':'abged','3':'abgcd','4':'fgbc',
-  '5':'afgcd','6':'afgecd','7':'abc','8':'abcdefg','9':'abcdfg'};
-function seg7Digit(ch){
-  const lit=SEG_MAP[ch]||'';
-  return '<div class="seg7">'+['a','b','c','d','e','f','g'].map(s=>
-    '<div class="sg sg-'+s+(lit.includes(s)?' on':'')+'"></div>'
-  ).join('')+'</div>';
+// Brass stopwatch case wrapping the countdown — crown + two pushers on
+// top, a brass case, an ivory dial with 60/12 tick rings (drawn as
+// dashed circles), and a crimson second hand that sweeps once a minute
+// behind whatever `face` markup is passed in.
+function stopwatchSVG(face){
+  return '<svg class="sw" viewBox="0 0 100 108" xmlns="http://www.w3.org/2000/svg">'+
+    '<defs>'+
+      '<radialGradient id="sw-brass" cx="35%" cy="30%" r="80%"><stop offset="0" stop-color="#fbe7a1"/><stop offset=".45" stop-color="#c9971f"/><stop offset="1" stop-color="#6e4a08"/></radialGradient>'+
+      '<radialGradient id="sw-dial" cx="45%" cy="38%" r="70%"><stop offset="0" stop-color="#fffaf0"/><stop offset="1" stop-color="#e2d5b8"/></radialGradient>'+
+    '</defs>'+
+    '<rect x="44" y="1" width="12" height="11" rx="2.5" fill="url(#sw-brass)"/>'+
+    '<rect x="46.5" y="4" width="7" height="11" rx="1.5" fill="url(#sw-brass)" transform="rotate(-40 50 58)"/>'+
+    '<rect x="46.5" y="4" width="7" height="11" rx="1.5" fill="url(#sw-brass)" transform="rotate(40 50 58)"/>'+
+    '<circle cx="50" cy="58" r="46" fill="url(#sw-brass)"/>'+
+    '<circle cx="50" cy="58" r="40.5" fill="#4a3004" opacity=".6"/>'+
+    '<circle cx="50" cy="58" r="39" fill="url(#sw-dial)"/>'+
+    '<circle cx="50" cy="58" r="36" fill="none" stroke="#3a2a1a" stroke-width="2.4" stroke-dasharray="0.6 3.17" opacity=".5"/>'+
+    '<circle cx="50" cy="58" r="36" fill="none" stroke="#881337" stroke-width="4" stroke-dasharray="1.2 17.65" stroke-dashoffset="0.6"/>'+
+    '<g class="sw-hand"><line x1="50" y1="64" x2="50" y2="25" stroke="#881337" stroke-width=".9" stroke-linecap="round" opacity=".35"/></g>'+
+    face+
+    '<circle cx="50" cy="58" r="1.6" fill="#881337" opacity=".7"/>'+
+  '</svg>';
 }
 
 function renderCountdown(){
@@ -2623,18 +2741,17 @@ function renderCountdown(){
   if(!el) return;
   const info=nextEpisodeInfo();
   if(!info){
-    el.innerHTML='<div class="cd-label">Series Complete</div>';
+    el.innerHTML=stopwatchSVG(
+      '<text class="sw-small" x="50" y="54" text-anchor="middle">TIME&#8217;S</text>'+
+      '<text class="sw-big" x="50" y="78" text-anchor="middle">UP</text>');
     return;
   }
-  // Label is a one-line caption directly above the digit row (see
-  // #hdr-countdown), not squeezed beside it.
-  el.innerHTML='<div class="cd-label">Episode '+info.ep+'</div><div class="cd-digits">'+
-    '<div class="cd-unit"><div class="cd-nums" id="cd-d"></div><div class="cd-lbl">Days</div></div>'+
-    '<div class="cd-colon"><span></span><span></span></div>'+
-    '<div class="cd-unit"><div class="cd-nums" id="cd-h"></div><div class="cd-lbl">Hrs</div></div>'+
-    '<div class="cd-colon"><span></span><span></span></div>'+
-    '<div class="cd-unit"><div class="cd-nums" id="cd-m"></div><div class="cd-lbl">Mins</div></div>'+
-  '</div>';
+  // Dial layout: episode number up top, days large in the middle,
+  // hours:minutes underneath. tickCountdown() fills the three tspans.
+  el.innerHTML=stopwatchSVG(
+    '<text class="sw-ep" x="50" y="40" text-anchor="middle">EP '+info.ep+'</text>'+
+    '<text x="50" y="66" text-anchor="middle"><tspan class="sw-big" id="cd-d"></tspan><tspan class="sw-unit" dx="1">d</tspan></text>'+
+    '<text class="sw-small" x="50" y="83" text-anchor="middle"><tspan id="cd-h"></tspan>:<tspan id="cd-m"></tspan></text>');
   tickCountdown(info.date);
   countdownTimer=setInterval(()=>tickCountdown(info.date),1000);
 }
@@ -2647,9 +2764,9 @@ function tickCountdown(target){
   const days=Math.floor(totalMin/1440);
   const hours=Math.floor((totalMin%1440)/60);
   const mins=totalMin%60;
-  dEl.innerHTML=String(days).padStart(2,'0').split('').map(seg7Digit).join('');
-  hEl.innerHTML=String(hours).padStart(2,'0').split('').map(seg7Digit).join('');
-  mEl.innerHTML=String(mins).padStart(2,'0').split('').map(seg7Digit).join('');
+  dEl.textContent=String(days).padStart(2,'0');
+  hEl.textContent=String(hours).padStart(2,'0');
+  mEl.textContent=String(mins).padStart(2,'0');
   if(diff<=0 && countdownTimer){clearInterval(countdownTimer);countdownTimer=null;}
 }
 
