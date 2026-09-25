@@ -1933,10 +1933,13 @@ function computeDerived(){
     NAMES.forEach(n => { rankPts[n] = 6 - ranks[n]; });
     return rankPts;
   });
+  // Only aired weeks count, same as Show Pts: a pick made ahead of
+  // broadcast scores nothing yet. (Unaired episodes are all-zero, which
+  // rankWithTies would read as a 5-way tie for 1st worth 5 points each.)
   PVP_SCORE = {};
   PLAYERS.forEach(p => {
     let s = 0;
-    for(let ep=1; ep<=10; ep++){
+    for(let ep=1; ep<=WEEKS_AIRED; ep++){
       const pk = p.picks[ep];
       if(pk) s += CAST_EP_RANK_PTS[ep-1][pk] || 0;
     }
@@ -2527,7 +2530,7 @@ function buildCastSlide(n){
       <div class="cd-img"><div class="cd-img-frame">${imgEl}</div></div>
       <div class="cd-info">
         <div class="cd-name" style="color:${acc}">${CONT[n].full}</div>
-        <div class="cd-sub">Rank #${srank} &middot; avg ${(tot/eps.length).toFixed(1)}/ep</div>
+        <div class="cd-sub">Rank #${srank} &middot; avg ${(WEEKS_AIRED ? tot/WEEKS_AIRED : 0).toFixed(1)}/ep</div>
         <div class="cd-pts">${tot}</div>
         <div class="cd-pts-l">total pts</div>
         <div class="cd-ranks">

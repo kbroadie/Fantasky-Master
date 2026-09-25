@@ -2,7 +2,7 @@
 
 This document describes the Fantasky Master web app in full: what it is for, how its data is structured, every calculation it performs, and every screen and interaction. It is written to be read by a language model (or a new developer) who has not seen the code. Terms are defined before they are used, formulas are given explicitly, and a fully worked example is included.
 
-The document describes `index.html` as merged to `main` in pull request #2 (commit `02b7f1f`).
+The document describes `index.html` as of the fixes that make early picks score nothing and compute the cast average per aired episode.
 
 ---
 
@@ -134,10 +134,10 @@ So 1st = 5, 2nd = 4, 3rd = 3, 4th = 2, 5th = 1. **Ties share points**, and the n
 Step 2: for each player:
 
 ```
-League Pts = Σ over e = 1..10 where the player has a pick of rankPoints[e][pick_e]
+League Pts = Σ over e = 1..WEEKS_AIRED where the player has a pick of rankPoints[e][pick_e]
 ```
 
-In words: **League Pts rewards picking the week's best performer**, regardless of how many raw points that performer actually scored.
+In words: **League Pts rewards picking the week's best performer**, regardless of how many raw points that performer actually scored. Like Show Pts, only aired episodes count; a pick made ahead of broadcast earns nothing until its episode airs.
 
 ### 5.6 Board ranks: `PVE_RANK` and `PVP_RANK`
 
@@ -156,7 +156,7 @@ These include players who never picked (they score 0 and rank last), but those p
 | **Contestant series total** | `Σ EPS[c][1..10]` | Cast page |
 | **Cast order** | Contestants sorted by series total, descending. | Cast page tab order |
 | **Contestant series rank** ("Rank #N") | Position in that sort, **without** tie handling (ties broken by `NAMES` order). | Cast page |
-| **Contestant average** ("avg X/ep") | `series total ÷ 10` (see caveat §10.2). | Cast page |
+| **Contestant average** ("avg X/ep") | `series total ÷ WEEKS_AIRED`, i.e. points per aired episode (shown as 0.0 if nothing has aired). Example: Nina, 70 points after 4 episodes → 17.5. | Cast page |
 | **Category ranks** (prize / filmed / live) | `rankWithTies` over contestants by `TY.P`, by `TY.F + TY.T` (team tasks count as filmed), and by `TY.L`. | Cast page |
 | **Standings leader** | The player with the highest Show Pts among players with at least one pick (ties go to `PICKS` insertion order). | Standings header ("X leads with N points") |
 
@@ -301,14 +301,13 @@ Styling never affects the calculations.
 
 ## 10. Edge cases, conventions and known caveats
 
-1. **Pending picks are excluded from Show Pts.** A pick for an episode that has not aired yet contributes nothing to Show Pts and is displayed as "…".
-2. **Contestant "avg /ep" divides by 10, not by episodes aired.** Mid-series this understates the real average (e.g. Nina, 70 points after 4 episodes, shows "avg 7.0/ep" rather than 17.5).
-3. **Latent League Pts issue for pending picks.** `PVP_SCORE` does not check `WEEKS_AIRED`. For an unaired episode every contestant has 0 points, so all tie for 1st and would each be worth 5 rank points. If a player ever enters a pick for a future week, their League Pts would jump by 5 before that episode airs. This does not affect the current data, because no Series 22 player has a pick beyond week 4.
-4. **Rank deltas are manual.** `RD` and `RD_PVP` are not computed from week-over-week standings; they must be re-entered after each episode or they go stale.
-5. **Hidden players.** Players with no picks at all (Series 22: Ellen, Katherine) are omitted from the Standings table but still exist in the data.
-6. **Ties.** Board ranks, category ranks and weekly rank points are tie-aware. The contestant series rank on the Cast page and the episode winner name are not: they fall back to `NAMES` order.
-7. **Scores above 5 are allowed.** One Series 22 task awarded a bonus point (a 6); it is kept as-is so totals match the source.
-8. **Airtime time zone.** The code comment calls 21:00 "the real UK broadcast slot", but the date is built in the viewer's local time zone, so viewers outside the UK see a countdown to 21:00 their time.
+1. **Early (pending) picks don't count.** A pick for an episode that has not aired yet contributes nothing to Show Pts or League Pts, and is displayed as "…" in the player's weekly strip. (League Pts has to skip unaired weeks explicitly: all contestants score 0 in an unaired episode, which would otherwise read as a five-way tie for 1st worth 5 rank points each.)
+2. **Contestant "avg /ep" is per aired episode.** It divides the contestant's total by `WEEKS_AIRED`, the number of episodes that produced that total.
+3. **Rank deltas are manual.** `RD` and `RD_PVP` are not computed from week-over-week standings; they must be re-entered after each episode or they go stale.
+4. **Hidden players.** Players with no picks at all (Series 22: Ellen, Katherine) are omitted from the Standings table but still exist in the data.
+5. **Ties.** Board ranks, category ranks and weekly rank points are tie-aware. The contestant series rank on the Cast page and the episode winner name are not: they fall back to `NAMES` order.
+6. **Scores above 5 are allowed.** One Series 22 task awarded a bonus point (a 6); it is kept as-is so totals match the source.
+7. **Airtime time zone.** The code comment calls 21:00 "the real UK broadcast slot", but the date is built in the viewer's local time zone, so viewers outside the UK see a countdown to 21:00 their time.
 
 ---
 
@@ -318,7 +317,7 @@ After a new Series 22 episode airs, edit `index.html`:
 
 1. **Scores:** append that episode's tasks to `TASKS_S22` (`{ep, n, t, s}`, with `s` in `NAMES_S22` order).
 2. **Weeks aired:** increment `S22_WEEKS_AIRED`.
-3. **Picks:** add each player's pick for the new week to `PICKS_S22`, and optionally next week's picks (see caveat §10.3).
+3. **Picks:** add each player's pick for the new week to `PICKS_S22`. Next week's picks can be entered early too; they won't score until that episode airs (§10.1).
 4. **Episode text:** add or confirm the episode title and date in `EM_S22`, and write an Analysis paragraph in `EI_S22`.
 5. **Rank deltas:** update `RD_S22` and `RD_PVP_S22` with each player's rank change on each board.
 6. **Contestant text (optional):** refresh `CONT_S22[name].stat` / `.bio`.
