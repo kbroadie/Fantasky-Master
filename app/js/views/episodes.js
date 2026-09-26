@@ -90,7 +90,8 @@ function slide(d, e) {
 // 1): a smooth line in their colour (a monotone cubic Bézier, so it
 // never overshoots a point, e.g. above the leader's 0 or past a real low),
 // labelled at the
-// end with their name and gap (the leader's total). Tap a line to bring it
+// end with the first three letters of their name, like the task table's
+// columns, and their gap (the leader's total). Tap a line to bring it
 // forward and fade the rest; tap a point to read it in the caption.
 
 /** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
@@ -127,7 +128,7 @@ function raceChart(d, upTo) {
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
   const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const W = 340, L = 34, R = 236, T = 12, B = 160, H = B + 24;
+  const W = 340, L = 34, R = 262, T = 12, B = 160, H = B + 24; // R leaves room for "NIN 70"
   const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
@@ -148,7 +149,7 @@ function raceChart(d, upTo) {
     const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
     const [lx, ly] = pts.at(-1), ty = labelY[name], g = gap(name, upTo);
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
+    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);
       const say = `Ep ${e} · ${name} · ${total[name][e]} points · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
@@ -161,6 +162,6 @@ function raceChart(d, upTo) {
     <div class="card race">
       <div class="card-head"><span>The race so far</span><span class="legend">points behind the leader</span></div>
       <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Points behind the leader after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
-      <p class="rc-cap">Tap a line to follow it, or a point for that week</p>
+      <p class="rc-cap"></p>
     </div>`;
 }

@@ -120,7 +120,7 @@ function heatStrip(d, c) {
     <div class="card heat" style="--c:${c.color}">
       <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5</span></div>
       <div class="hs-grid">${head}${rows}</div>
-      <p class="hs-cap">Tap a square for its tasks</p>
+      <p class="hs-cap"></p>
     </div>`;
 }
 

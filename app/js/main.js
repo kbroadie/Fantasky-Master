@@ -256,14 +256,14 @@ $("#ep-body").addEventListener("click", (e) => {
   for (const g of card.querySelectorAll("g[data-who].on")) g.classList.remove("on");
   if (!who || same) {
     card.classList.remove("focus");
-    cap.textContent = "Tap a line to follow it, or a point for that week";
+    cap.textContent = "";
     return;
   }
   who.classList.add("on");
   svg.append(who); // draw it on top
   card.classList.add("focus");
   if (hit) { hit.classList.add("on"); cap.textContent = hit.dataset.say; }
-  else cap.textContent = `Following ${who.dataset.who} · tap a point for that week`;
+  else cap.textContent = "";
 });
 
 // Long task names are clamped to two lines; tap one to read it in full.
