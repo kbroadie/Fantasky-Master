@@ -243,6 +243,16 @@ $("#cast-body").addEventListener("click", (e) => {
   card.querySelector(".hs-cap").textContent = slot.dataset.say;
 });
 
+// The race chart (Episodes): tap a point to read that week's standing.
+$("#ep-body").addEventListener("click", (e) => {
+  const hit = e.target.closest(".rc-hit");
+  if (!hit) return;
+  const card = hit.closest(".race");
+  for (const x of card.querySelectorAll(".rc-hit.on")) x.classList.remove("on");
+  hit.classList.add("on");
+  card.querySelector(".rc-cap").textContent = hit.dataset.say;
+});
+
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 

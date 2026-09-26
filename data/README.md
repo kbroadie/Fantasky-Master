@@ -32,7 +32,7 @@ For episode *N* of the current series:
 
 1. **Scores.** Add a `score` row for every contestant on every task; that's 5 rows per task, so usually 25 rows. The five rows of a task share `task_no`, `task_type` and `task_name`.
 2. **Picks.** Add a `pick` row for each player who voted, with their final vote from the WhatsApp poll.
-3. **Episode row.** Fill `analysis` on episode *N*'s `episode` row. If contestants tied for the top score, put the tiebreak winner in `tiebreak_winner`. Correct the `title` if it was a placeholder.
+3. **Episode row.** If contestants tied for the top score, put the tiebreak winner in `tiebreak_winner`. Correct the `title` if it was a placeholder. (`analysis` isn't shown in the app any more; filling it is optional.)
 4. **Optional.** `bio` is only who they are, so it rarely changes.
 
 Example rows:

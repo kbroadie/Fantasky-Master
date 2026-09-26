@@ -2,8 +2,9 @@
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
 // columns (each under its portrait) and the ballot.
-import { esc, rich, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
+import { esc, ord, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
+import { rankWithTies } from "../league.js";
 
 /** The cast in seat order; the CSV's order if the stats aren't loaded. */
 function seated(d) {
@@ -80,6 +81,59 @@ function slide(d, e) {
       <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
     </table></div>`;
 
-  const notes = e.analysis ? `<div class="card note"><div class="card-head"><span>Episode analysis</span></div><p>${rich(e.analysis)}</p></div>` : "";
-  return head(line) + `<div class="ep-body"><div class="pod">${pod}</div>${table}${notes}</div>`;
+  return head(line) + `<div class="ep-body"><div class="pod">${pod}</div>${table}${raceChart(d, e.ep)}</div>`;
+}
+
+// ── The race so far ─────────────────────────────────────────────────────────
+// A bump chart: each contestant's rank by running total after every episode
+// up to this one (1st at the top), a line in their colour, labelled at the end
+// with their name and total. Ties share a rank and are nudged apart so both
+// lines show. Tap a point to read it in the caption.
+
+function raceChart(d, upTo) {
+  const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const total = Object.fromEntries(names.map((n) => [n, [0]]));
+  for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  // rank[e][n], competition ranking ("1-2-2-4") on the running total
+  const rank = {};
+  for (const e of eps) {
+    const sorted = [...names].sort((a, b) => total[b][e] - total[a][e]);
+    rank[e] = Object.fromEntries([...rankWithTies(sorted, (n) => total[n][e])]);
+  }
+  const W = 340, L = 34, R = 236, T = 16, row = 28, n = names.length, H = T + (n - 1) * row + 34;
+  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L));
+  const y = (e, name) => {
+    const r = rank[e][name], tied = names.filter((m) => rank[e][m] === r).sort((a, b) => d.idx[a] - d.idx[b]);
+    return T + (r - 1) * row + (tied.indexOf(name) - (tied.length - 1) / 2) * 6;
+  };
+  const f1 = (v) => v.toFixed(1);
+  const grid = names.map((_, i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${T + i * row}" y2="${T + i * row}"/><text class="rc-axis" x="${L - 10}" y="${T + i * row + 4}" text-anchor="end">${ord(i + 1)}</text>`).join("");
+  const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  // End labels: at each line's last point, but at least 15 apart, so tied
+  // contestants' names don't sit on top of each other (pushed apart evenly).
+  const labelY = {}, ends = [...names].sort((a, b) => y(upTo, a) - y(upTo, b));
+  ends.forEach((m, i) => { labelY[m] = Math.max(y(upTo, m), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
+  const over = Math.max(0, labelY[ends.at(-1)] - (T + (n - 1) * row + 3));
+  for (const m of ends) labelY[m] -= over / 2;
+  // Leader drawn last, so its line sits on top
+  const byFinal = [...names].sort((a, b) => rank[upTo][b] - rank[upTo][a]);
+  const lines = byFinal.map((name) => {
+    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(e, name)]);
+    const line = upTo > 1 ? `<polyline points="${pts.map(([a, b]) => `${f1(a)},${f1(b)}`).join(" ")}" style="stroke:${c}"/>` : "";
+    const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    const [lx] = pts.at(-1), ly = labelY[name];
+    const label = `<text class="rc-name" x="${f1(lx + 12)}" y="${f1(ly + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${total[name][upTo]}</tspan></text>`;
+    const hits = pts.map(([a, b], i) => {
+      const e = i + 1, say = `Ep ${e} · ${name} · ${ord(rank[e][name])} on ${total[name][e]} points`;
+      return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
+    }).join("");
+    return `<g>${line}${dots}${label}${hits}</g>`;
+  }).join("");
+  const summary = [...names].sort((a, b) => rank[upTo][a] - rank[upTo][b]).map((m) => `${ord(rank[upTo][m])} ${m} ${total[m][upTo]}`).join(", ");
+  return `
+    <div class="card race">
+      <div class="card-head"><span>The race so far</span><span class="legend">rank by total points</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Standings by total points after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
+      <p class="rc-cap">Tap a point for the standings that week</p>
+    </div>`;
 }

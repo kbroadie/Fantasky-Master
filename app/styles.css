@@ -315,6 +315,19 @@ strong { color: var(--t1); font-weight: 700; }
 }
 .card.note p { padding: 0 14px 12px; font-size: 15px; line-height: 1.6; color: var(--t2); text-wrap: pretty; }
 
+/* The race so far: a bump chart of rank by running total */
+.race svg { display: block; width: 100%; max-width: 520px; margin: 0 auto; padding: 4px 12px 0; overflow: visible; }
+.rc-grid { stroke: var(--b-dim); stroke-width: 1; }
+.rc-axis { font-family: var(--fm); font-size: 11px; fill: var(--t4); }
+.rc-axis.now { fill: var(--gold2); }
+.race polyline { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rc-pt { stroke: var(--s2); stroke-width: 2; } /* a ring of the card's colour where lines cross */
+.rc-name { font-family: var(--ff-name); font-size: 13px; font-weight: 700; }
+.rc-total { font-family: var(--ff); font-weight: 800; fill: var(--t2); }
+.rc-hit { fill: transparent; cursor: pointer; }
+.rc-hit.on { stroke: var(--t1); stroke-width: 1.5; fill: none; }
+.rc-cap { padding: 4px 12px 12px; font-size: 13px; color: var(--t3); }
+
 /* Framed portraits */
 .fp { display: block; width: 100%; height: auto; aspect-ratio: 225 / 266; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
 .cn { font-weight: 700; }
