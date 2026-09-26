@@ -1,7 +1,7 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
-import { HEROES, HERO_RATIO, PORTRAIT_EYE, PORTRAIT_RATIO } from "../heroes.js";
+import { HEROES, HERO_RATIO } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -45,17 +45,23 @@ function lastWeek(d) {
     <p class="lead-line">${lead}</p>`;
 }
 
+/** Series with hero shots show the week's pick as each row's backdrop; the rest keep a pick column. */
+const heroRows = () => !!HEROES[state.key];
+
 export function standingsHead(d) {
   return `
     <div class="hero">${lastWeek(d)}</div>
+    <div class="st-table${heroRows() ? "" : " faces"}">
     <div class="st-head">
       <span class="st-rank">Rank</span>
       <span class="st-name">Player</span>
+      ${heroRows() ? "" : `<span class="st-pick">Wk ${pickWeek(d)}</span>`}
       <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
       <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
       <span></span>
     </div>
-    <div id="rows"></div>`;
+    <div id="rows"></div>
+    </div>`;
 }
 
 export function standingsRows(d) {
@@ -64,12 +70,14 @@ export function standingsRows(d) {
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
-    const bg = now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
+    const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
+    const face = heroRows() ? "" : now?.pick ? `<span class="mini${now.won ? " won" : ""}">${framed(d.cast[now.pick])}</span>` : `<span class="mini none">–</span>`;
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
-        <span class="pc-name"><span class="nm">${esc(p.name)}</span>${p.showRank === 1 ? `<span class="badge" role="img" aria-label="Show leader">👑</span>` : ""}${p.leagueRank === 1 ? `<span class="badge" role="img" aria-label="League leader">🏆</span>` : ""}</span>
+        <span class="pc-name"><span class="nm">${esc(p.name)}</span></span>
+        ${face}
         <span class="pc-num${tier(p.showRank)}">${p.show}</span>
         <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
         <span class="chev" aria-hidden="true"></span>
@@ -82,16 +90,14 @@ export function standingsRows(d) {
 
 /**
  * The row's backdrop: the hero shot of the contestant the player picked this
- * week, placed so the eyes sit in the middle of the row, in the gap between
- * the name and the Show column. Series without hero shots use the framed
- * portrait, zoomed past its frame. Last in the row, so it doesn't shift the
- * grid columns (it's absolutely positioned).
+ * week, stretched to span the row from edge to edge, with the eyes on the
+ * row's vertical centre and in the gap between the name and the Show column
+ * (the eyes can get comically big on wide screens). Last in the row, so it
+ * doesn't shift the grid columns (it's absolutely positioned).
  */
 function pickBackdrop(c, won) {
-  const hero = HEROES[state.key]?.[c.key];
-  const [ex, ey] = hero ? hero.eye : PORTRAIT_EYE;
-  const style = `--ex:${ex};--ey:${ey};--ar:${hero ? HERO_RATIO : PORTRAIT_RATIO}`;
-  return `<span class="pc-bg${hero ? "" : " portrait"}${won ? " won" : ""}" aria-hidden="true"><img src="${hero ? hero.src : c.img.replace(/m\.webp$/, "l.webp")}" alt="" decoding="async" style="${style}"></span>`;
+  const [ex, ey] = HEROES[state.key][c.key].eye;
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${HEROES[state.key][c.key].src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--ar:${HERO_RATIO}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

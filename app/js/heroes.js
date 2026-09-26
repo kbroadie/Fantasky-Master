@@ -17,7 +17,3 @@ export const HEROES = {
     Richard: { src: imgur("yNHG1vh"), eye: [0.49, 0.345] },
   },
 };
-
-/** Where the eyes sit in a gold-framed portrait, for series without hero shots. */
-export const PORTRAIT_EYE = [0.5, 0.42];
-export const PORTRAIT_RATIO = 225 / 266;
