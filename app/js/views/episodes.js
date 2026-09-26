@@ -128,11 +128,11 @@ function raceChart(d, upTo) {
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
   const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const W = 340, L = 34, R = 262, T = 12, B = 160, H = B + 24; // R leaves room for "NIN 70"
+  const W = 340, L = 10, R = 262, T = 12, B = 160, H = B + 24; // R leaves room for "NIN 70"
   const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
-  const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-axis" x="${L - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${v ? `−${-v}` : 0}</text>`).join("");
+  const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest just into the axis margin, then push up only
