@@ -128,11 +128,15 @@ function raceChart(d, upTo) {
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
   const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const W = 340, L = 10, R = 262, T = 12, B = 160, H = B + 24; // R leaves room for "NIN 70"
+  const W = 340, L = 10, R = 330, T = 12, B = 160, H = B + 24; // the plot fills the card
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
-  const last = d.episodes.length;
-  const x = (e) => L + ((e - 1) / (last - 1)) * (R - L), y = (v) => T + (v / yMin) * (B - T);
+  // The plot fills the card (to R); only when this episode's dots would leave
+  // too little room for their labels (about 66 units: "JOA 165", so episodes
+  // 9 and 10) does the axis tighten just enough to keep them to the right.
+  const last = d.episodes.length, LBL = 66;
+  const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, upTo - 1));
+  const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
   const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
