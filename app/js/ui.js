@@ -27,19 +27,14 @@ export function splitTime(ms) {
   const s = Math.max(0, Math.floor(ms / 1000));
   return { d: Math.floor(s / 86400), h: Math.floor((s % 86400) / 3600), m: Math.floor((s % 3600) / 60), s: s % 60 };
 }
-export const store = {
-  get(k, f) { try { return JSON.parse(localStorage.getItem(k)) ?? f; } catch { return f; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
-};
 
 
 // ── Shared state ─────────────────────────────────────────────────────────────
 
 export const state = {
   key: null, d: null, view: "standings", arg: null, sort: "show",
-  me: store.get("fm-me", null), epSub: "league", plSub: 0,
+  epSub: "league",
 };
-export const meIn = (d) => (state.me && d.allPlayers.includes(state.me) ? state.me : null);
 export const link = (view, arg) => `#/${state.key}/${view}${arg != null ? `/${enc(arg)}` : ""}`;
 
 // ── Badges ──────────────────────────────────────────────────────────────────

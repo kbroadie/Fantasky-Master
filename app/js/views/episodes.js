@@ -1,4 +1,4 @@
-import { $$, $, esc, rich, ord, reducedMotion, TYPE, fmtLocal, fmtShortDay, framed, state, meIn, link, swiperHTML } from "../ui.js";
+import { $, $$, esc, rich, ord, reducedMotion, TYPE, fmtLocal, fmtShortDay, framed, state, swiperHTML } from "../ui.js";
 import { epState } from "../stage.js";
 import { burstAt } from "../fx.js";
 
@@ -18,18 +18,16 @@ export function viewEpisodes() {
 }
 
 export function episodeCard(ep) {
-  const d = state.d, e = d.raw.episodes[ep - 1], air = d.episodes[ep - 1].air, st = epState(d, ep), me = meIn(d);
+  const d = state.d, e = d.raw.episodes[ep - 1], air = d.episodes[ep - 1].air, st = epState(d, ep);
   const head = `<p class="kicker">Episode ${ep} · ${esc(fmtShortDay.format(air))}</p><h2>${e.title ? esc(e.title) : `Episode ${ep}`}</h2>`;
   if (st !== "scored") {
     const msg = st === "pending" ? "Aired. Scores and picks coming soon."
       : st === "next" ? `Sealed until ${esc(fmtLocal.format(air))}. Poll closes in <b data-countdown></b>.`
       : `Sealed until ${esc(fmtLocal.format(air))}.`;
-    const mine = me && d.byName[me]?.weeks[ep - 1].pick;
-    return `<article class="card ep sealed">${head}<div class="envelope" aria-hidden="true"><span class="env-seal">${ep}</span></div><p class="sealed-msg">${msg}</p>${mine ? `<p class="my-week">Your pick is in: <b>${esc(mine)}</b></p>` : ""}</article>`;
+    return `<article class="card ep sealed">${head}<div class="envelope" aria-hidden="true"><span class="env-seal">${ep}</span></div><p class="sealed-msg">${msg}</p></article>`;
   }
 
   const w = d.winners[ep], c = d.cast[w.winner], tasks = d.epTasks(ep), wk = d.weekly[ep];
-  const mine = me && d.byName[me]?.weeks[ep - 1];
   const order = [...d.names].sort((a, b) => d.placing[ep][a] - d.placing[ep][b] || d.EPS[b][ep] - d.EPS[a][ep]);
 
   const league = `<ol class="lw">${order.map((n) => {
@@ -37,7 +35,7 @@ export function episodeCard(ep) {
     return `<li class="${n === w.winner ? "win" : ""}" style="--c:${cc.color}">
       ${framed(cc)}
       <div><div class="lw-head"><b>${esc(n)}</b><span class="lw-place">${ord(d.placing[ep][n])}</span><span class="lw-pts">${d.EPS[n][ep]}<small>S</small> +${d.rankPts[ep][n]}<small>L</small></span></div>
-      <div class="lw-who">${who.length ? who.map((pn) => `<a href="${link("player", pn)}" class="chip ${pn === me ? "me" : ""}">${esc(pn)}</a>`).join("") : `<span class="nobody">nobody</span>`}</div></div>
+      <div class="lw-who">${who.length ? who.map((pn) => `<span class="chip">${esc(pn)}</span>`).join("") : `<span class="nobody">nobody</span>`}</div></div>
     </li>`;
   }).join("")}</ol>`;
 
@@ -59,7 +57,6 @@ export function episodeCard(ep) {
   <article class="card ep" style="--c:${c.color}">
     <div class="ep-top">${framed(c, "fp-m")}<div>${head}
       <p class="verdict"><b>${esc(c.key)}</b> ${w.tiebreak ? `won a ${w.tied.length}-way tie on ${w.top} after the tiebreak` : `won with ${w.top}`} · ${wk.hits.length}/${wk.voters} backed them · avg ${wk.avgShow.toFixed(1)}</p>
-      ${mine ? (mine.show != null ? `<p class="my-week">You: <b>${esc(mine.pick)}</b> ${mine.show} Show +${mine.league} League${mine.won ? " ★" : ""}</p>` : `<p class="my-week">You didn't vote.</p>`) : ""}
     </div></div>
     <div class="panel" data-panel="league">${league}</div>
     <div class="panel" data-panel="score">${score}</div>

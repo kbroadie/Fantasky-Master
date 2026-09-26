@@ -14,13 +14,12 @@ The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_dat
 
 ## Layout
 
-A floating dock at the bottom holds the tabs: **Table · You · Episodes · Cast**. The series seal sits top right.
+A floating dock at the bottom holds three tabs: **Standings · Episodes · Cast**. The series seal sits top right. There is no personal "you" view; the app is the same for everyone.
 
 | Tab | What's on it |
 |---|---|
-| **Table** | The HD-2D scene of the house, with the next poll deadline in an RPG-style dialog box, and your own card (rank, points, movement, last result). The table below lists every player with a strip of all ten episodes: each cell is coloured by the contestant they picked and shows the points it scored, and a gold outline marks a pick that won the episode. |
-| **You** | Any player's season, as three swipeable panels: **Overview** (both ranks and the gap to the player above or below, a rank-history chart, winner hit rate, average pick against the league, points left on the table, the pick-everyone tracker), **Weeks**, and **Plan** (your remaining picks, saved on the device, with a copy button). |
-| **Episodes** | A numbered pager above swipeable episode cards. Each card has subtabs: **League** (who backed whom, in finishing order), **Scoreboard** (a task-by-task replay), **Tasks** and **Write-up**. The chosen subtab stays put as you swipe between episodes. |
+| **Standings** | The HD-2D scene of the house, with the next poll deadline in an RPG-style dialog box. The table below lists every player with a strip of all ten episodes: each cell is coloured by the contestant they picked and shows the points it scored, and a gold outline marks a pick that won the episode. |
+| **Episodes** | A numbered pager above swipeable episode cards. Each card has subtabs: **League** (which players backed each contestant, in finishing order), **Scoreboard** (a task-by-task replay), **Tasks** and **Write-up**. The chosen subtab stays put as you swipe between episodes. |
 | **Cast** | Five gold-framed portraits in standings order (first place on the right), each with its score in large numbers, select between swipeable contestant cards: stats, league backing, a points-per-episode chart, and the bio and stat text from the CSV. For Series 22 each card uses the contestant's full-length hero shot as its backdrop, with the portrait row floating over the top of the photo, the name and stats below the face, and the photo panning against your swipe. The photos align to the top of the card. On desktop the hero stands to the right of the stats. |
 
 Contestants appear as their full gold-framed portraits throughout.

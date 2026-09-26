@@ -4,29 +4,19 @@ import { metaFor } from "./meta.js";
 import { createStage, epState } from "./stage.js";
 import { startSky } from "./gl.js";
 import { burstAt } from "./fx.js";
-import { $$, $, esc, ord, listing, reducedMotion, YT, fmtLocal, zoneHour, pad, splitTime, store, state, meIn, link, rankSeal, deltaTag, statusLine, fitHeight, bindSwiper, heroParallax, goSlide, quietHash } from "./ui.js";
+import { $, $$, esc, listing, reducedMotion, YT, fmtLocal, zoneHour, pad, splitTime, state, link, fitHeight, bindSwiper, heroParallax, goSlide, quietHash } from "./ui.js";
 import { viewStandings } from "./views/table.js";
-import { viewPlayer, planKey, planner } from "./views/player.js";
 import { selectedEp, viewEpisodes, playRace } from "./views/episodes.js";
 import { castOrder, viewCast } from "./views/cast.js";
-
 
 // ── State ────────────────────────────────────────────────────────────────────
 
 let SERIES = {}, CURRENT = null, sky = null, stage = null;
-const VIEWS = ["standings", "player", "episodes", "cast"];
+const VIEWS = ["standings", "episodes", "cast"];
 
 function parseHash() {
   const [, key, view, arg] = location.hash.replace(/^#/, "").split("/");
   return { key: SERIES[key] ? key : CURRENT, view: VIEWS.includes(view) ? view : "standings", arg: arg ? decodeURIComponent(arg) : null };
-}
-
-
-function setMe(name) {
-  state.me = name;
-  store.set("fm-me", name);
-  renderMe();
-  renderView(false);
 }
 
 function loadSeries(key) {
@@ -39,7 +29,6 @@ function loadSeries(key) {
   stage?.update(state.d, m.theme, (ep) => link("episodes", ep));
   renderTop();
   renderDialog();
-  renderMe();
 }
 
 // ── Top bar ──────────────────────────────────────────────────────────────────
@@ -58,7 +47,7 @@ function renderTop() {
     }).join("")}`;
 }
 
-// ── Home: dialog box and "you" ───────────────────────────────────────────────
+// ── Home: dialog box ─────────────────────────────────────────────────────
 
 function leaders(d, key) {
   const top = Math.max(...d.players.map((p) => p[key]));
@@ -108,33 +97,6 @@ function knock() {
   type();
 }
 
-function renderMe() {
-  const d = state.d, box = $("#me");
-  if (!d || !box) return;
-  const me = meIn(d), p = me && d.byName[me];
-  if (!me) {
-    box.innerHTML = `<label class="me-pick"><span>Which player are you?</span>
-      <select data-me-select><option value="">Choose your name…</option>${[...d.allPlayers].sort().map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>`;
-    return;
-  }
-  if (!p) {
-    box.innerHTML = `<div class="me-card quiet"><span class="me-label">You</span><b class="me-name">${esc(me)}</b><span class="me-line">No votes yet in Series ${state.key}.</span><button class="linkish" data-me-clear type="button">Not you?</button></div>`;
-    return;
-  }
-  const lastW = d.weeksScored ? p.weeks[d.weeksScored - 1] : null;
-  const next = d.nextEp ? p.weeks[d.nextEp.ep - 1] : null;
-  box.innerHTML = `
-    <div class="me-card">
-      <a class="me-main" href="${link("player", me)}">
-        <span class="me-label">You</span><b class="me-name">${esc(me)}</b>
-        <span class="me-b">${rankSeal(p.showRank)}<b>${p.show}</b><small>Show</small>${deltaTag(p.showDelta)}</span>
-        <span class="me-b">${rankSeal(p.leagueRank)}<b>${p.league}</b><small>League</small>${deltaTag(p.leagueDelta)}</span>
-      </a>
-      <p class="me-line">${lastW ? (lastW.show != null ? `Ep ${d.weeksScored}: ${esc(lastW.pick)} got you <b>${lastW.show}</b> (${ord(lastW.place)})` : `No vote in Ep ${d.weeksScored}`) : ""}${next?.pick ? ` · Ep ${next.ep} pick in: ${esc(next.pick)}` : ""}
-        ${p.status ? ` · ${statusLine(p.status)}` : ""} <button class="linkish" data-me-clear type="button">Not you?</button></p>
-    </div>`;
-}
-
 function tick() {
   const d = state.d;
   if (!d?.nextEp) return;
@@ -146,19 +108,18 @@ function tick() {
   for (const el of $$("[data-countdown]")) el.textContent = t.d ? `${t.d}d ${t.h}h` : `${t.h}h ${pad(t.m)}m`;
 }
 
-
 // ── Views ────────────────────────────────────────────────────────────────────
 
 function renderView(animate = true) {
   const main = $("#view");
   document.body.dataset.view = state.view;
-  const html = { standings: viewStandings, player: viewPlayer, episodes: viewEpisodes, cast: viewCast }[state.view]();
+  const html = { standings: viewStandings, episodes: viewEpisodes, cast: viewCast }[state.view]();
   const swap = () => {
     main.innerHTML = html;
     for (const t of $$(".tabs a")) {
       const v = t.dataset.view;
       t.setAttribute("aria-current", v === state.view ? "page" : "false");
-      t.href = v === "player" ? link("player", meIn(state.d) ?? undefined) : link(v);
+      t.href = link(v);
     }
     moveTabInk();
     afterRender();
@@ -171,19 +132,10 @@ function renderView(animate = true) {
 
 // ── After render ────────────────────────────────────────────────────────────
 
-let meObserver = null;
 function afterRender() {
   tick();
-  meObserver?.disconnect();
   const d = state.d;
 
-  if (state.view === "standings") {
-    const row = $("#me-row"), float = $("#me-float");
-    if (row && float) {
-      meObserver = new IntersectionObserver(([en]) => { float.hidden = en.isIntersecting || scrollY < 200; });
-      meObserver.observe(row);
-    }
-  }
   if (state.view === "episodes") {
     const sel = selectedEp();
     bindSwiper("ep-swiper", sel - 1, (i) => {
@@ -204,12 +156,6 @@ function afterRender() {
       state.arg = castOrder(d)[i].key;
       quietHash(link("cast", state.arg));
       $$(".wall .frame").forEach((f, j) => f.classList.toggle("on", j === i));
-    });
-  }
-  if (state.view === "player") {
-    bindSwiper("pl-swiper", state.plSub, (i) => {
-      state.plSub = i;
-      $$(".player .subtabs button").forEach((b, j) => b.setAttribute("aria-selected", j === i));
     });
   }
   if (pendingReveal) $("#view").scrollIntoView({ behavior: "auto", block: "start" });
@@ -272,7 +218,6 @@ document.addEventListener("click", (e) => {
   if (go) {
     const i = +go.dataset.go;
     goSlide(go.dataset.swiper, i);
-    if (go.dataset.swiper === "pl-swiper") { state.plSub = i; $$(".player .subtabs button").forEach((b, j) => b.setAttribute("aria-selected", j === i)); }
     return;
   }
   const sub = t.closest("[data-epsub]");
@@ -287,42 +232,7 @@ document.addEventListener("click", (e) => {
   }
   const replay = t.closest(".replay");
   if (replay) { playRace(+replay.dataset.ep); return; }
-  if (t.closest("[data-jump-me]")) { $("#me-row")?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" }); return; }
-  if (t.closest("[data-me-clear]")) { setMe(null); return; }
-  const meSet = t.closest("[data-me-set]");
-  if (meSet) { burstAt(meSet, { count: 40 }); setMe(meSet.dataset.meSet); return; }
-
-  const plan = t.closest("[data-plan]");
-  if (plan && !plan.disabled) {
-    const key = planKey(meIn(state.d)), p = store.get(key, {}), ep = plan.dataset.plan;
-    p[ep] = p[ep] === plan.dataset.name ? null : plan.dataset.name;
-    store.set(key, p);
-    rerenderPlanner();
-    return;
-  }
-  if (t.closest("[data-plan-clear]")) { store.set(planKey(meIn(state.d)), {}); rerenderPlanner(); return; }
-  const copy = t.closest("[data-plan-copy]");
-  if (copy) {
-    const d = state.d, name = meIn(d), p = d.byName[name], plan = store.get(planKey(name), {});
-    const text = `${name}'s Series ${state.key} picks: ` + Array.from({ length: EPISODES }, (_, i) => `Ep${i + 1} ${p?.weeks[i].pick || plan[i + 1] || "–"}`).join(", ");
-    navigator.clipboard?.writeText(text).then(() => { copy.textContent = "Copied ✓"; setTimeout(() => (copy.textContent = "Copy plan"), 1500); }, () => prompt("Copy your plan:", text));
-    return;
-  }
   if (t.closest(".menu-item")) $("#series-menu").hidePopover?.();
-});
-
-function rerenderPlanner() {
-  const box = $(".planner");
-  if (!box) return;
-  const tmp = document.createElement("div");
-  tmp.innerHTML = planner(meIn(state.d));
-  box.replaceWith(tmp.firstElementChild);
-  fitHeight($("#pl-swiper"));
-}
-
-document.addEventListener("change", (e) => {
-  if (e.target.matches("[data-me-select]") && e.target.value) { setMe(e.target.value); burstAt($("#me"), { count: 40 }); }
-  if (e.target.matches("[data-player-select]") && e.target.value) location.hash = link("player", e.target.value);
 });
 
 let scrollRaf = 0;

@@ -9,12 +9,12 @@ Fantasy league for the TV show *Taskmaster*. Players pick one contestant per epi
 
 ```
 data/fantasky_master_data.csv   ← the ONLY league data (hand-edited; schema in data/README.md)
-app/index.html                  page shell: top bar, home stage/dialog/me, <main>, floating dock
+app/index.html                  page shell: top bar, home stage + dialog, <main>, floating dock
 app/styles.css                  all styles; mobile-first, desktop in @media (min-width: 600/900px)
 app/fonts/                      Monaspace variable woff2, subset to Latin (+ OFL.txt)
-app/js/main.js                  state wiring, routing (#/series/view/arg), dialog, "you" card, events, boot
+app/js/main.js                  state wiring, routing (#/series/view/arg), dialog, events, boot
 app/js/ui.js                    shared helpers ($, esc, ord, framed…), `state`, badges, swiper
-app/js/views/{table,player,episodes,cast}.js   one file per tab; each returns an HTML string
+app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns an HTML string
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
 app/js/meta.js                  presentation only: per-series theme + Imgur hero shots
@@ -26,6 +26,7 @@ tools/screenshots.mjs           Playwright shots of every view at 390px and 1440
 
 ## Conventions
 
+- **No personalisation:** there is no "you", player picker or planner (removed on request). There are three tabs only.
 - **No build step, no framework, no runtime dependencies.** Native ES modules; `package.json` is for tooling only.
 - **Views** are functions returning template strings. Escape user and CSV text with `esc()`, or `rich()` to allow `<strong>`. Interactions go through delegated listeners in `main.js`.
 - **Contestants** always appear as full gold-framed portraits (`framed()`), never cropped circles.
