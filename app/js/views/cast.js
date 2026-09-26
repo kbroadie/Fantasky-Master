@@ -45,7 +45,6 @@ function slide(d, c, max, med) {
         <div class="cd-pts-l">total points</div>
       </div>
     </div>
-    <div class="cd-league">Picked <b>${c.pickedBy}</b> time${c.pickedBy === 1 ? "" : "s"} by the league · earned them <b>${c.deliveredTo}</b> points</div>
     ${records(d, c)}
     <div class="card">
       <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${c.wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
