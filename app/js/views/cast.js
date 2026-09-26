@@ -1,5 +1,5 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
-import { esc, rich, framed, state, ICON_PATHS } from "../ui.js";
+import { esc, rich, framed, state, icon, ICON_PATHS, TASK_NAME } from "../ui.js";
 import { statsFor, badgesFor, factsFor } from "../alltime.js";
 import { faceFor } from "../heroes.js";
 
@@ -51,6 +51,7 @@ function slide(d, c, max, med) {
       <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${c.wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
       <div class="bars" style="--c:${c.color}">${medLine}${bars}</div>
     </div>
+    ${heatStrip(d, c)}
     ${radar(d, c)}
     ${profile(c)}`;
 }
@@ -86,6 +87,43 @@ function profile(c) {
       <div class="card-head"><span>Profile</span></div>
       ${c.bio ? `<p>${rich(c.bio)}</p>` : ""}
       ${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+    </div>`;
+}
+
+// ── Task heat strip ─────────────────────────────────────────────────────────
+// Every task of the series as a square in the contestant's colour, stronger
+// for a higher score (0 is an empty outline): one row per task type, one
+// column per episode (tasks of the same type in an episode share the slot),
+// the type's average at the end. Tap a square to read it in the caption.
+
+const HEAT_TYPES = ["P", "F", "T", "L"];
+
+function heatStrip(d, c) {
+  const i = d.idx[c.key], eps = d.episodes.map((e) => e.ep);
+  const byType = Object.fromEntries(HEAT_TYPES.map((k) => [k, []]));
+  for (const ep of eps.filter((e) => e <= d.weeksScored)) {
+    for (const t of d.epTasks(ep)) if (byType[t.t]) byType[t.t].push({ ep, name: t.n, v: t.s[i] });
+  }
+  const types = HEAT_TYPES.filter((k) => byType[k].length);
+  if (!types.length) return "";
+  const head = `<span></span>${eps.map((e) => `<span class="hs-ep${e > d.weeksScored ? " tbd" : ""}">${e}</span>`).join("")}<span class="hs-ep">avg</span>`;
+  const rows = types.map((k) => {
+    const all = byType[k], avg = all.reduce((a, x) => a + x.v, 0) / all.length;
+    const slots = eps.map((e) => {
+      const cells = all.filter((x) => x.ep === e).map((x) => {
+        const say = `Ep ${e} · ${TASK_NAME[k]} · ${x.name} · ${x.v}`;
+        return `<button class="hs-cell" style="--v:${x.v}" data-say="${esc(say)}" aria-label="${esc(say)}"></button>`;
+      }).join("");
+      return `<span class="hs-slot${e > d.weeksScored ? " tbd" : ""}">${cells}</span>`;
+    }).join("");
+    return `<span class="hs-type">${icon(k)}${TASK_NAME[k]}</span>${slots}<span class="hs-avg">${avg.toFixed(1)}</span>`;
+  }).join("");
+  const key = [0, 1, 2, 3, 4, 5].map((v) => `<i class="hs-key" style="--v:${v}"></i>`).join("");
+  return `
+    <div class="card heat" style="--c:${c.color}">
+      <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5</span></div>
+      <div class="hs-grid">${head}${rows}</div>
+      <p class="hs-cap">Tap a square for the task</p>
     </div>`;
 }
 
