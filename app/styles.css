@@ -41,13 +41,14 @@ strong { color: var(--t1); font-weight: 700; }
 /* ── Top bar: masthead + tabs, pinned ───────────────────────────────── */
 .topbar {
   position: sticky; top: 0; z-index: 5;
-  background: linear-gradient(180deg, rgba(20, 5, 6, .92), rgba(7, 5, 7, .94));
-  -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  /* Frosted glass: content scrolls underneath as a soft blur */
+  background: linear-gradient(180deg, rgba(7, 5, 7, .35), rgba(7, 5, 7, .6));
+  -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
 }
 .hdr {
   display: flex; align-items: center; gap: 10px;
   padding: calc(12px + env(safe-area-inset-top)) var(--px) 12px;
-  background: rgba(70, 8, 8, .6); border-bottom: 1px solid var(--b-gold);
+  background: rgba(70, 8, 8, .5); border-bottom: 1px solid var(--b-gold);
   transition: padding .3s var(--ease), box-shadow .3s var(--ease);
 }
 .hdr.compact { padding-top: calc(6px + env(safe-area-inset-top)); padding-bottom: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
@@ -82,7 +83,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* Tabs: one gold panel slides behind the active tab */
 .tabs {
   position: relative; display: flex; height: 58px; margin: 8px 10px; padding: 5px; border-radius: 18px;
-  background: rgba(11, 9, 11, .7); border: 1px solid var(--b-gold);
+  background: rgba(11, 9, 11, .55); border: 1px solid var(--b-gold);
   transition: height .3s var(--ease), margin .3s var(--ease);
   box-shadow: 0 8px 22px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .05);
 }
