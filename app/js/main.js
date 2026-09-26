@@ -3,7 +3,7 @@
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
-import { $, $$, esc, reducedMotion, state, fmtWhen, until, bestPerEpisode } from "./ui.js";
+import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats } from "./ui.js";
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
@@ -235,7 +235,7 @@ addEventListener("hashchange", () => {
 try {
   SERIES = await loadData();
   CURRENT = currentSeriesKey(SERIES, new Date());
-  state.best = bestPerEpisode(SERIES);
+  state.stats = perEpisodeStats(SERIES);
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);

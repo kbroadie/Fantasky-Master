@@ -39,44 +39,50 @@ function slide(d, c, max) {
     ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
 }
 
-// ── Strengths radar ─────────────────────────────────────────────────────────
+// ── Performance radar ───────────────────────────────────────────────────────
 // Points per episode from Prize, Filmed and Live tasks (team tasks aren't
-// counted). Each axis runs from 0 at the centre to the best per-episode
-// figure by any contestant in any series at the edge of the circle
-// (state.best). Gridlines at quarters; this contestant's area is a solid
-// shape in their colour, with subtle gradients and no outline.
+// counted), as z-scores against every contestant in every series
+// (state.stats). The scale runs from −3σ at the centre to +3σ at the edge,
+// with a hairline ring at every whole σ and ticks where they cross the axes;
+// the middle ring (dashed) is the all-series average. With ten or so
+// contestants no z-score can pass ±3, so nothing is clipped in practice.
+// Only the selected contestant is drawn, with no numbers or legend.
 
 const KINDS = [["P", "Prize"], ["F", "Filmed"], ["L", "Live"]];
+const Z = 3;
+const SIGMAS = [-2, -1, 0, 1, 2];
 
 function radar(d, c) {
-  const n = KINDS.length, R = 84, cx = 170, cy = 112;
-  const eps = Math.max(1, d.weeksScored), best = state.best;
-  const val = (k) => c.ty[k] / eps;
-  const at = (i, f) => {
-    const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
-    return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
-  };
-  const xy = ([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`;
-  const shape = KINDS.map(([k], i) => xy(at(i, Math.min(1, best[k] ? val(k) / best[k] : 0)))).join(" ");
-  const rings = [0.25, 0.5, 0.75].map((f) => `<circle class="rd-grid" cx="${cx}" cy="${cy}" r="${(R * f).toFixed(1)}"/>`).join("");
-  const spokes = KINDS.map((_, i) => { const [x, y] = at(i, 1); return `<line class="rd-grid" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join("");
+  const n = KINDS.length, R = 80, cx = 170, cy = 108;
+  const eps = Math.max(1, d.weeksScored), st = state.stats;
+  const z = (k) => (st[k].sd ? (c.ty[k] / eps - st[k].mean) / st[k].sd : 0);
+  const r = (k) => Math.min(1, Math.max(0, (z(k) + Z) / (2 * Z)));
+  const ang = (i) => -Math.PI / 2 + (i * 2 * Math.PI) / n;
+  const at = (i, f) => [cx + Math.cos(ang(i)) * R * f, cy + Math.sin(ang(i)) * R * f];
+  const f1 = (v) => v.toFixed(1);
+  const pts = KINDS.map(([k], i) => at(i, r(k)));
+  const ringAt = (s) => (s + Z) / (2 * Z);
+  const rings = SIGMAS.map((s) => `<circle class="rd-ring${s === 0 ? " avg" : ""}" cx="${cx}" cy="${cy}" r="${f1(R * ringAt(s))}"/>`).join("");
+  const spokes = KINDS.map((_, i) => { const [x, y] = at(i, 1); return `<line class="rd-axis" x1="${cx}" y1="${cy}" x2="${f1(x)}" y2="${f1(y)}"/>`; }).join("");
+  const ticks = KINDS.map((_, i) => [...SIGMAS.map(ringAt), 1].map((f) => {
+    const [x, y] = at(i, f), a = ang(i) + Math.PI / 2, dx = Math.cos(a) * 3, dy = Math.sin(a) * 3;
+    return `<line class="rd-tick" x1="${f1(x - dx)}" y1="${f1(y - dy)}" x2="${f1(x + dx)}" y2="${f1(y + dy)}"/>`;
+  }).join("")).join("");
   const labels = KINDS.map(([k, label], i) => {
-    const [x, y] = at(i, 1.14), anchor = Math.abs(x - cx) < 1 ? "middle" : x > cx ? "start" : "end";
-    return `<text class="rd-label" x="${x.toFixed(1)}" y="${(y < cy ? y - 2 : y + 14).toFixed(1)}" text-anchor="${anchor}">${ICON[k]} ${label}</text>`;
+    const [x, y] = at(i, 1.13), anchor = Math.abs(x - cx) < 1 ? "middle" : x > cx ? "start" : "end";
+    return `<text class="rd-label" x="${f1(x)}" y="${f1(y < cy ? y - 2 : y + 13)}" text-anchor="${anchor}">${ICON[k]} ${label}</text>`;
   }).join("");
   const id = `rd-${esc(c.key).replace(/\W/g, "")}`;
-  const summary = KINDS.map(([k, label]) => `${label} ${val(k).toFixed(1)} per episode (best in any series: ${best[k].toFixed(1)})`).join(", ");
+  const summary = KINDS.map(([k, label]) => `${label} ${z(k) >= 0 ? "+" : "−"}${Math.abs(z(k)).toFixed(1)} standard deviations`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
-      <div class="card-head"><span>Strengths</span></div>
-      <svg viewBox="0 0 340 214" role="img" aria-label="${esc(c.key)}'s points per episode: ${summary}">
-        <defs>
-          <radialGradient id="${id}-bg"><stop offset="0" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity=".035"/></radialGradient>
-          <linearGradient id="${id}-me" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}"/><stop offset="1" stop-color="${c.color}" stop-opacity=".62"/></linearGradient>
-        </defs>
-        <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#${id}-bg)"/>
-        ${rings}${spokes}
-        <polygon points="${shape}" fill="url(#${id}-me)"/>
+      <div class="card-head"><span>Performance</span></div>
+      <svg viewBox="0 0 340 204" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
+        <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}" stop-opacity=".9"/><stop offset="1" stop-color="${c.color}" stop-opacity=".65"/></linearGradient></defs>
+        <circle class="rd-face" cx="${cx}" cy="${cy}" r="${R}"/>
+        ${rings}${spokes}${ticks}
+        <polygon points="${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join(" ")}" fill="url(#${id})"/>
+        ${pts.map(([x, y]) => `<circle class="rd-pt" cx="${f1(x)}" cy="${f1(y)}" r="2.5"/>`).join("")}
         ${labels}
       </svg>
     </div>`;

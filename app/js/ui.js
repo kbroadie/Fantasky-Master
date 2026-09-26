@@ -27,24 +27,26 @@ export const framed = (c) => `<img class="fp" src="${c.img}" alt="${esc(c.key)}"
 /** A contestant's first name in their accent colour. */
 export const named = (c) => `<b class="cn" style="color:${c.color}">${esc(c.key)}</b>`;
 
-export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0, best: null };
+export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0, stats: null };
 
 /**
- * The best points per episode by any contestant in any series, for each kind
- * of task (P prize, F filmed, L live). Per episode so a series in progress
- * compares fairly with a finished one. The Cast radar scales to these.
+ * Mean and standard deviation of points per episode, over every contestant
+ * in every series with scored episodes, for each kind of task (P prize,
+ * F filmed, L live). Per episode so a series in progress compares fairly
+ * with a finished one. The Cast radar plots z-scores against these.
  */
-export function bestPerEpisode(series) {
-  const best = { P: 0, F: 0, L: 0 };
+export function perEpisodeStats(series) {
+  const vals = { P: [], F: [], L: [] };
   for (const raw of Object.values(series)) {
     const scored = raw.tasks.reduce((m, t) => Math.max(m, t.ep), 0);
     if (!scored) continue;
     raw.cast.forEach((_, i) => {
-      for (const k of Object.keys(best)) {
-        const pts = raw.tasks.filter((t) => t.t === k).reduce((a, t) => a + t.s[i], 0);
-        best[k] = Math.max(best[k], pts / scored);
-      }
+      for (const k of Object.keys(vals)) vals[k].push(raw.tasks.filter((t) => t.t === k).reduce((a, t) => a + t.s[i], 0) / scored);
     });
   }
-  return best;
+  return Object.fromEntries(Object.entries(vals).map(([k, v]) => {
+    const mean = v.reduce((a, x) => a + x, 0) / (v.length || 1);
+    const sd = Math.sqrt(v.reduce((a, x) => a + (x - mean) ** 2, 0) / (v.length || 1));
+    return [k, { mean, sd }];
+  }));
 }

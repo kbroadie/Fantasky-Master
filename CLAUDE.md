@@ -41,10 +41,10 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Episode tabs carry a dot in the winner's colour.
   - Portraits, the league's picks and the task table all run in finishing order.
   - The next episode shows its poll deadline and the five contestants.
-  - The Cast tab shows points per episode as bars on one scale for all five contestants, and a strengths radar with three axes, 🎁 Prize, 🎬 Filmed and ⚡ Live (team tasks aren't counted, not even in Filmed).
-    - The chart area is a circle with quarter gridlines.
-    - Each axis is points per episode, scaled so the edge is the best by any contestant in any series (`bestPerEpisode` in `ui.js`, stored as `state.best`). Per episode, so a series in progress compares fairly with a finished one.
-    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, no outline, no numbers and no legend.
+  - The Cast tab shows points per episode as bars on one scale for all five contestants, and a Performance radar with three axes, 🎁 Prize, 🎬 Filmed and ⚡ Live (team tasks aren't counted, not even in Filmed).
+    - Each axis is a z-score of points per episode against every contestant in every series (`perEpisodeStats` in `ui.js`, stored as `state.stats`). It's per episode so a series in progress compares fairly with a finished one.
+    - The scale runs from −3σ at the centre to +3σ at the edge of the circle. There's a hairline ring at every whole σ, with ticks where the rings cross the axes, and a dashed gold ring at 0σ (the all-series average).
+    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points, no outline, no numbers and no legend. The look is precise and minimal: hairlines, no decoration.
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
 - **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
