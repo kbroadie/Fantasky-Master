@@ -321,6 +321,12 @@ strong { color: var(--t1); font-weight: 700; }
 .rc-axis { font-family: var(--fm); font-size: 11px; fill: var(--t4); }
 .rc-axis.now { fill: var(--gold2); }
 .race path { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rc-grid.lead { stroke: var(--gold4); stroke-dasharray: 3 3; } /* 0: the leader's line */
+.race .rc-tap { stroke: transparent; stroke-width: 16; cursor: pointer; } /* a wide, invisible target along each line */
+.rc-name { cursor: pointer; }
+/* Tap a line: it comes forward (moved last in main.js) and the rest fade */
+.race g[data-who] { transition: opacity .2s; }
+.race.focus g[data-who]:not(.on) { opacity: .15; }
 .race .rc-lead { stroke-width: 1; opacity: .6; }
 .rc-pt { stroke: var(--s2); stroke-width: 2; } /* a ring of the card's colour where lines cross */
 .rc-name { font-family: var(--ff-name); font-size: 13px; font-weight: 700; }

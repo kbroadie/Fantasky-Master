@@ -2,7 +2,7 @@
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
 // columns (each under its portrait) and the ballot.
-import { esc, ord, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
+import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
 
@@ -85,10 +85,13 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// Every contestant's running total after each episode up to this one (the x
-// axis starts at episode 1): a smooth line in their colour (a monotone cubic Bézier, so it
-// never dips between episodes the way a looser curve could), labelled at the
-// end with their name and total. Tap a point to read it in the caption.
+// How far each contestant is behind the leader after every episode up to this
+// one (the leader runs flat along 0 at the top; the x axis starts at episode
+// 1): a smooth line in their colour (a monotone cubic Bézier, so it
+// never overshoots a point, e.g. above the leader's 0 or past a real low),
+// labelled at the
+// end with their name and gap (the leader's total). Tap a line to bring it
+// forward and fade the rest; tap a point to read it in the caption.
 
 /** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
 function smooth(pts) {
@@ -116,41 +119,48 @@ function raceChart(d, upTo) {
   const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
   const total = Object.fromEntries(names.map((n) => [n, [0]]));
   for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  // The gap to the leader after each episode: 0 for the leader, negative below.
+  const best = Object.fromEntries(eps.map((e) => [e, Math.max(...names.map((n) => total[n][e]))]));
+  const gap = (n, e) => total[n][e] - best[e];
+  const leaders = (e) => names.filter((n) => !gap(n, e));
   const sorted = (e) => [...names].sort((a, b) => total[b][e] - total[a][e]);
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
-  const top = Math.max(1, ...names.map((n) => total[n][upTo])), step = niceStep(top), yMax = Math.ceil(top / step) * step;
+  const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
+  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
   const W = 340, L = 34, R = 236, T = 12, B = 160, H = B + 24;
-  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => B - (v / yMax) * (B - T);
+  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
-  const ticks = Array.from({ length: Math.round(yMax / step) + 1 }, (_, i) => i * step);
-  const grid = ticks.map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-axis" x="${L - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${v}</text>`).join("");
+  const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
+  const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-axis" x="${L - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${v ? `−${-v}` : 0}</text>`).join("");
   const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
-  // End labels at each line's end, kept at least 15 apart (pushed apart
-  // evenly, inside the plot); a hairline joins a label to its line if moved.
+  // End labels at each line's end, kept at least 15 apart: push down where
+  // they crowd, cap the lowest just into the axis margin, then push up only
+  // the ones that still crowd. A hairline joins a moved label to its line.
   const ends = sorted(upTo), labelY = {};
-  ends.forEach((m, i) => { labelY[m] = Math.max(y(total[m][upTo]), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
-  const over = Math.max(0, labelY[ends.at(-1)] - B);
-  for (const m of ends) labelY[m] -= over;
+  ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, upTo)), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
+  labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B + 6);
   for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
-  // Leader drawn last, so its line sits on top
+  // Leader drawn last, so its line sits on top. Each contestant is one group
+  // (data-who) so a tap can bring it forward and fade the rest.
   const lines = [...ends].reverse().map((name) => {
-    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(total[name][e])]);
-    const path = pts.length > 1 ? `<path d="${smooth(pts)}" style="stroke:${c}"/>` : "";
+    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(gap(name, e))]);
+    const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
     const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
-    const [lx, ly] = pts.at(-1), ty = labelY[name];
+    const [lx, ly] = pts.at(-1), ty = labelY[name], g = gap(name, upTo);
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${total[name][upTo]}</tspan></text>`;
+    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
     const hits = pts.map(([a, b], i) => {
-      const e = i + 1, say = `Ep ${e} · ${name} · ${total[name][e]} points (${ord(rank(e, name))})`;
+      const e = i + 1, gg = gap(name, e);
+      const say = `Ep ${e} · ${name} · ${total[name][e]} points · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
       return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
     }).join("");
-    return `<g>${path}${dots}${lead}${label}${hits}</g>`;
+    return `<g data-who="${esc(name)}">${path}${dots}${lead}${label}${hits}</g>`;
   }).join("");
-  const summary = ends.map((m) => `${m} ${total[m][upTo]}`).join(", ");
+  const summary = ends.map((m) => `${m} ${gap(m, upTo) ? `${-gap(m, upTo)} behind` : `leads on ${total[m][upTo]}`}`).join(", ");
   return `
     <div class="card race">
-      <div class="card-head"><span>The race so far</span><span class="legend">total points</span></div>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total points after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
-      <p class="rc-cap">Tap a point for that week's total</p>
+      <div class="card-head"><span>The race so far</span><span class="legend">points behind the leader</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Points behind the leader after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
+      <p class="rc-cap">Tap a line to follow it, or a point for that week</p>
     </div>`;
 }
