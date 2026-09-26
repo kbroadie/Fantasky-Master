@@ -264,7 +264,7 @@ function viewStandings() {
   const worst = Math.max(...P.map((p) => p[key + "Rank"]));
   const head = `
     <header class="v-head">
-      <div><p class="kicker">Series ${state.key} · after Ep ${d.weeksScored} of ${EPISODES}</p><h2>The Table</h2></div>
+      <div><p class="kicker">Series ${state.key} · Ep ${d.weeksScored}/${EPISODES}</p><h2>The Table</h2></div>
       <div class="seg" role="group" aria-label="Rank by">
         <button data-sort="show" aria-pressed="${key === "show"}">Show</button>
         <button data-sort="league" aria-pressed="${key === "league"}">League</button>
@@ -297,7 +297,7 @@ function viewStandings() {
   <section class="card table">
     ${head}
     ${d.weeksScored ? weekStrip(d.weeksScored) : ""}
-    <div class="legend"><span>Rank</span><span>Player</span><span class="lg-strip">Episodes 1–10 · ${key === "show" ? "Show pts" : "League pts"} · ★ winner</span><span>Total</span></div>
+    <div class="legend"><span>Rank</span><span>Player</span><span class="lg-strip">Ep 1–10 · ${key} pts</span><span>Total</span></div>
     <ol class="rows">${rows}</ol>
     ${d.inactive.length ? `<p class="foot">Yet to vote: ${d.inactive.map(esc).join(", ")}</p>` : ""}
   </section>
@@ -351,7 +351,7 @@ function viewPlayer() {
     ${d.weeksScored ? bumpChart(name) : ""}
     <dl class="kv">
       <div><dt>Winner hit</dt><dd>${p.hits}<small>/${p.played}</small></dd></div>
-      <div><dt>Avg · league</dt><dd>${(p.played ? p.show / p.played : 0).toFixed(1)}<small>·${leagueAvg.toFixed(1)}</small></dd></div>
+      <div><dt>Avg pick</dt><dd>${(p.played ? p.show / p.played : 0).toFixed(1)}<small class="under">league ${leagueAvg.toFixed(1)}</small></dd></div>
       <div><dt>Best week</dt><dd>${p.best ? `${p.best.show}<small> E${p.best.ep}</small>` : "–"}</dd></div>
       <div><dt>Left on table</dt><dd>${p.missed}</dd></div>
     </dl>
