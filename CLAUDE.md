@@ -40,6 +40,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
     - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). Every face is drawn the same size: the photo is scaled so the pupils are `--eyes` apart (50px on phones, 64px from 600px up; `sep` in `heroes.js` is each face's pupil distance), and never smaller than it takes to span the row edge to edge. Pillars and neighbours at the sides are fine; the reshade darkens them.
     - The eyes sit on the centre line of the row's top line (`--head / 2`) and in the gap between the name and Show (`--tx`).
     - It's anchored to the top, so opening a row doesn't move it; it just uncovers more of the photo, lightly dimmed behind the picks.
+    - A slight vertical scroll parallax (`parallax` in `main.js`, 6% of the row's distance from mid-screen, keyed to the top line so an opened row's own photo doesn't move). Off under reduced motion.
     - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
   - **Series without a group photo (21):** no pick is shown in the rows.
   - 👑 marks the Show leader and 🏆 the League leader in the last-week strip only, not on the rows. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
@@ -63,7 +64,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
-- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative animation is the episode podium effects (requested; see above), which stop under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
+- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative motion is the episode podium effects and the Standings backdrop parallax (both requested; see above), which stop under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
 

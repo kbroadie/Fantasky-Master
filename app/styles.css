@@ -203,6 +203,7 @@ strong { color: var(--t1); font-weight: 700; }
   position: absolute; max-width: none; width: var(--W); height: auto;
   left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
   filter: saturate(.85) brightness(.8) contrast(1.05);
+  transform: translate3d(0, var(--py, 0px), 0); will-change: transform; /* scroll parallax, set in main.js */
 }
 /* Reshade: darker behind the name and the numbers, clear over the eyes;
    the uncovered part below the head is dimmed a little for the picks. */
