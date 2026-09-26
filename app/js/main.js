@@ -211,6 +211,24 @@ function bindSwiper(id, index, onSettle) {
   }, { passive: true });
   new ResizeObserver(() => fitHeight(el)).observe(el.children[0]);
 }
+/** Hero shots drift against the swipe, like a camera pan across the set. */
+function heroParallax(el) {
+  if (!el || reducedMotion) return;
+  let raf = 0;
+  const apply = () => {
+    raf = 0;
+    const w = el.clientWidth;
+    for (const s of el.children) {
+      const img = s.querySelector(".cc-hero-img");
+      if (!img) continue;
+      const off = (s.offsetLeft - el.scrollLeft) / w;
+      if (Math.abs(off) > 1.2) continue;
+      img.style.transform = `translateX(${(off * -28).toFixed(1)}%) scale(1.12)`;
+    }
+  };
+  el.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
+  apply();
+}
 function goSlide(id, i) {
   const el = $(`#${id}`);
   el?.scrollTo({ left: i * stepOf(el), behavior: reducedMotion ? "auto" : "smooth" });
@@ -510,7 +528,7 @@ function playRace(ep, instant = false) {
 // Cast -----------------------------------------------------------------------
 
 function viewCast() {
-  const d = state.d;
+  const d = state.d, m = metaFor(state.key);
   const byRank = [...d.contestants].sort((a, b) => a.rank - b.rank);
   const idx = Math.max(0, d.contestants.findIndex((c) => c.key === (state.arg || byRank[0].key)));
   const worst = Math.max(...d.contestants.map((c) => c.rank));
@@ -525,13 +543,8 @@ function viewCast() {
       const ep = i + 1, scored = ep <= d.weeksScored;
       return `<li class="${scored ? "" : "future"} ${d.winners[ep]?.winner === c.key ? "won" : ""}" style="--h:${scored ? (v / maxEp) * 100 : 0}%"><b>${scored ? v : ""}</b><span class="bar"></span><small>${ep}</small></li>`;
     }).join("");
-    return `
-    <article class="card cast-card" style="--c:${c.color}">
-      <div class="cc-top">
-        ${framed(c, "fp-l")}
-        <div class="cc-info">
-          <p class="kicker">${d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`}</p>
-          <h2>${esc(c.full)}</h2>
+    const hero = m.heroes?.[c.key];
+    const kv = `
           <dl class="kv tight">
             <div><dt>Total</dt><dd>${c.total}</dd></div>
             <div><dt>Per ep</dt><dd>${c.avg.toFixed(1)}</dd></div>
@@ -540,16 +553,28 @@ function viewCast() {
             <div><dt>Picked</dt><dd>${c.pickedBy}<small>×</small></dd></div>
             <div><dt>To backers</dt><dd>${c.deliveredTo}</dd></div>
           </dl>
-          <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>
-        </div>
+          <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>`;
+    const rank = d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`;
+    const top = hero ? `
+      <div class="cc-hero">
+        <img class="cc-hero-img" src="${hero}" alt="${esc(c.full)} in the Series ${state.key} promo shoot" width="640" height="865" loading="lazy" decoding="async">
+        <div class="cc-hero-txt">${framed(c, "fp-m")}<div><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></div></div>
       </div>
+      ${kv}` : `
+      <div class="cc-top">
+        ${framed(c, "fp-l")}
+        <div class="cc-info"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2>${kv}</div>
+      </div>`;
+    return `
+    <article class="card cast-card ${hero ? "has-hero" : ""}" style="--c:${c.color}">
+      ${top}
       <figure class="ep-chart"><ol>${bars}</ol></figure>
       ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
       ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
     </article>`;
   });
   return `
-  <div class="wall" aria-label="Contestants">${wall}</div>
+  <div class="wall ${m.group ? "has-group" : ""}" aria-label="Contestants" ${m.group ? `style="--group:url('${m.group}')"` : ""}>${wall}</div>
   ${swiperHTML("cast-swiper", cards)}`;
 }
 
@@ -583,6 +608,7 @@ function afterRender() {
   }
   if (state.view === "cast") {
     const idx = $$(".wall .frame").findIndex((f) => f.classList.contains("on"));
+    heroParallax($("#cast-swiper"));
     bindSwiper("cast-swiper", idx, (i) => {
       state.arg = d.contestants[i].key;
       quietHash(link("cast", state.arg));
