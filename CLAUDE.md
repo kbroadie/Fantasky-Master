@@ -20,8 +20,6 @@ tools/check-data.mjs            validates the CSV + worked-example regression (n
 tools/screenshots.mjs           Playwright shots of every view at 390px and 1440px → shots/
 ```
 
-`app/js/{stage,gl,fx,meta}.js` and `app/fonts/` are left over from the HD-2D version and are no longer loaded. Delete them once the user confirms.
-
 ## UX framework
 
 The user's v1 prototype is the model: fast, clean, obvious navigation. The aim is to make it fun and emotionally engaging without making anyone think harder.
