@@ -9,7 +9,20 @@ export const ord = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; ret
 export const listing = (a) => a.length < 2 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a.at(-1)}`;
 export const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export const ICON = { P: "🎁", F: "🎬", T: "👥", L: "⚡" }; // 🏆 is kept for the League leader
+/**
+ * Task-type icons: one monoline set on a 16px grid (1.5 stroke, round
+ * joins), so they match each other wherever they appear. Emoji are kept for
+ * the 👑/🏆 leader badges only.
+ */
+export const ICON_PATHS = {
+  P: "M2.5 7.5h11v6.5h-11z M1.75 5h12.5v2.5H1.75z M8 5v9 M8 5C6.8 2.2 4 2.6 4.8 4.4 M8 5c1.2-2.8 4-2.4 3.2-.6",
+  F: "M2 7h12v7H2z M2 7l11.4-3.1-.6-2.1L1.4 4.9z M5.2 4.3l1.5 1.8 M8.6 3.4l1.5 1.8",
+  T: "M5.5 7.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5z M1.75 13.75c0-2.3 1.7-4 3.75-4s3.75 1.7 3.75 4 M11 7.25a1.9 1.9 0 1 0 0-3.8 M12.25 9.9c1.2.4 2 1.9 2 3.85",
+  L: "M9.25 1.5 3.5 9h4.25l-1 5.5L12.5 7H8.25z",
+};
+export const TASK_NAME = { P: "Prize", F: "Filmed", T: "Team", L: "Live" };
+/** A task-type icon as inline HTML. */
+export const icon = (k) => ICON_PATHS[k] ? `<svg class="ico" viewBox="0 0 16 16" role="img" aria-label="${TASK_NAME[k]} task"><path d="${ICON_PATHS[k]}"/></svg>` : "";
 /** Gold, silver and bronze for the top three; nothing for the rest. */
 export const tier = (rank) => rank <= 3 ? ` t${rank}` : "";
 // Dates and deadlines are shown in the device's own time zone and locale.

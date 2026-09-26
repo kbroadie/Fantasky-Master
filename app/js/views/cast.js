@@ -1,5 +1,5 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
-import { esc, rich, framed, state, ICON } from "../ui.js";
+import { esc, rich, framed, state, ICON_PATHS } from "../ui.js";
 
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
@@ -68,9 +68,15 @@ function radar(d, c) {
     const [x, y] = at(i, f), a = ang(i) + Math.PI / 2, dx = Math.cos(a) * 3, dy = Math.sin(a) * 3;
     return `<line class="rd-tick" x1="${f1(x - dx)}" y1="${f1(y - dy)}" x2="${f1(x + dx)}" y2="${f1(y + dy)}"/>`;
   }).join("")).join("");
+  // Label = icon + word. DM Mono is monospaced, so the word's width is known
+  // (11px, 0.6em advance + 0.12em tracking) and the pair can be placed as a unit.
   const labels = KINDS.map(([k, label], i) => {
-    const [x, y] = at(i, 1.13), anchor = Math.abs(x - cx) < 1 ? "middle" : x > cx ? "start" : "end";
-    return `<text class="rd-label" x="${f1(x)}" y="${f1(y < cy ? y - 2 : y + 13)}" text-anchor="${anchor}">${ICON[k]} ${label}</text>`;
+    const [x, y] = at(i, 1.13), side = Math.abs(x - cx) < 1 ? 0 : x > cx ? 1 : -1;
+    const w = label.length * 11 * 0.72, ico = 13, gap = 5, total = ico + gap + w;
+    const left = side === 1 ? x : side === -1 ? x - total : x - total / 2;
+    const base = y < cy ? y - 2 : y + 13;
+    return `<g class="rd-ico" transform="translate(${f1(left)} ${f1(base - 10.5)}) scale(${ico / 16})"><path d="${ICON_PATHS[k]}"/></g>`
+      + `<text class="rd-label" x="${f1(left + ico + gap)}" y="${f1(base)}">${label}</text>`;
   }).join("");
   const id = `rd-${esc(c.key).replace(/\W/g, "")}`;
   const summary = KINDS.map(([k, label]) => `${label} ${z(k) >= 0 ? "+" : "−"}${Math.abs(z(k)).toFixed(1)} standard deviations`).join(", ");

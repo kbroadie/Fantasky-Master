@@ -303,7 +303,8 @@ strong { color: var(--t1); font-weight: 700; }
 .tt td { padding: 8px 5px; text-align: center; border-bottom: 1px solid var(--b-dim); font-size: 17px; font-weight: 700; }
 .tt td:first-child { text-align: left; padding-left: 10px; font-size: 14px; font-weight: 400; color: var(--t2); }
 .tn { display: flex; align-items: center; gap: 7px; }
-.tn > span:first-child { flex-shrink: 0; font-size: 13px; }
+/* Task-type icons: one monoline set, gold, same size everywhere */
+.ico { flex-shrink: 0; width: 15px; height: 15px; fill: none; stroke: var(--gold2); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 .tname { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; cursor: pointer; }
 .tname.full { display: block; }
 .best { color: var(--gold2); }
@@ -345,6 +346,7 @@ strong { color: var(--t1); font-weight: 700; }
 .rd-tick { stroke: rgba(255, 255, 255, .28); }
 .rd-pt { fill: var(--c); }
 .rd-label { font-family: var(--fm); font-size: 11px; fill: var(--t2); letter-spacing: .12em; text-transform: uppercase; }
+.rd-ico path { fill: none; stroke: var(--gold2); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Narrow phones: a little more room for the one-line countdown */
 @media (max-width: 380px) {

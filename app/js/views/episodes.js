@@ -1,7 +1,7 @@
 // Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
 // swipeable episode slides. Portraits, the league's picks and the task table
 // all run in finishing order, so each column sits under its portrait.
-import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, ICON } from "../ui.js";
+import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon } from "../ui.js";
 
 export const epTabs = (d) => d.episodes.map((e) => {
   const w = d.winners[e.ep];
@@ -79,7 +79,7 @@ function slide(d, e) {
       <thead><tr><th>Task</th>${order.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
       <tbody>${tasks.map((t) => {
         const s = col.map((i) => t.s[i]), hi = Math.max(...s), lo = Math.min(...s);
-        return `<tr><td><span class="tn"><span aria-hidden="true">${ICON[t.t] || ""}</span><span class="tname" title="${esc(t.n)}">${esc(t.n)}</span></span></td>${s.map((v) =>
+        return `<tr><td><span class="tn">${icon(t.t)}<span class="tname" title="${esc(t.n)}">${esc(t.n)}</span></span></td>${s.map((v) =>
           `<td class="sc${hi > lo && v === hi ? " best" : hi > lo && v === lo ? " worst" : ""}">${v}</td>`).join("")}</tr>`;
       }).join("")}
       <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
