@@ -346,6 +346,8 @@ strong { color: var(--t1); font-weight: 700; }
 .rd-tick { stroke: rgba(255, 255, 255, .28); }
 .rd-pt { fill: var(--c); }
 .rd-label { font-family: var(--fm); font-size: 11px; fill: var(--t2); letter-spacing: .12em; text-transform: uppercase; }
+.rd-z { font-family: var(--ff); font-size: 15px; font-weight: 800; fill: var(--t1); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.rd-sigma { font-family: var(--fm); font-size: 11px; font-weight: 500; fill: var(--t3); }
 .rd-ico path { fill: none; stroke: var(--gold2); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Narrow phones: a little more room for the one-line countdown */

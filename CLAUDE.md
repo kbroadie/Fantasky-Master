@@ -44,7 +44,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - The Cast tab shows points per episode as bars on one scale for all five contestants, and a Performance radar with three axes, Prize, Filmed and Live, each labelled with its line icon (team tasks aren't counted, not even in Filmed).
     - Each axis is a z-score of points per episode against every contestant in every series (`perEpisodeStats` in `ui.js`, stored as `state.stats`). It's per episode so a series in progress compares fairly with a finished one.
     - The scale runs from −3σ at the centre to +3σ at the edge of the circle. There's a hairline ring at every whole σ, with ticks where the rings cross the axes, and a dashed gold ring at 0σ (the all-series average).
-    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points, no outline, no numbers and no legend. The look is precise and minimal: hairlines, no decoration.
+    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points and no outline. Each axis label shows the z-score to two decimals ("+2.48σ"), and the card head says "z-score vs all series". The look is precise and minimal: hairlines, no decoration.
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.

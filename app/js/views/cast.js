@@ -46,14 +46,16 @@ function slide(d, c, max) {
 // with a hairline ring at every whole σ and ticks where they cross the axes;
 // the middle ring (dashed) is the all-series average. With ten or so
 // contestants no z-score can pass ±3, so nothing is clipped in practice.
-// Only the selected contestant is drawn, with no numbers or legend.
+// Only the selected contestant is drawn; each axis label carries its z-score.
 
 const KINDS = [["P", "Prize"], ["F", "Filmed"], ["L", "Live"]];
+/** A z-score to two decimals with a proper sign: "+2.48", "−1.70", "0.00". */
+const zText = (v) => (Math.abs(v) < 0.005 ? "0.00" : `${v > 0 ? "+" : "−"}${Math.abs(v).toFixed(2)}`);
 const Z = 3;
 const SIGMAS = [-2, -1, 0, 1, 2];
 
 function radar(d, c) {
-  const n = KINDS.length, R = 80, cx = 170, cy = 108;
+  const n = KINDS.length, R = 80, cx = 170, cy = 124;
   const eps = Math.max(1, d.weeksScored), st = state.stats;
   const z = (k) => (st[k].sd ? (c.ty[k] / eps - st[k].mean) / st[k].sd : 0);
   const r = (k) => Math.min(1, Math.max(0, (z(k) + Z) / (2 * Z)));
@@ -74,16 +76,19 @@ function radar(d, c) {
     const [x, y] = at(i, 1.13), side = Math.abs(x - cx) < 1 ? 0 : x > cx ? 1 : -1;
     const w = label.length * 11 * 0.72, ico = 13, gap = 5, total = ico + gap + w;
     const left = side === 1 ? x : side === -1 ? x - total : x - total / 2;
-    const base = y < cy ? y - 2 : y + 13;
+    // The word, then the z-score on the line below it.
+    const base = y < cy ? y - 17 : y + 13;
+    const zx = side === 1 ? left : side === -1 ? left + total : x, zAnchor = side === 1 ? "start" : side === -1 ? "end" : "middle";
     return `<g class="rd-ico" transform="translate(${f1(left)} ${f1(base - 10.5)}) scale(${ico / 16})"><path d="${ICON_PATHS[k]}"/></g>`
-      + `<text class="rd-label" x="${f1(left + ico + gap)}" y="${f1(base)}">${label}</text>`;
+      + `<text class="rd-label" x="${f1(left + ico + gap)}" y="${f1(base)}">${label}</text>`
+      + `<text class="rd-z" x="${f1(zx)}" y="${f1(base + 16)}" text-anchor="${zAnchor}">${zText(z(k))}<tspan class="rd-sigma">σ</tspan></text>`;
   }).join("");
   const id = `rd-${esc(c.key).replace(/\W/g, "")}`;
-  const summary = KINDS.map(([k, label]) => `${label} ${z(k) >= 0 ? "+" : "−"}${Math.abs(z(k)).toFixed(1)} standard deviations`).join(", ");
+  const summary = KINDS.map(([k, label]) => `${label} ${zText(z(k))} standard deviations`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
-      <div class="card-head"><span>Performance</span></div>
-      <svg viewBox="0 0 340 204" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
+      <div class="card-head"><span>Performance</span><span class="legend">z-score vs all series</span></div>
+      <svg viewBox="0 0 340 236" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
         <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}" stop-opacity=".9"/><stop offset="1" stop-color="${c.color}" stop-opacity=".65"/></linearGradient></defs>
         <circle class="rd-face" cx="${cx}" cy="${cy}" r="${R}"/>
         ${rings}${spokes}${ticks}
