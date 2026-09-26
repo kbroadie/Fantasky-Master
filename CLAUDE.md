@@ -10,7 +10,7 @@ Fantasy league for the TV show *Taskmaster*. Players pick one contestant per epi
 ```
 data/fantasky_master_data.csv   ← the ONLY league data (hand-edited; schema in data/README.md)
 data/taskmaster_stats.csv       all-time stats for every contestant, S1–22 (imported, never hand-edited)
-app/index.html                  sticky top bar (masthead + 3 tabs) and the three pages
+app/index.html                  sticky top bar (masthead + 3 tabs), the three pages and the footer
 app/styles.css                  all styles; mobile-first, wider layouts in @media at the end
 app/js/main.js                  renders all pages at load, tabs, swipers, sorting, series toggle, countdown, routing (#/series/page/arg)
 app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
@@ -71,6 +71,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
     - Each axis is a z-score of points per episode against all 110 contestants in Taskmaster history (`allTimePerEpisode` in `alltime.js`, stored as `state.stats`; `perEpisodeStats` in `ui.js` over the league's own series is the fallback if the stats file fails to load). It's per episode so a series in progress compares fairly with a finished one.
     - The scale runs from −3σ at the centre to +3σ at the edge of the circle. There's a hairline ring at every whole σ, with ticks where the rings cross the axes, and a dashed gold ring at 0σ (the all-series average).
     - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points and no outline. Each axis has one centred group set clear of the circle: the z-score to two decimals as the headline ("+2.48σ"), with the icon and name as a muted caption below. The card head says "z-score vs all 110 contestants". The look is precise and minimal: hairlines, no decoration.
+- **Footer** (`footer` in `ui.js`, `#foot` after `<main>`, the same on every tab): a row of seven rubber ducks as the closing rule (one SVG `<symbol>`, gold, 18×14px, with gold hairlines fading out to each side), then one DM Mono line saying how fresh the scores are: "Scores updated after Episode 4", "Series 21 · final scores" once complete, nothing before the first episode. `fit` in `main.js` leaves room for it, so a short slide ends with the footer at the bottom of the screen.
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.

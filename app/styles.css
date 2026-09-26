@@ -487,6 +487,16 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 }
 
 /* ── Wider screens ─────────────────────────────────────────────────── */
+/* ── Footer: a row of rubber ducks as the closing rule ─────────────────── */
+.foot { padding: 8px var(--px) 0; text-align: center; }
+.ducks { display: flex; align-items: center; justify-content: center; gap: 7px; }
+/* Hairlines run out from the ducks to the page edges and fade */
+.ducks::before, .ducks::after { content: ""; flex: 1; height: 1px; max-width: 120px; }
+.ducks::before { background: linear-gradient(90deg, transparent, var(--b-gold)); margin-right: 4px; }
+.ducks::after { background: linear-gradient(90deg, var(--b-gold), transparent); margin-left: 4px; }
+.duck { width: 18px; height: 14px; fill: var(--gold2); opacity: .8; }
+.foot-line { margin-top: 8px; font-family: var(--fm); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--t4); }
+
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }

@@ -3,7 +3,7 @@
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
-import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats } from "./ui.js";
+import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
@@ -48,6 +48,7 @@ function loadSeries(key) {
   mountPodiumFx($("#ep-body"));
   $("#cast-tabs").innerHTML = castTabs(d);
   $("#cast-body").innerHTML = castSlides(d);
+  $("#foot").innerHTML = footer(d, key);
   for (const id of ["#ep-body", "#cast-body"]) for (const s of $(id).children) sizes.observe(s);
   countdown();
 }
@@ -90,7 +91,8 @@ function fit(body) {
   const s = body.children[idxOf(body)];
   if (!s) return;
   const pad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
-  const toBottom = innerHeight - (body.getBoundingClientRect().top + scrollY) - pad;
+  // Leave room for the footer, so a short slide ends with it at the bottom of the screen.
+  const toBottom = innerHeight - (body.getBoundingClientRect().top + scrollY) - pad - ($("#foot")?.offsetHeight || 0);
   body.style.height = `${Math.max(s.offsetHeight, toBottom)}px`;
 }
 const sizes = new ResizeObserver((entries) => {
