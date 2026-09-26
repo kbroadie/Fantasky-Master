@@ -99,51 +99,27 @@ function jump(sw, i) {
 }
 
 // ── Swiping on into the neighbouring tab ─────────────────────────────────────
-// Pulling sideways where a page can't scroll any further stretches it a
-// little away from your finger and fades in a pill naming the tab you'll
-// land on ("Cast →"). The pill sits fully on screen and turns solid gold
-// once letting go will switch tabs.
+// A sideways swipe where a page can't scroll any further switches to the
+// neighbouring tab. There's no visual hint while you pull.
 
-const PULL = 60;
-const peek = $("#peek");
-
-function edgeNav(el, can, labels, onEdge) {
+function edgeNav(el, can, onEdge) {
   let x0 = null, y0 = 0, prev = false, next = false;
-  const reset = () => {
-    peek.className = "peek";
-    el.style.transition = "transform .25s var(--ease)";
-    el.style.transform = "";
-  };
   el.addEventListener("touchstart", (e) => {
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
-    prev = !!labels.prev && can.prev();
-    next = !!labels.next && can.next();
+    prev = can.prev(); next = can.next();
   }, { passive: true });
-  el.addEventListener("touchmove", (e) => {
-    if (x0 == null) return;
-    const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
-    const side = prev && dx > 0 ? "left" : next && dx < 0 ? "right" : null;
-    if (!side || Math.abs(dx) < Math.abs(dy) * 1.5) { if (peek.className !== "peek") reset(); return; }
-    const d = Math.abs(dx);
-    peek.textContent = side === "left" ? `← ${labels.prev}` : `${labels.next} →`;
-    peek.className = `peek ${side}${d >= PULL ? " ready" : ""}`;
-    peek.style.opacity = Math.min(1, d / PULL).toFixed(2);
-    el.style.transition = "none";
-    el.style.transform = `translateX(${(Math.sign(dx) * Math.min(d, 120) * 0.35).toFixed(1)}px)`;
-  }, { passive: true });
-  el.addEventListener("touchcancel", () => { x0 = null; reset(); }, { passive: true });
+  el.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
   el.addEventListener("touchend", (e) => {
-    reset();
     if (x0 == null) return;
     const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
     x0 = null;
-    if (Math.abs(dx) < PULL || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
     if (prev && dx > 0) onEdge(-1);
     if (next && dx < 0) onEdge(1);
   }, { passive: true });
 }
 
-function bindSwiper(sw, onEdge, labels) {
+function bindSwiper(sw, onEdge, ends) {
   const body = $(sw.body);
   let raf = 0, settle = 0;
   body.addEventListener("scroll", () => {
@@ -160,9 +136,9 @@ function bindSwiper(sw, onEdge, labels) {
     if (b) body.scrollTo({ left: b.dataset.slide * body.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
   });
   edgeNav(body, {
-    prev: () => body.scrollLeft <= 2,
-    next: () => body.scrollLeft >= body.scrollWidth - body.clientWidth - 2,
-  }, labels, onEdge);
+    prev: () => ends.prev && body.scrollLeft <= 2,
+    next: () => ends.next && body.scrollLeft >= body.scrollWidth - body.clientWidth - 2,
+  }, onEdge);
 }
 
 // ── Countdown: one line, "Ep 5 airs in 5d 18h" ──────────────────────────────
@@ -220,14 +196,14 @@ $("#p-standings").addEventListener("click", (e) => {
 });
 
 // Standings has nothing to scroll sideways, so a left swipe goes to Episodes.
-edgeNav($("#p-standings"), { prev: () => false, next: () => true }, { next: "Episodes" }, () => show("episodes"));
+edgeNav($("#p-standings"), { prev: () => false, next: () => true }, () => show("episodes"));
 bindSwiper(EP, (dir) => {
   if (dir < 0) show("standings");
   else { state.cast = 0; show("cast"); }
-}, { prev: "Standings", next: "Cast" });
+}, { prev: true, next: true });
 bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
-}, { prev: "Episodes" });
+}, { prev: true, next: false });
 
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));

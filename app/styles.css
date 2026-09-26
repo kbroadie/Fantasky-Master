@@ -121,22 +121,6 @@ strong { color: var(--t1); font-weight: 700; }
 .compact .tab svg { height: 0; opacity: 0; }
 .tab span { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
 
-/* Pulling past the end of a page: a pill naming the tab you'll land on,
-   fully on screen at that edge; solid gold once letting go will switch */
-.peek {
-  position: fixed; top: 50%; z-index: 6; transform: translateY(-50%); pointer-events: none;
-  padding: 10px 16px; border-radius: 999px; white-space: nowrap;
-  font-family: var(--fm); font-size: 13px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--gold3); background: rgba(20, 8, 4, .88); border: 1px solid rgba(236, 192, 64, .6);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .5);
-  -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
-  visibility: hidden; transition: background .15s, color .15s, box-shadow .15s;
-}
-.peek.left, .peek.right { visibility: visible; }
-.peek.left { left: 12px; }
-.peek.right { right: 12px; }
-.peek.ready { color: #2a0404; background: linear-gradient(160deg, var(--gold3), var(--gold)); border-color: transparent; box-shadow: 0 0 18px var(--gold-glow), 0 4px 16px rgba(0, 0, 0, .5); }
-
 /* ── Pages ─────────────────────────────────────────────────────────── */
 .page { display: none; }
 .page.active { display: block; }
@@ -352,19 +336,11 @@ strong { color: var(--t1); font-weight: 700; }
 .bar.won i { box-shadow: 0 0 0 2px var(--gold3), 0 0 10px var(--gold-glow); }
 .bar.won::before { content: "👑"; position: absolute; top: -16px; font-size: 12px; }
 .bar.tbd i { height: 3px; background: var(--b-gold); }
-/* Strengths radar */
-.radar svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; overflow: visible; }
-.rd-ring { fill: none; stroke: rgba(255, 255, 255, .08); stroke-width: 1; }
-.rd-ring:last-of-type { stroke: rgba(236, 192, 64, .3); }
-.rd-spoke { stroke: rgba(255, 255, 255, .08); stroke-width: 1; }
-.rd-other { fill: none; stroke: #8a7d74; stroke-width: 1; stroke-opacity: .55; stroke-linejoin: round; }
-.rd-me { fill: var(--c); fill-opacity: .22; stroke: var(--c); stroke-width: 2; stroke-linejoin: round; }
-.rd-dot { fill: var(--c); stroke: var(--s2); stroke-width: 2; }
-.rd-label { font-family: var(--fm); font-size: 11px; fill: var(--t3); letter-spacing: .08em; text-transform: uppercase; }
-.rd-val { font-family: var(--ff); font-size: 14px; font-weight: 800; fill: var(--t1); letter-spacing: 0; text-transform: none; }
-.rd-key { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 2px 12px 12px; font-size: 13px; color: var(--t2); }
-.rd-key span { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--c); }
-.rd-key .k-other { margin-left: 10px; border-top: 1px solid #8a7d74; }
+/* Strengths radar: two solid shapes, no outlines, numbers or legend */
+.radar svg { display: block; width: 100%; max-width: 340px; margin: 0 auto; padding-bottom: 8px; overflow: visible; }
+.rd-area { fill: rgba(255, 255, 255, .07); }
+.rd-me { fill: var(--c); }
+.rd-label { font-family: var(--fm); font-size: 12px; fill: var(--t2); letter-spacing: .08em; text-transform: uppercase; }
 
 /* Narrow phones: a little more room for the one-line countdown */
 @media (max-width: 380px) {
