@@ -27,12 +27,12 @@ const BASE = `http://127.0.0.1:${server.address().port}/app/`;
 
 // [name, width, height, hash, action?]
 const SHOTS = [
-  ["phone-table", 390, 844, "#/"],
-  ["phone-table-rows", 390, 844, "#/", (p) => p.evaluate(() => scrollTo(0, 600))],
+  ["phone-standings", 390, 844, "#/"],
+  ["phone-standings-open", 390, 844, "#/", (p) => p.click(".pc-head")],
   ["phone-episode", 390, 844, "#/{S}/episodes"],
-  ["phone-episode-scoreboard", 390, 844, "#/{S}/episodes", async (p) => { await p.click('[data-epsub="score"]'); await p.waitForTimeout(4500); }],
+  ["phone-episode-table", 390, 844, "#/{S}/episodes", (p) => p.evaluate(() => scrollTo(0, 800))],
   ["phone-cast", 390, 844, "#/{S}/cast"],
-  ["desktop-table", 1440, 900, "#/"],
+  ["desktop-standings", 1440, 900, "#/"],
   ["desktop-cast", 1440, 900, "#/{S}/cast"],
 ];
 

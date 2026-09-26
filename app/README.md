@@ -10,56 +10,38 @@ The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_dat
 
 - `js/csv.js` parses the CSV.
 - `js/league.js` derives the boards, ranks, movement, tiebreak placings, rank history, pick-rule status and contestant stats.
-- `js/meta.js` holds presentation only: each series' look (Series 22 Ancient Greek, Series 21 an American diner) and optional promo art from the Imgur albums (the Series 22 hero shots). A series without promo art falls back to the framed portraits.
 
 ## Layout
 
-A floating dock at the bottom holds three tabs: **Standings · Episodes · Cast**. The series seal sits top right. There is no personal "you" view; the app is the same for everyone.
+The layout follows the v1 prototype. A sticky top bar holds:
+
+- the title
+- the series number: tap it to switch series
+- a red seven-segment countdown to the next episode
+- three tabs: **Standings · Episodes · Cast**
+
+A gold panel slides behind the active tab. All three pages are drawn when the app loads, so switching tabs is instant. There is no personal "you" view; the app is the same for everyone.
 
 | Tab | What's on it |
 |---|---|
-| **Standings** | The HD-2D scene of the house, with the next poll deadline in an RPG-style dialog box. The table below lists every player with a strip of all ten episodes: each cell is coloured by the contestant they picked and shows the points it scored, and a gold outline marks a pick that won the episode. |
-| **Episodes** | A numbered pager above swipeable episode cards. Each card has subtabs: **League** (which players backed each contestant, in finishing order), **Scoreboard** (a task-by-task replay), **Tasks** and **Write-up**. The chosen subtab stays put as you swipe between episodes. |
-| **Cast** | Five gold-framed portraits in standings order (first place on the right), each with its score in large numbers, select between swipeable contestant cards: stats, league backing, a points-per-episode chart, and the bio and stat text from the CSV. For Series 22 each card uses the contestant's full-length hero shot as its backdrop, with the portrait row floating over the top of the photo, the name and stats below the face, and the photo panning against your swipe. The photos align to the top of the card. On desktop the hero stands to the right of the stats. |
+| **Standings** | Who's leading, then one table with every player's rank and movement, the face of the contestant they picked this week (glowing gold if the pick won), and their Show and League points. Tap **Show** or **League** to sort by it; tap again to reverse. Tap a player to open their ten weekly picks as framed portraits with the points each one earned. |
+| **Episodes** | A strip of Ep 1–10 above swipeable episodes. Each has the five framed portraits with scores (a crown on the winner), the league's picks in finishing order (who backed whom and what they earned), the task-by-task table and the write-up. |
+| **Cast** | A strip of names in standings order above swipeable contestant pages: portrait, total, category ranks, how often the league picked them and what they earned for it, an episode-by-episode box score, the bio and a stat. |
 
-Contestants appear as their full gold-framed portraits throughout.
+Swiping past the last episode carries on into the Cast tab, and swiping back from the first episode returns to Standings.
 
-## Type
+## Look
 
-Every font is from [Monaspace](https://github.com/githubnext/monaspace) (SIL OFL, licence in `fonts/OFL.txt`): five metric-compatible variable families, self-hosted and subset to Latin (about 460 KB in total, against 3.3 MB unsubset). Each family has one job:
-
-- **Argon** (humanist): body text and write-ups; the easiest of the five to read in longer passages.
-- **Neon** (grotesque): labels, tabs and every figure. Monospaced digits line up in tables for free.
-- **Xenon** (slab): headings, set semi-wide on the width axis.
-- **Radon** (handwriting): player names, like names chalked on a scoreboard.
-- **Krypton** (mechanical): the RPG dialog box, the countdown and the task-type stamps.
-
-Features in use:
-
-- **Texture healing** (`calt`) is on everywhere.
-- **Case-sensitive forms** (`case`) are on for all-caps labels.
-- **The width axis** (`wdth`) sets the headings and logo apart.
-- **Emphasis:** `<strong>` uses the weight axis and `<em>` the slant axis, with synthetic styles turned off.
-- **Line breaking:** paragraphs use `text-wrap: pretty` and headings `text-wrap: balance`.
-
-## The scene
-
-The house is original pixel art, drawn in code at 480×144 pixels onto separate layers:
-
-- **Far:** hills and a landmark from the series' location (the Museum of Water & Steam's standpipe tower for Series 22, Hampton Court for Series 21).
-- **Middle:** the house, garden and caravan. Its ten windows are the ten episodes; a scored episode's window shows a pixelated crop of the winner's portrait.
-- **Light:** a glow layer.
-- **Particles:** chimney smoke and fireflies.
-- **Near:** a foreground fence.
-
-The layers sit at different depths in a CSS 3D scene. The far and near layers are blurred for a tilt-shift look, and the camera sways with your pointer, idle drift and scroll, which gives real parallax, in the style of Square Enix's HD-2D games. Tap a window to open its episode, or the caravan to hear from Alex.
+- **Palette:** Taskmaster red and gold on near-black.
+- **Colour has one meaning each:** gold is the best result, green is moving up and red is moving down.
+- **Faces:** contestants always appear as their gold-framed portraits.
+- **Fonts:** system fonts only, so there's nothing to download.
+- **Motion:** used only for navigation, such as the sliding tab and a row opening.
 
 ## Performance
 
 - **No framework, no build step, no dependencies.**
-- **The scene is cheap to run:** its layers are tiny canvases upscaled with `image-rendering: pixelated`, particles update about 15 times a second, and everything stops once the scene is off-screen.
-- **The sky:** a WebGL2 shader drawn at quarter resolution as chunky pixels, which also pauses once you scroll past.
-- **Portraits** load as small WebP versions of the Imgur images.
+- **Portraits** load as small WebP versions of the Imgur images, lazily.
 - **Reduced motion** settings are respected.
 
 ## Checks and screenshots

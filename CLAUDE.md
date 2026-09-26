@@ -9,20 +9,27 @@ Fantasy league for the TV show *Taskmaster*. Players pick one contestant per epi
 
 ```
 data/fantasky_master_data.csv   ← the ONLY league data (hand-edited; schema in data/README.md)
-app/index.html                  page shell: top bar, home stage + dialog, <main>, floating dock
-app/styles.css                  all styles; mobile-first, desktop in @media (min-width: 600/900px)
-app/fonts/                      Monaspace variable woff2, subset to Latin (+ OFL.txt)
-app/js/main.js                  state wiring, routing (#/series/view/arg), dialog, events, boot
-app/js/ui.js                    shared helpers ($, esc, ord, framed…), `state`, badges, swiper
-app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns an HTML string
+app/index.html                  sticky top bar (masthead + 3 tabs) and the three pages
+app/styles.css                  all styles; mobile-first, wider layouts in @media at the end
+app/js/main.js                  renders all pages at load, tabs, swipers, sorting, series toggle, countdown, routing (#/series/page/arg)
+app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
+app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
-app/js/meta.js                  presentation only: per-series theme + Imgur hero shots
-app/js/stage.js                 HD-2D pixel-art house (canvas layers in CSS 3D); windows = episodes
-app/js/gl.js, fx.js             WebGL sky; particle bursts
 tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
 tools/screenshots.mjs           Playwright shots of every view at 390px and 1440px → shots/
 ```
+
+`app/js/{stage,gl,fx,meta}.js` and `app/fonts/` are left over from the HD-2D version and are no longer loaded. Delete them once the user confirms.
+
+## UX framework
+
+The user's v1 prototype is the model: fast, clean, obvious navigation. The aim is to make it fun and emotionally engaging without making anyone think harder.
+
+- **Top bar** (sticky): brand; the series number, which you tap to switch series; a red seven-segment countdown to the next episode. Below it are three segmented tabs, with a gold panel that slides behind the active one. The bar compacts on scroll.
+- **Standings:** one table sorted by Show or League (tap a header to sort, tap again to reverse). Each row shows rank, movement, the player's pick that week as a framed face, then Show and League. Tap a row to open that player's ten picks.
+- **Episodes / Cast:** a tab strip over scroll-snapped slides. Swiping past the first or last slide carries on into the neighbouring tab.
+- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
 
@@ -30,14 +37,8 @@ tools/screenshots.mjs           Playwright shots of every view at 390px and 1440
 - **No build step, no framework, no runtime dependencies.** Native ES modules; `package.json` is for tooling only.
 - **Views** are functions returning template strings. Escape user and CSV text with `esc()`, or `rich()` to allow `<strong>`. Interactions go through delegated listeners in `main.js`.
 - **Contestants** always appear as full gold-framed portraits (`framed()`), never cropped circles.
-- **Fonts:** Monaspace only, one job per family:
-  - `--f-body` Argon: reading.
-  - `--f-ui` Neon: labels and figures.
-  - `--f-head` Xenon: headings.
-  - `--f-hand` Radon: player names.
-  - `--f-mech` Krypton: dialog and stamps.
-  - Keep `calt` on (texture healing); use `--ff-caps` for uppercase labels.
-- **Hero shots** (`meta.js`): faces sit between about 19% and 45% of the photo height. The name and stats must start below that (`.cc-face` spacer), and the portrait row overlays the empty space above the heads.
+- **Fonts:** system fonts only for now. The stacks are `--ff` (text), `--ff-name` (rounded, for names) and `--fm` (mono, for labels). Use tabular figures for numbers.
+- **Terms:** use **Show** and **League** points, as in README.md.
 - **Imgur images:** the page sets `referrer: no-referrer` because Imgur blocks some referrers. Portraits load as `…m.webp`.
 
 ## Commands
@@ -57,5 +58,3 @@ In the Claude cloud sandbox:
 - Work on the session's `claude/…` branch and open one PR per round of feedback. Merge only when the user says so.
 - CI (`.github/workflows/checks.yml`) runs the data check on every push and PR. PRs also upload a `screenshots` artifact.
 - The user mostly uses the app on phones. Check the 390px shots first.
-- **Re-subsetting fonts** (from the Monaspace repo's `fonts/Web Fonts/Variable Web Fonts`):
-  `pyftsubset <Var.woff2> --flavor=woff2 --unicodes="U+0020-007E,U+00A0-00FF,U+2010-2027,U+2190-2199,U+2212,U+25B2,U+25B6,U+25BC,U+258C,U+2605,U+2713" --layout-features="calt,liga,ccmp,locl,case,frac,numr,dnom,sups,cv01,cv02,cv10,cv11,cv31"`
