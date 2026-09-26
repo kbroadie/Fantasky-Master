@@ -288,7 +288,6 @@ strong { color: var(--t1); font-weight: 700; }
 .card.note { border-left: 2px solid var(--gold4); }
 .card.note.gold { border-left-color: var(--gold2); }
 .card.note p { padding: 0 14px 12px; font-size: 15px; line-height: 1.6; color: var(--t2); text-wrap: pretty; }
-.card-foot { padding: 8px 12px 10px; font-family: var(--fm); font-size: 11px; color: var(--t3); border-top: 1px solid var(--b-dim); }
 
 /* Framed portraits */
 .fp { display: block; width: 100%; height: auto; aspect-ratio: 225 / 266; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
@@ -331,22 +330,6 @@ strong { color: var(--t1); font-weight: 700; }
 .ballot span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .ballot b { font-family: var(--ff-name); font-size: 12px; font-weight: 700; }
 
-/* The league's picks: Show and League centred in two equal columns, as on
-   Standings; the head and rows share the same right padding so each number
-   sits under its label, and the insets balance the card's 12px left side. */
-.cols { display: grid; grid-template-columns: 54px 54px; column-gap: 8px; text-align: center; flex-shrink: 0; }
-.card-head .cols { letter-spacing: .06em; }
-.lg-head { padding-right: 6px; }
-.lg-row { display: flex; align-items: center; gap: 10px; padding: 9px 6px 9px 10px; border-top: 1px solid var(--b-dim); border-left: 3px solid var(--c); }
-.lg-row.win { background: linear-gradient(90deg, rgba(212, 160, 40, .14), transparent 70%); }
-.lg-who { flex: 1; min-width: 0; font-size: 16px; }
-.lg-who .cn { font-family: var(--ff-name); font-size: 17px; }
-.lg-who small { font-family: var(--fm); font-size: 11px; color: var(--t3); margin-left: 2px; }
-.backers { margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--t2); }
-.lg-row.win .backers { color: var(--gold3); }
-.backers .none { font-family: var(--fm); font-size: 11px; color: var(--t4); }
-.lg-row .cols b { font-size: 16px; font-weight: 800; }
-.lg-row.win .cols b { color: var(--gold3); }
 
 .tt-wrap { overflow-x: auto; }
 /* Task table: the task column takes the rest; five equal score columns, the
@@ -457,7 +440,6 @@ strong { color: var(--t1); font-weight: 700; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
   .board .st-head, .board .pc-head { grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 16px 22px; }
   .board .pk-grid { padding-inline: 20px; }
-  .cols { grid-template-columns: 72px 72px; column-gap: 12px; }
   .tt th:not(:first-child) { width: 64px; }
   .tt th:last-child { width: 70px; }
   .pc-bg { --tx: calc(50cqw - 42px); --face: 106px; }

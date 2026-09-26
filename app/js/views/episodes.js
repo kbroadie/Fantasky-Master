@@ -1,8 +1,8 @@
 // Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
-// seat order (1–5, from the all-time stats): the portraits, the league's
-// picks, the task-table columns (each under its portrait) and the ballot.
-import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
+// seat order (1–5, from the all-time stats): the portraits, the task-table
+// columns (each under its portrait) and the ballot.
+import { esc, rich, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 
 /** The cast in seat order; the CSV's order if the stats aren't loaded. */
@@ -68,21 +68,6 @@ function slide(d, e) {
     </div>`;
   }).join("");
 
-  const noVote = d.players.filter((p) => !p.weeks[e.ep - 1].pick).map((p) => p.name);
-  const league = `
-    <div class="card">
-      <div class="card-head lg-head"><span>The league's picks</span><span class="cols"><span>Show</span><span>League</span></span></div>
-      ${order.map((n) => {
-        const by = wk.by[n];
-        return `<div class="lg-row${n === w.winner ? " win" : ""}" style="--c:${d.cast[n].color}">
-          <div class="lg-who">${named(d.cast[n])} <small>${ord(d.placing[e.ep][n])}</small>
-            <div class="backers">${by.length ? esc(by.join(", ")) : `<span class="none">no picks</span>`}</div></div>
-          <span class="cols"><b>+${pts(n)}</b><b>+${d.rankPts[e.ep][n]}</b></span>
-        </div>`;
-      }).join("")}
-      ${noVote.length ? `<p class="card-foot">No pick: ${esc(listing(noVote))}</p>` : ""}
-    </div>`;
-
   const tasks = d.epTasks(e.ep);
   const table = `
     <div class="card tt-wrap"><table class="tt">
@@ -96,5 +81,5 @@ function slide(d, e) {
     </table></div>`;
 
   const notes = e.analysis ? `<div class="card note"><div class="card-head"><span>Episode analysis</span></div><p>${rich(e.analysis)}</p></div>` : "";
-  return head(line) + `<div class="ep-body"><div class="pod">${pod}</div>${league}${table}${notes}</div>`;
+  return head(line) + `<div class="ep-body"><div class="pod">${pod}</div>${table}${notes}</div>`;
 }
