@@ -219,11 +219,11 @@ function heroParallax(el) {
     raf = 0;
     const w = el.clientWidth;
     for (const s of el.children) {
-      const img = s.querySelector(".cc-hero-img");
+      const img = s.querySelector(".cc-bg img");
       if (!img) continue;
       const off = (s.offsetLeft - el.scrollLeft) / w;
       if (Math.abs(off) > 1.2) continue;
-      img.style.transform = `translateX(${(off * -28).toFixed(1)}%) scale(1.12)`;
+      img.style.transform = `translateX(${(off * -22).toFixed(1)}%) scale(1.12)`;
     }
   };
   el.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
@@ -555,19 +555,29 @@ function viewCast() {
           </dl>
           <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>`;
     const rank = d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`;
-    const top = hero ? `
-      <div class="cc-hero">
-        <img class="cc-hero-img" src="${hero}" alt="${esc(c.full)} in the Series ${state.key} promo shoot" width="640" height="865" loading="lazy" decoding="async">
-        <div class="cc-hero-txt">${framed(c, "fp-m")}<div><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></div></div>
+    if (hero) {
+      // The hero shot is the card's backdrop. Faces sit between ~19% and ~45% of
+      // the photo's height, so the name goes in the strip above the head and the
+      // stats start below the chin (the .cc-face spacer keeps that zone clear).
+      return `
+    <article class="card cast-card has-hero" style="--c:${c.color}">
+      <div class="cc-bg" aria-hidden="true"><img src="${hero}" alt="" width="640" height="865" loading="lazy" decoding="async"></div>
+      <header class="cc-name"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></header>
+      <div class="cc-face"></div>
+      <div class="cc-body">
+        ${kv}
+        <figure class="ep-chart"><ol>${bars}</ol></figure>
+        ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
+        ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
       </div>
-      ${kv}` : `
+    </article>`;
+    }
+    return `
+    <article class="card cast-card" style="--c:${c.color}">
       <div class="cc-top">
         ${framed(c, "fp-l")}
         <div class="cc-info"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2>${kv}</div>
-      </div>`;
-    return `
-    <article class="card cast-card ${hero ? "has-hero" : ""}" style="--c:${c.color}">
-      ${top}
+      </div>
       <figure class="ep-chart"><ol>${bars}</ol></figure>
       ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
       ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
