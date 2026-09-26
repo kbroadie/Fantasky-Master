@@ -212,12 +212,19 @@ strong { color: var(--t1); font-weight: 700; }
    uncovers more of the face below. */
 .pc-head, .pc-more { position: relative; z-index: 1; }
 .pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
+.pc-bg img, .pc-bg .edge {
+  /* Head --face across, and at least wide enough to span the row, unless
+     --cap limits how far that can enlarge the head (Patatas: a narrow photo
+     with an off-centre face). The face's --ex/--ey/--size/--ar are on .pc-bg. */
+  --W: max(var(--face) / var(--size), min(max(var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px), var(--cap, 99) * var(--face) / var(--size)));
+  position: absolute; left: calc(var(--tx) - var(--ex) * var(--W)); width: var(--W);
+}
 .pc-bg img {
-  --W: max(var(--face) / var(--size), var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px);
-  position: absolute; max-width: none; width: var(--W); height: auto;
-  left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
+  max-width: none; height: auto; top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
   transform: translateY(var(--py, 0px)); /* scroll parallax, set in main.js */
 }
+/* A capped photo that doesn't span the row fades into it at both edges. */
+.pc-bg .edge { top: 0; bottom: 0; background: linear-gradient(90deg, var(--s1), transparent 48px, transparent calc(100% - 48px), var(--s1)); }
 /* Reshade: darker behind the name and the numbers, clear over the eyes;
    the uncovered part below the head is dimmed a little for the picks.
    The photo and its shade are one compositing layer (.pc-bg is isolated;
@@ -425,16 +432,16 @@ strong { color: var(--t1); font-weight: 700; }
 .hs-ep.tbd { opacity: .5; }
 .hs-type { display: flex; align-items: center; gap: 4px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--t3); white-space: nowrap; }
 .hs-type .ico { width: 13px; height: 13px; }
-.hs-slot { display: flex; gap: 2px; height: 22px; }
+.hs-slot { display: flex; gap: 2px; height: 24px; padding: 0; border-radius: 4px; }
+button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-index: 1; }
 .hs-slot.tbd { border-radius: 3px; background: rgba(255, 255, 255, .025); }
 .hs-cell {
-  flex: 1; min-width: 0; padding: 0; border-radius: 3px;
+  flex: 1; min-width: 0; border-radius: 3px;
   background: color-mix(in srgb, var(--c) calc(var(--v) * 19% + 5%), var(--s2));
 }
 .hs-cell[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }
-.hs-cell.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-index: 1; }
 .hs-avg { font-size: 13px; font-weight: 700; color: var(--t2); text-align: right; }
-.hs-cap { padding: 6px 12px 10px; font-size: 13px; color: var(--t3); min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs-cap { padding: 6px 12px 10px; font-size: 13px; line-height: 1.4; color: var(--t3); min-height: calc(2.8em + 16px); } /* two lines, so a long caption doesn't move the page */
 .hs-legend { display: inline-flex; align-items: center; gap: 2px; }
 .hs-key { width: 9px; height: 9px; border-radius: 2px; background: color-mix(in srgb, var(--c) calc(var(--v) * 19% + 5%), var(--s2)); }
 .hs-key[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }

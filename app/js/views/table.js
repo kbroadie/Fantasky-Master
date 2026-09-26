@@ -1,7 +1,7 @@
 // Standings: a "Week 4 Standings" headline and the leaders, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
-import { GROUP, faceFor } from "../heroes.js";
+import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
@@ -61,7 +61,9 @@ export function standingsRows(d) {
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
-    const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick], standing(rank, d.players.length)) : "";
+    // No pick that week: Patatas stands in.
+    const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
+    const bg = face ? pickBackdrop(face, standing(rank, d.players.length)) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       ${bg}
@@ -90,17 +92,16 @@ function standing(rank, n) {
 }
 
 /**
- * The row's backdrop: the contestant the player picked this week, cropped
- * from the series' group photo, scaled so every head is the same size and
+ * The row's backdrop: the contestant the player picked this week (or
+ * Patatas if they didn't pick), cropped from their photo, scaled so every head is the same size and
  * the photo spans the row edge to edge, with the eyes on the centre line of
  * the row's top line and in the gap between the name and the Show column.
  * It covers the whole row, so opening the row just uncovers more of the
  * photo below; nothing moves. Graded by rank (standing).
  */
-function pickBackdrop(c, grade) {
-  const f = faceFor(state.key, c.key);
-  if (!f) return "";
-  return `<span class="pc-bg" aria-hidden="true" style="filter:${grade}"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>`;
+function pickBackdrop(f, grade) {
+  const vars = `--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
+  return `<span class="pc-bg" aria-hidden="true" style="filter:${grade};${vars}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

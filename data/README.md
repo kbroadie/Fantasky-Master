@@ -12,13 +12,13 @@ This CSV holds **every hand-entered piece of league data**, for all series. Noth
 
 ## Columns
 
-`record, series, episode, task_no, task_type, task_name, player, contestant, score, title, air_date, tiebreak_winner, full_name, accent_color, portrait_url, bio, stat, analysis`
+`record, series, episode, task_no, task_type, task_name, player, contestant, score, title, air_date, tiebreak_winner, full_name, accent_color, portrait_url, bio, analysis`
 
 Each row has a `record` type that says which columns it uses. Leave the other columns blank.
 
 | `record` | One row per… | Columns used |
 |---|---|---|
-| `contestant` | contestant per series | `series`, `contestant` (short name), `full_name`, `accent_color` (hex), `portrait_url` (direct `https://i.imgur.com/<id>.png` link), `bio` (who they are, in a sentence or two; no performance), `stat` (not shown in the app) |
+| `contestant` | contestant per series | `series`, `contestant` (short name), `full_name`, `accent_color` (hex), `portrait_url` (direct `https://i.imgur.com/<id>.png` link), `bio` (who they are, in a sentence or two; no performance) |
 | `player` | league player per series (the roster) | `series`, `player` |
 | `episode` | episode per series, 1–10, including future ones | `series`, `episode`, `title`, `air_date` (London date, e.g. `1 Oct 2026`), `tiebreak_winner` (only if contestants tied for the top score), `analysis` |
 | `score` | contestant per task | `series`, `episode`, `task_no` (1, 2, 3… within the episode), `task_type` (`P` prize, `F` filmed, `T` team, `L` live), `task_name`, `contestant`, `score` |
@@ -33,7 +33,7 @@ For episode *N* of the current series:
 1. **Scores.** Add a `score` row for every contestant on every task; that's 5 rows per task, so usually 25 rows. The five rows of a task share `task_no`, `task_type` and `task_name`.
 2. **Picks.** Add a `pick` row for each player who voted, with their final vote from the WhatsApp poll.
 3. **Episode row.** Fill `analysis` on episode *N*'s `episode` row. If contestants tied for the top score, put the tiebreak winner in `tiebreak_winner`. Correct the `title` if it was a placeholder.
-4. **Optional.** `bio` is only who they are, so it rarely changes. `stat` isn't shown in the app.
+4. **Optional.** `bio` is only who they are, so it rarely changes.
 
 Example rows:
 

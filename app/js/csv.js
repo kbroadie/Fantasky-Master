@@ -54,7 +54,7 @@ export function buildSeries(records) {
       case "contestant":
         s.cast.push({
           key: r.contestant, full: r.full_name, color: r.accent_color || "#b8862b",
-          img: portrait(r.portrait_url), bio: r.bio, stat: r.stat,
+          img: portrait(r.portrait_url), bio: r.bio,
         });
         break;
       case "player":

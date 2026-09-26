@@ -94,7 +94,8 @@ function profile(c) {
 // Every task of the series as a square in the contestant's colour, stronger
 // for a higher score (0 is an empty outline): one row per task type, one
 // column per episode (tasks of the same type in an episode share the slot),
-// the type's average at the end. Tap a square to read it in the caption.
+// the type's average at the end. Tap a slot (the whole episode's column in a
+// row, a far bigger target than a square) to read its tasks in the caption.
 
 const HEAT_TYPES = ["P", "F", "T", "L"];
 
@@ -110,11 +111,11 @@ function heatStrip(d, c) {
   const rows = types.map((k) => {
     const all = byType[k], avg = all.reduce((a, x) => a + x.v, 0) / all.length;
     const slots = eps.map((e) => {
-      const cells = all.filter((x) => x.ep === e).map((x) => {
-        const say = `Ep ${e} · ${TASK_NAME[k]} · ${x.name} · ${x.v}`;
-        return `<button class="hs-cell" style="--v:${x.v}" data-say="${esc(say)}" aria-label="${esc(say)}"></button>`;
-      }).join("");
-      return `<span class="hs-slot${e > d.weeksScored ? " tbd" : ""}">${cells}</span>`;
+      const here = all.filter((x) => x.ep === e);
+      if (!here.length) return `<span class="hs-slot${e > d.weeksScored ? " tbd" : ""}"></span>`;
+      const say = `Ep ${e} · ${TASK_NAME[k]} · ${here.map((x) => `${x.name}: ${x.v}`).join(" · ")}`;
+      const cells = here.map((x) => `<i class="hs-cell" style="--v:${x.v}"></i>`).join("");
+      return `<button class="hs-slot" data-say="${esc(say)}" aria-label="${esc(say)}">${cells}</button>`;
     }).join("");
     return `<span class="hs-type">${icon(k)}${TASK_NAME[k]}</span>${slots}<span class="hs-avg">${avg.toFixed(1)}</span>`;
   }).join("");
@@ -123,7 +124,7 @@ function heatStrip(d, c) {
     <div class="card heat" style="--c:${c.color}">
       <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5</span></div>
       <div class="hs-grid">${head}${rows}</div>
-      <p class="hs-cap">Tap a square for the task</p>
+      <p class="hs-cap">Tap a square for its tasks</p>
     </div>`;
 }
 
