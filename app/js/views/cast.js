@@ -1,6 +1,7 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
 import { esc, rich, framed, state, ICON_PATHS } from "../ui.js";
 import { statsFor, badgesFor, factsFor } from "../alltime.js";
+import { faceFor } from "../heroes.js";
 
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
@@ -71,12 +72,17 @@ function records(d, c) {
     </div>`;
 }
 
-/** Who they are: a short bio and personal facts. Performance lives elsewhere. */
+/** Who they are: a short bio and personal facts. Performance lives elsewhere.
+ *  With a group photo, their face sits behind the card, offset to the right,
+ *  and the bio narrows to the left of it. */
 function profile(c) {
   const facts = factsFor(statsRow(c));
   if (!c.bio && !facts.length) return "";
+  const f = faceFor(state.key, c.key);
+  const bg = f ? `<span class="pf-bg" aria-hidden="true"><img src="${f.src}" alt="" loading="lazy" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--sep:${f.sep};--ar:${f.ratio}"></span>` : "";
   return `
-    <div class="card note profile">
+    <div class="card note profile${f ? " has-face" : ""}">
+      ${bg}
       <div class="card-head"><span>Profile</span></div>
       ${c.bio ? `<p>${rich(c.bio)}</p>` : ""}
       ${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}

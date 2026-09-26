@@ -1,7 +1,7 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
-import { GROUP } from "../heroes.js";
+import { GROUP, faceFor } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -93,11 +93,9 @@ export function standingsRows(d) {
  * uncovers more of the photo below; nothing moves.
  */
 function pickBackdrop(c, won) {
-  const { src, ratio, faces } = GROUP[state.key];
-  const face = faces[c.key];
-  if (!face) return "";
-  const { eye: [ex, ey], sep } = face;
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--sep:${sep};--ar:${ratio}"></span>`;
+  const f = faceFor(state.key, c.key);
+  if (!f) return "";
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--sep:${f.sep};--ar:${f.ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

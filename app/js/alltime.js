@@ -90,6 +90,23 @@ export function badgesFor(rows, row) {
 // ── Profile facts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const yes = (v) => /^y/i.test(v || "");
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "28-Jan-1957" as a date in the device's locale, e.g. "28 January 1957". */
+function birthday(dob) {
+  const m = /^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/.exec(dob || "");
+  const mon = m && MONTHS.indexOf(m[2]);
+  if (!m || mon < 0) return "";
+  const date = new Date(Date.UTC(+m[3], mon, +m[1]));
+  return date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
+}
+
+/** "173 cm / 5′ 8″" */
+function height(cm) {
+  const inches = Math.round(+cm / 2.54);
+  return `${Math.round(+cm)} cm / ${Math.floor(inches / 12)}′ ${inches % 12}″`;
+}
+
 const DEGREE = { OXBRIDGE: "Oxbridge", RADA: "RADA", YALE: "Yale", Y: "Degree", N: "No degree" };
 
 /** Label/value pairs for the profile; blanks are left out. */
@@ -97,11 +114,11 @@ export function factsFor(row) {
   if (!row) return [];
   const f = [];
   const add = (label, value) => { if (value != null && value !== "") f.push([label, String(value)]); };
+  add("Birthday", birthday(row.dob));
   add("Age", row.age && `${row.age} at the start`);
   add("Star sign", row.star_sign);
-  add("Height", row.height_cm && `${Math.round(+row.height_cm)} cm`);
+  add("Height", row.height_cm && height(row.height_cm));
   add("Born", [row.birth_place, row.birth_country].filter((x, i, a) => x && x !== "NA" && a.indexOf(x) === i).join(", "));
-  add("Seat", row.seat && `${row.seat} of 5`);
   add("Education", [DEGREE[row.degree] || "", yes(row.footlights) ? "Footlights" : ""].filter(Boolean).join(" · "));
   add("Children", row.children);
   add("Siblings", row.siblings);

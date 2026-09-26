@@ -2,7 +2,13 @@
 // where every contestant's eyes are in it and the distance between their
 // pupils (fractions of the photo's width and height, measured from the
 // original). Standings uses it as row backdrops, one face per row, scaled
-// so every face comes out the same size. League data lives in the CSV.
+// so every face comes out the same size; Cast uses it behind each Profile. League data lives in the CSV.
+
+/** A contestant's face in their series' group photo, or null if there isn't one. */
+export function faceFor(series, key) {
+  const g = GROUP[series], face = g?.faces[key];
+  return face ? { src: g.src, ratio: g.ratio, ex: face.eye[0], ey: face.eye[1], sep: face.sep } : null;
+}
 
 export const GROUP = {
   22: {
