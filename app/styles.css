@@ -313,10 +313,28 @@ strong { color: var(--t1); font-weight: 700; }
   display: flex; justify-content: space-between; align-items: center; padding: 9px 12px 7px;
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .16em; text-transform: uppercase;
 }
-.card.note { border-left: 2px solid var(--gold4); }
-.card.note.profile { border-left: 1px solid var(--b-gold); } /* no gold edge on the Profile */
-.card.note.gold { border-left-color: var(--gold2); }
 .card.note p { padding: 0 14px 12px; font-size: 15px; line-height: 1.6; color: var(--t2); text-wrap: pretty; }
+
+/* The race so far: running totals as smooth lines */
+.race svg { display: block; width: 100%; max-width: 520px; margin: 0 auto; padding: 4px 12px 0; overflow: visible; }
+.rc-grid { stroke: var(--b-dim); stroke-width: 1; }
+.rc-axis { font-family: var(--fm); font-size: 11px; fill: var(--t4); }
+.rc-axis.now { fill: var(--gold2); }
+.race path { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+.rc-grid.lead { stroke: var(--gold4); stroke-dasharray: 3 3; } /* 0: the leader's line */
+.race .rc-tap { stroke: transparent; stroke-width: 16; cursor: pointer; } /* a wide, invisible target along each line */
+.rc-name { cursor: pointer; }
+/* Tap a line: it comes forward (moved last in main.js) and the rest fade */
+.race g[data-who] { transition: opacity .2s; }
+.race.focus g[data-who]:not(.on) { opacity: .15; }
+.race .rc-lead { stroke-width: 1; opacity: .6; }
+.rc-pt { stroke: var(--s2); stroke-width: 2; } /* a ring of the card's colour where lines cross */
+.rc-name { font-family: var(--fm); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; } /* like the task table's column heads */
+.rc-total { font-family: var(--ff); font-weight: 800; letter-spacing: 0; fill: var(--t2); }
+.rc-hit { fill: transparent; cursor: pointer; }
+.rc-hit.on { stroke: var(--t1); stroke-width: 1.5; fill: none; }
+.rc-cap { padding: 4px 12px 12px; font-size: 13px; color: var(--t3); }
+.rc-cap:empty, .hs-cap:empty { display: none; } /* no instructions; a caption only once something is tapped */
 
 /* Framed portraits */
 .fp { display: block; width: 100%; height: auto; aspect-ratio: 225 / 266; filter: drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
@@ -389,7 +407,6 @@ strong { color: var(--t1); font-weight: 700; }
 .cd-head { margin-bottom: 12px; } /* Cast header: the episode head's pattern (kicker, Bungee title, mono line) */
 .cd-head .ep-sub b { font-family: var(--ff); font-weight: 800; }
 .cd-img { width: 104px; margin: 0 auto 10px; }
-.cd-img .fp { filter: drop-shadow(0 3px 14px rgba(0, 0, 0, .85)); }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
 

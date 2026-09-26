@@ -243,6 +243,29 @@ $("#cast-body").addEventListener("click", (e) => {
   card.querySelector(".hs-cap").textContent = slot.dataset.say;
 });
 
+// The race chart (Episodes): tap a line, name or point to follow that
+// contestant (their line comes forward, the rest fade); a point also reads out
+// that week in the caption. Tap them again, or empty chart, to see everyone.
+$("#ep-body").addEventListener("click", (e) => {
+  const card = e.target.closest(".race");
+  if (!card) return;
+  const who = e.target.closest("g[data-who]"), hit = e.target.closest(".rc-hit");
+  const cap = card.querySelector(".rc-cap"), svg = card.querySelector("svg");
+  for (const x of card.querySelectorAll(".rc-hit.on")) x.classList.remove("on");
+  const same = who && who.classList.contains("on") && !hit;
+  for (const g of card.querySelectorAll("g[data-who].on")) g.classList.remove("on");
+  if (!who || same) {
+    card.classList.remove("focus");
+    cap.textContent = "";
+    return;
+  }
+  who.classList.add("on");
+  svg.append(who); // draw it on top
+  card.classList.add("focus");
+  if (hit) { hit.classList.add("on"); cap.textContent = hit.dataset.say; }
+  else cap.textContent = "";
+});
+
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 
