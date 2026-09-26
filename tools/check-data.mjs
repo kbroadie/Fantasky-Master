@@ -95,6 +95,31 @@ if (series[22]) {
   if (!ep2 || Object.entries(want).some(([n, p]) => ep2[n] !== p)) err(`Worked example: Series 22 ep 2 placement points should be ${JSON.stringify(want)}, got ${JSON.stringify(ep2)}`);
 }
 
+// Cross-check against the all-time stats (data/taskmaster_stats.csv, imported
+// by tools/import-stats.mjs): when the stats cover the same number of
+// episodes as the CSV has scored, totals and task-type points should agree.
+const STATS = new URL("../data/taskmaster_stats.csv", import.meta.url);
+let stats = [];
+try { stats = parseCSV(readFileSync(STATS, "utf8")); } catch { warn("data/taskmaster_stats.csv is missing; run node tools/import-stats.mjs"); }
+if (stats.length) {
+  for (const [key, raw] of Object.entries(series)) {
+    const d = derive(raw, new Date());
+    for (const c of d.contestants) {
+      const r = stats.find((s) => +s.series === +key && s.name.trim().toLowerCase() === c.full.trim().toLowerCase());
+      if (!r) { warn(`Series ${key}: ${c.full} isn't in the all-time stats`); continue; }
+      if (+r.episodes !== d.weeksScored) continue;
+      const eps = d.weeksScored, near = (a, b) => Math.abs(a - b) < 0.02;
+      const bad = [
+        !near(+r.points, c.total) && `total ${c.total} vs ${r.points}`,
+        !near(+r.prize_per_ep * eps, c.ty.P) && `prize ${c.ty.P} vs ${(+r.prize_per_ep * eps).toFixed(0)}`,
+        !near(+r.live_per_ep * eps, c.ty.L) && `live ${c.ty.L} vs ${(+r.live_per_ep * eps).toFixed(0)}`,
+        !near(+r.solo_filmed_points, c.ty.F) && `filmed ${c.ty.F} vs ${r.solo_filmed_points}`,
+      ].filter(Boolean);
+      if (bad.length) warn(`Series ${key} ${c.full}: the CSV and the all-time stats disagree (${bad.join(", ")}); check task types and scores`);
+    }
+  }
+}
+
 for (const w of warnings) console.warn(`warning: ${w}`);
 for (const e of errors) console.error(`error: ${e}`);
 console.log(errors.length ? `✗ ${errors.length} error(s)` : `✓ ${rows.length} rows OK${warnings.length ? `, ${warnings.length} warning(s)` : ""}`);

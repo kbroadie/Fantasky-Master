@@ -202,20 +202,24 @@ strong { color: var(--t1); font-weight: 700; }
   --W: max(var(--eyes) / var(--sep), var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px);
   position: absolute; max-width: none; width: var(--W); height: auto;
   left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
-  filter: saturate(.85) brightness(.8) contrast(1.05);
-  transform: translate3d(0, var(--py, 0px), 0); will-change: transform; /* scroll parallax, set in main.js */
+  transform: translateY(var(--py, 0px)); /* scroll parallax, set in main.js */
 }
 /* Reshade: darker behind the name and the numbers, clear over the eyes;
-   the uncovered part below the head is dimmed a little for the picks. */
+   the uncovered part below the head is dimmed a little for the picks.
+   The photo and its shade are one compositing layer (.pc-bg is isolated;
+   the image has no filter, will-change or 3D transform of its own). As
+   separate layers, iOS Safari could draw the photo unshaded for a frame
+   while the top bar resized, flashing the white pillars. */
+.pc-bg { isolation: isolate; }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
   background:
     linear-gradient(180deg, transparent var(--head), rgba(16, 13, 16, .5) calc(var(--head) + 24px)),
+    linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
     linear-gradient(90deg, rgba(16, 13, 16, .82) 0, rgba(16, 13, 16, .66) 22%, rgba(16, 13, 16, .22) 40%, rgba(16, 13, 16, .22) 54%, rgba(16, 13, 16, .66) 66%, rgba(16, 13, 16, .84) 80%);
 }
 /* A pick that won: the face warms towards gold. */
-.pc-bg.won img { filter: sepia(.35) saturate(1.15) brightness(.87) contrast(1.05); }
-.pc-bg.won::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 22% 40px at calc(50% - 16px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%); }
+.pc-bg.won::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 22% 40px at calc(50% - 16px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 
@@ -358,15 +362,34 @@ strong { color: var(--t1); font-weight: 700; }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
 
-/* Points per episode: ten bars in the contestant's colour, one scale for all */
-.bars { display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; height: 150px; padding: 18px 10px 0; }
-.bar { position: relative; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; min-width: 0; }
-.bar b { font-size: 14px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
-.bar i { width: 100%; max-width: 26px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); }
-.bar small { font-family: var(--fm); font-size: 11px; color: var(--t4); padding: 5px 0 6px; }
+/* Points per episode, one scale for all five contestants. Every bar is --f
+   of the plot height (its score over the series' best episode), so heights
+   compare exactly; the number and crown ride above the bar, the episode
+   number sits below the plot. */
+.bars { --plot: 96px; --axis: 22px; position: relative; display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; height: calc(34px + var(--plot) + var(--axis)); padding: 0 10px; }
+.bar { position: relative; display: flex; justify-content: center; min-width: 0; }
+.bar i { position: absolute; z-index: 1; bottom: var(--axis); width: 100%; max-width: 26px; height: max(2px, var(--plot) * var(--f)); border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--c), color-mix(in srgb, var(--c) 55%, #000)); }
+.bar b { position: absolute; z-index: 3; bottom: calc(var(--axis) + var(--plot) * var(--f) + 4px); font-size: 14px; font-weight: 800; line-height: 1; text-shadow: 0 0 2px var(--s2), 0 0 3px var(--s2), 0 0 4px var(--s2); } /* knocks the median line out behind the number */
+.bar small { position: absolute; bottom: 0; height: var(--axis); padding-top: 5px; font-family: var(--fm); font-size: 11px; line-height: 1.2; color: var(--t4); }
 .bar.won b { color: var(--gold3); }
-.bar.won::before { content: "👑"; position: absolute; top: -16px; font-size: 12px; }
+.bar.won::before { content: "👑"; position: absolute; z-index: 3; bottom: calc(var(--axis) + var(--plot) * var(--f) + 19px); font-size: 12px; line-height: 1; }
 .bar.tbd i { height: 3px; background: var(--b-gold); }
+/* The series median: a dashed line across the plot, over the bars and under the numbers */
+.bar-med { position: absolute; z-index: 2; left: 6px; right: 6px; bottom: calc(var(--axis) + var(--plot) * var(--f)); border-top: 1px dashed rgba(240, 232, 220, .55); pointer-events: none; }
+.med-key { display: inline-block; width: 14px; margin-right: 5px; vertical-align: middle; border-top: 1px dashed rgba(240, 232, 220, .7); }
+/* All-time records: a badge per stat where the contestant is in the top 10 */
+.records .rec { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 8px 12px; border-top: 1px solid var(--b-dim); }
+.rec-label { font-family: var(--ff-name); font-size: 16px; font-weight: 700; color: var(--gold3); }
+.rec-rank { font-size: 15px; font-weight: 800; color: var(--t2); text-align: right; }
+.rec-rank.top { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
+.rec-text { grid-column: 1 / -1; font-size: 13px; color: var(--t2); margin-top: 1px; }
+
+/* Fact file: label over value, two columns */
+/* Profile: the bio, then personal facts in two columns under a hairline */
+.profile dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0 14px; padding: 12px 0 14px; border-top: 1px solid var(--b-dim); }
+.profile dt { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }
+.profile dd { font-size: 15px; color: var(--t1); margin-top: 2px; }
+
 /* Performance radar: hairline σ rings and axes with ticks, a dashed
    all-series average ring, one filled shape with small vertex points */
 .radar svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; padding-bottom: 8px; overflow: visible; shape-rendering: geometricPrecision; }
@@ -390,8 +413,8 @@ strong { color: var(--t1); font-weight: 700; }
   :root { --px: 20px; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
   .pc-bg { --tx: calc(50cqw - 42px); --eyes: 64px; }
-  .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%); }
-  .bars { height: 180px; }
+  .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
+  .bars { --plot: 126px; }
 }
 @media (min-width: 760px) {
   body { max-width: 840px; }

@@ -1,5 +1,6 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
 import { esc, rich, framed, state, ICON_PATHS } from "../ui.js";
+import { statsFor, badgesFor, factsFor } from "../alltime.js";
 
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
@@ -7,17 +8,31 @@ export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.ran
 export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}">${esc(c.key)}</button>`).join("");
 
 export function castSlides(d) {
-  // One scale for every contestant, so bars compare across slides.
-  const max = Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored)));
-  return castOrder(d).map((c) => `<section class="slide">${slide(d, c, max)}</section>`).join("");
+  // One scale for every contestant, so bars compare across slides, with the
+  // series median of every contestant's episode scores as a reference line.
+  const scores = d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored));
+  const max = Math.max(1, ...scores);
+  return castOrder(d).map((c) => `<section class="slide">${slide(d, c, max, median(scores))}</section>`).join("");
 }
 
-function slide(d, c, max) {
+function median(xs) {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+function slide(d, c, max, med) {
+  // Each bar's height is exactly its score over the shared max (--f); the
+  // number and crown sit above it and the episode number below, outside the
+  // plot, so they never squeeze the bar.
+  const f = (v) => (v / max).toFixed(4);
   const bars = d.episodes.map((e) => {
-    if (e.ep > d.weeksScored) return `<div class="bar tbd"><b></b><i></i><small>${e.ep}</small></div>`;
+    if (e.ep > d.weeksScored) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
     const v = c.eps[e.ep - 1], won = d.winners[e.ep]?.winner === c.key;
-    return `<div class="bar${won ? " won" : ""}"><b>${v}</b><i style="height:${Math.max(3, v / max * 100).toFixed(1)}%"></i><small>${e.ep}</small></div>`;
+    return `<div class="bar${won ? " won" : ""}" style="--f:${f(v)}"><i></i><b>${v}</b><small>${e.ep}</small></div>`;
   }).join("");
+  const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);
+  const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
 
   return `
     <div class="cd-hero">
@@ -30,19 +45,49 @@ function slide(d, c, max) {
       </div>
     </div>
     <div class="cd-league">Picked <b>${c.pickedBy}</b> time${c.pickedBy === 1 ? "" : "s"} by the league · earned them <b>${c.deliveredTo}</b> points</div>
+    ${records(d, c)}
     <div class="card">
-      <div class="card-head"><span>Points per episode</span>${c.wins ? `<span class="legend">👑 = won</span>` : ""}</div>
-      <div class="bars" style="--c:${c.color}">${bars}</div>
+      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${c.wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
+      <div class="bars" style="--c:${c.color}">${medLine}${bars}</div>
     </div>
     ${radar(d, c)}
-    ${c.bio ? `<div class="card note"><div class="card-head"><span>Profile</span></div><p>${rich(c.bio)}</p></div>` : ""}
-    ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
+    ${profile(c)}`;
+}
+
+// ── All-time records and fact file (alltime.js) ──────────────────────────────
+
+const statsRow = (c) => statsFor(state.allTime, state.key, c.full);
+
+/** Badges for stats where this contestant is in Taskmaster's all-time top 3.
+ *  Finished series only: four episodes are too few to rank against a whole run. */
+function records(d, c) {
+  if (d.weeksScored < d.episodes.length) return "";
+  const badges = badgesFor(state.allTime, statsRow(c));
+  if (!badges.length) return "";
+  return `
+    <div class="card records">
+      <div class="card-head"><span>All-time records</span><span class="legend">of ${badges[0].of} contestants</span></div>
+      ${badges.map((b) => `<div class="rec"><b class="rec-label">${esc(b.label)}</b><span class="rec-rank${b.rank === 1 ? " top" : ""}">${b.tied ? "=" : ""}#${b.rank}</span><span class="rec-text">${esc(b.text)}</span></div>`).join("")}
+    </div>`;
+}
+
+/** Who they are: a short bio and personal facts. Performance lives elsewhere. */
+function profile(c) {
+  const facts = factsFor(statsRow(c));
+  if (!c.bio && !facts.length) return "";
+  return `
+    <div class="card note profile">
+      <div class="card-head"><span>Profile</span></div>
+      ${c.bio ? `<p>${rich(c.bio)}</p>` : ""}
+      ${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
+    </div>`;
 }
 
 // ── Performance radar ───────────────────────────────────────────────────────
 // Points per episode from Prize, Filmed and Live tasks (team tasks aren't
-// counted), as z-scores against every contestant in every series
-// (state.stats). The scale runs from −3σ at the centre to +3σ at the edge,
+// counted), as z-scores against every contestant in Taskmaster history
+// (state.stats, from the all-time stats; the league's series if those are
+// missing). The scale runs from −3σ at the centre to +3σ at the edge,
 // with a hairline ring at every whole σ and ticks where they cross the axes;
 // the middle ring (dashed) is the all-series average. With ten or so
 // contestants no z-score can pass ±3, so nothing is clipped in practice.
@@ -86,7 +131,7 @@ function radar(d, c) {
   const summary = KINDS.map(([k, label]) => `${label} ${zText(z(k))} standard deviations`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
-      <div class="card-head"><span>Performance</span><span class="legend">z-score vs all series</span></div>
+      <div class="card-head"><span>Performance</span><span class="legend">${state.stats.n ? `z-score vs all ${state.stats.n} contestants` : "z-score vs all series"}</span></div>
       <svg viewBox="0 0 340 226" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
         <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}" stop-opacity=".9"/><stop offset="1" stop-color="${c.color}" stop-opacity=".65"/></linearGradient></defs>
         <circle class="rd-face" cx="${cx}" cy="${cy}" r="${R}"/>

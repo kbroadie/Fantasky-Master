@@ -1,0 +1,111 @@
+series,name,episodes,tasks,points,prize_per_ep,live_per_ep,solo_filmed_points,solo_filmed_tasks,first_or_last_pct,dq_pct,subj_minus_obj,fastest_ppt,solo_win_pct,solo_last_pct,episode_win_pct,team_ppt,dob,star_sign,age,seat,degree,footlights,birth_place,birth_country,height_cm,children,siblings,edinburgh_award,doctor_who,ghosts,biggest_film,marathon
+1,Frank Skinner,6,32,93,3.50,2.50,52,17,24.14,3.13,0.42,2.57,10.34,13.79,33.33,1.67,28-Jan-1957,Aquarius,58,1,Y,N,West Bromwich,England,178,1,3,Y,Y,,,N
+1,Josh Widdicombe,6,32,94,3,2.67,58,17,44.83,9.38,-0.18,3,31.03,13.79,33.33,0.67,08-Apr-1983,Aries,32,2,Y,N,London,England,169,0,1,Nom,,,,N
+1,Roisin Conaty,6,32,68,1.67,2.33,42,17,65.52,9.38,-0.33,2.43,17.24,48.28,16.67,0.67,26-Mar-1979,Aries,36,3,Y,N,London,England,173,0,1,Newcomer,,,,N
+1,Romesh Ranganathan,6,32,93,2.67,3,57,17,27.59,6.25,0,2.29,13.79,13.79,0,0.67,27-Mar-1978,Aries,37,4,Y,N,Sussex,England,182,3,1,Nom,,,,Y
+1,Tim Key,6,32,88,4.17,2.83,41,17,48.28,6.25,0.94,2.14,27.59,20.69,16.67,1.67,02-Sep-1976,Virgo,38,5,Y,Y,Cambridge,England,177.8,0,1,Y,,,See How They Run,Y
+2,Doc Brown,5,28,78,3.40,4.20,34,15,37,17.86,0.23,1.29,12,25,20,2,21-Sep-1977,Virgo,38,1,N,N,London,England,170,2,2,N,Y,,David Brent,N
+2,Joe Wilkinson,5,28,69,3.40,2.40,34,15,45.33,25,0.79,1.43,12,33.33,0,2,02-May-1975,Taurus,41,2,N,N,London,England,180.5,0,1,N,,,,Brighton Half Marathon
+2,Jon Richardson,5,28,90,2.80,3,52,15,52.83,7.14,-0.67,3.43,32,20.83,20,3,26-Sep-1982,Libra,33,3,N,N,Lancashire,England,173,1,NA,Nom,,,,N
+2,Katherine Ryan,5,28,94,3.40,5,46,15,24.5,14.29,0.10,2.43,12,12.5,20,2,30-Jun-1983,Cancer,32,4,Y,N,Ontario,Canada,168,1,2,N,,,,N
+2,Richard Osman,5,28,86,2.20,3.40,49,15,44.67,10.71,-0.13,4.57,28,16.67,40,3,28-Nov-1970,Sagittarius,45,5,OXBRIDGE,Y,Essex,England,200,2,1,N,,,,N
+3,Al Murray,5,27,80,2.80,2.60,45,14,50.91,11.11,-0.23,2.75,29.17,21.74,20,2.67,10-May-1968,Taurus,48,1,OXBRIDGE,N,Northamptonshire,England,191,3,0,Y,Y,,,N
+3,Dave Gorman,5,27,81,3.40,2.60,43,14,33.88,11.11,1.05,2.50,20.83,13.04,20,2.67,02-Mar-1971,Pisces,45,2,N,N,Stafford,England,175,1,3,Nom,,,,N
+3,Paul Chowdhry,5,27,66,2.60,2.20,34,14,47.28,14.81,-0.20,2.25,12.5,34.78,20,2.67,21-Aug-1974,Leo,42,3,N,N,London,England,173,0,NA,N,,,Cruella,N
+3,Rob Beckett,5,27,87,3.20,3.20,48,14,37.86,7.41,-0.40,3,29.17,8.7,40,2.33,02-Jan-1986,Capricorn,30,4,Y,N,London,England,170,1,4,N,,,,N
+3,Sara Pascoe,5,27,72,2.80,2.20,40,14,29.89,3.7,0.45,3,12.5,17.39,0,2.33,22-May-1981,Gemini,35,5,Y,N,London,England,160,0,2,Nom,,,,N
+4,Hugh Dennis,8,45,129,1.63,2.88,78,25,47.07,8.89,-1.05,3.25,17.07,30,12.5,3.75,13-Feb-1962,Aquarius,55,1,OXBRIDGE,Y,Northamptonshire,England,185,2,1,N,,,No Time To Die,Y
+4,Joe Lycett,8,45,136,3,2.88,84,25,19.57,8.89,0.54,3,17.07,2.5,25,1.25,05-Jul-1988,Cancer,28,2,Y,N,Birmingham,England,184,0,1,Nom,,,,N
+4,Lolly Adefope,8,45,125,4.25,2.25,68,25,44.45,8.89,0,3.50,21.95,22.5,12.5,1.25,14-Sep-1990,Virgo,26,3,Y,N,London,England,163,0,1,N,,Y,The Spy Who Dumped me,N
+4,Mel Giedroyc,8,45,134,2.25,3.38,74,25,41.89,6.67,-0.09,2.13,24.39,17.5,37.5,3.75,05-Jun-1968,Gemini,48,4,OXBRIDGE,Y,Surrey,England,166,2,3,N,Y,,,N
+4,Noel Fielding,8,45,144,3.75,2.13,92,25,49.15,11.11,1.38,3,34.15,15,12.5,1.25,21-Jun-1973,Cancer,43,5,Y,N,London,England,176,0,1,Newcomer,,,Lego Movie 2,N
+5,Aisling Bea,8,43,126,3.25,3.38,66,24,37.5,13.95,0.51,1.43,22.5,15,0,2.33,16-Mar-1984,Pisces,33,1,Y,N,Kildare,Ireland,170,0,1,Nom,Y,,Greatest Days,N
+5,Bob Mortimer,8,43,138,3.13,3.13,81,24,55,9.3,-0.13,4.29,35,20,37.5,2.33,23-May-1959,Gemini,58,2,Y,N,Middlesbrough,England,170,2,3,N,,,Chuchill:  The Hollywood Years,N
+5,Mark Watson,8,43,130,2.88,3.63,70,24,37.5,9.3,-0.23,3.43,20,17.5,25,2.67,13-Feb-1980,Aquarius,37,3,OXBRIDGE,Y,Bristol,England,182,2,3,Nom,,,,N
+5,Nish Kumar,8,43,107,2.13,2.75,60,24,50,13.95,0.63,2,17.5,32.5,0,2.67,26-Aug-1985,Virgo,32,4,Y,N,London,England,175,0,1,Nom,,,,N
+5,Sally Phillips,8,43,130,3.75,2.75,71,24,40,11.63,0.98,2.57,20,20,37.5,2.33,10-May-1970,Taurus,47,5,OXBRIDGE,N,Hong Kong,Hong Kong,163,3,2,N,,,Bridget Jones Diary,N
+6,Alice Levine,10,56,152,2.40,2.70,81,30,36.73,10.71,-0.23,1.50,16.33,20.41,20,3.33,08-Jul-1986,Cancer,31,1,Y,N,Nottinghamshire,England,170.2,0,1,N,,,,N
+6,Asim Chaudhry,10,56,159,2.30,2.60,87,30,53.06,7.14,-0.46,4.50,20.41,32.65,10,3.83,24-Nov-1987,Sagittarius,30,2,Y,N,London,England,171,0,2,N,,,Barbie,N
+6,Liza Tarbuck,10,56,181,2.90,2.30,106,30,46.94,8.93,0.62,2.50,30.61,16.33,20,3.83,21-Nov-1964,Scorpio,53,3,RADA,N,Liverpool,England,172,0,2,N,Y,,Best Exotic Marigold Hotel,N
+6,Russell Howard,10,56,170,3,2.70,93,30,40.82,8.93,-0.53,4,24.49,16.33,30,3.33,23-Mar-1980,Aries,38,4,Y,N,Bristol,England,172,0,2,Nom,,,,Y
+6,Tim Vine,10,56,175,3.80,2.30,91,30,36.73,5.36,0.60,4,18.37,18.37,20,3.83,04-Mar-1967,Pisces,51,5,Y,N,London,England,188,0,2,Best Joke,,,,N
+7,James Acaster,10,54,165,2.30,2.60,104,29,49.57,7.41,-0.29,3.86,29.17,20.41,30,2,09-Jan-1985,Capricorn,33,1,Y,N,Northamptonshire,England,185,0,2,Nom,,,Ghostbusters: Frozen Empire,N
+7,Jessica Knappett,10,54,175,2.60,3.20,102,29,35.08,7.41,-0.21,2.29,18.75,16.33,10,3.33,28-Nov-1984,Sagittarius,33,2,Y,N,Yorkshire,England,181,1,1,N,Y,Y,The Inbetweeners Movie,N
+7,Kerry Godliman,10,54,176,3.30,3.60,92,29,35.16,3.7,-0.55,2.86,22.92,12.24,30,3.33,17-Nov-1973,Scorpio,44,3,N,N,London,England,160,2,NA,N,Y,,We Live In Time,N
+7,Phil Wang,10,54,133,3,2.20,70,29,43.11,12.96,0.46,1.86,12.5,30.61,0,1.83,22-Jan-1990,Aquarius,28,4,OXBRIDGE,Y,Staffordshire,England,185,0,2,Nom,,,Wonka,N
+7,Rhod Gilbert,10,54,167,2.80,3.10,97,29,53.66,12.96,-0.14,2.43,29.17,24.49,30,1.83,18-Oct-1968,Libra,49,5,Y,N,Carmarthen,Wales,183,0,2,Nom,,,,N
+8,Iain Stirling,10,53,156,3.10,1.70,92,27,50.48,16.98,0.52,3.78,28.26,22.22,30,2.29,27-Jan-1988,Aquarius,31,1,Y,N,Edinburgh,Scotland,188,0,1,N,,,,N
+8,Joe Thomas,10,53,150,2.80,1.80,86,27,48.5,11.32,0.10,1.78,17.39,31.11,10,3.29,28-Oct-1983,Scorpio,35,2,OXBRIDGE,Y,Essex,England,175,0,3,N,Y,,Mummies,N
+8,Lou Sanders,10,53,164,3,3,88,27,39.47,11.32,-0.05,2.78,23.91,15.56,30,2.29,24-Nov-1985,Sagittarius,33,3,Y,N,Kent,England,172.7,0,1,N,,,,N
+8,Paul Sinha,10,53,136,3.30,2.20,64,27,46.38,9.43,0.87,1.44,13.04,33.33,10,2.43,28-May-1970,Gemini,48,4,Y,N,Bedfordshire,England,172.7,0,NA,Nom,,,,N
+8,Sian Gibson,10,53,143,3.20,1.40,79,27,35.17,11.32,0.56,2.67,17.39,17.78,20,3.29,30-Jul-1976,Leo,42,5,Y,N,Flintshire,Wales,154,1,NA,N,,,,N
+9,David Baddiel,10,50,128,3.60,2.20,55,25,48.47,8,1.10,1.50,15.91,32.56,10,3,28-May-1964,Gemini,55,1,OXBRIDGE,Y,New York,USA,172,2,2,N,,,The Infidel (Writer),N
+9,Ed Gamble,10,50,167,3.20,2.40,95,25,41.12,4,-0.39,4.17,31.82,9.3,40,3.17,10-Mar-1986,Pisces,33,2,Y,N,London,England,185,0,1,N,,,,Y
+9,Jo Brand,10,50,154,3.20,3.60,71,25,43.76,12,0.67,2,18.18,25.58,10,3.33,23-Jul-1957,Leo,62,3,Y,N,London,England,162,2,2,Nom,,,Horrid Henry The Movie,Y
+9,Katy Wix,10,50,158,3.40,3.10,76,25,43.6,12,0.74,1.67,25,18.6,20,3.50,28-Feb-1980,Pisces,39,4,Y,N,Glamorgan,Wales,172,0,1,N,Y,Y,Magicians,N
+9,Rose Matafeo,10,50,159,2.40,3.40,86,25,38.95,8,0.21,2.33,25,13.95,20,3.50,25-Feb-1992,Pisces,27,5,N,N,Auckland,New Zealand,178,0,2,Y,,,Moana 2,N
+10,Daisy May Cooper,10,51,158,2.50,3.60,83,27,52.75,11.76,-0.65,2.18,31.82,20.93,20,3,01-Aug-1986,Leo,34,1,N,N,Cirencester,England,175,2,1,N,,,The Personal History of David Copperfield,N
+10,Johnny Vegas,10,51,139,2.60,2.80,73,27,41.54,15.69,0.78,1.64,13.64,27.91,10,2.50,05-Sep-1970,Virgo,50,2,Y,N,Lancashire,England,170,2,3,Nom,,,Early Man,N
+10,Katherine Parkinson,10,51,118,3,2.20,53,27,50.9,17.65,0.72,2,11.36,39.53,10,2.38,09-Mar-1978,Pisces,42,3,OXBRIDGE,N,London,England,168,2,1,N,Y,,The Boat That Rocked,N
+10,Mawaan Rizwan,10,51,151,3.90,3,69,27,41.28,15.69,0.80,2.27,25,16.28,10,2.63,18-Aug-1992,Leo,28,4,N,N,Lahore,Pakistan,175.26,0,1,N,Y,,,N
+10,Richard Herring,10,51,162,3.20,3.90,77,27,36.68,9.8,0.12,3.09,22.73,13.95,50,3.25,12-Jul-1967,Cancer,53,5,OXBRIDGE,N,Yorkshire,England,169,2,2,N,Y,,,Y
+11,Charlotte Ritchie,10,50,125,2.90,2.20,62,24,45.24,12,0.52,2.18,14.29,30.95,20,2.38,23-Aug-1989,Virgo,31,1,Y,N,London,England,167.6,0,2,N,Y,Y,Wonka,N
+11,Jamali Maddix,10,50,137,3.10,2.40,70,24,47.62,8,0.32,2.27,21.43,26.19,10,2.38,08-Apr-1991,Taurus,29,2,Y,N,Essex,England,185,0,NA,N,,,Stitch Head,N
+11,Lee Mack,10,50,151,3.10,3.30,64,24,57.14,12,0.29,2.73,26.19,30.95,30,3.75,04-Aug-1968,Leo,52,3,Y,N,Merseyside,England,183,3,1,Nom,Y,,,Y
+11,Mike Wozniak,10,50,154,3.50,2.90,66,24,40.48,12,0.58,2.27,19.05,21.43,10,3.75,08-Nov-1979,Scorpio,41,4,Y,N,Oxford,England,185,2,1,Nom,,,Prevenge,N
+11,Sarah Kendall,10,50,158,3,3.40,83,24,28.57,4,0.11,3.73,16.67,11.9,30,2.38,03-Aug-1976,Leo,44,5,Y,N,Newcastle,Australia,172.5,2,1,Nom,,,,N
+12,Alan Davies,10,50,161,3.80,2.50,80,25,31.82,4,0.37,2.77,15.91,15.91,20,2.86,06-Mar-1966,Pisces,55,1,Y,N,Essex,England,180,3,2,Nom,,,"Angus, Thongs and Perfect Snogging",N
+12,Desiree Burch,10,50,161,3.90,3,76,25,45.45,6,0.74,3.54,27.27,18.18,20,3.57,26-Jan-1979,Aquarius,42,2,YALE,N,California,USA,170,0,NA,N,,,,N
+12,Guz Khan,10,50,167,3.20,4.20,77,25,43.18,8,0.17,2.69,25,18.18,40,3.57,24-Jan-1986,Aquarius,35,3,Y,N,Coventry,England,180.3,4,2,N,,,,N
+12,Morgana Robinson,10,50,168,2.10,3.70,92,25,36.36,4,-0.24,3.38,25,11.36,10,3.86,07-May-1982,Taurus,39,4,N,N,Victoria,Australia,175,0,4,N,,,The Witches,N
+12,Victoria Coren Mitchell,10,50,121,2.10,2.20,60,25,43.18,8,0.28,2.38,13.64,29.55,10,2.86,18-Aug-1972,Leo,49,5,OXBRIDGE,N,London,England,160,1,1,N,,,,N
+13,Ardal O'Hanlon,10,50,153,3.80,2.80,72,26,42.73,6,0.67,2.25,20,22.73,20,3.67,08-Oct-1965,Libra,56,1,Y,N,Carrickmacross,Ireland,175,3,5,N,Y,,Handsome Devil,N
+13,Bridget Christie,10,50,157,3.60,3.30,71,26,65.2,12,1.02,3.25,31.11,34.09,20,4.33,17-Aug-1971,Leo,50,2,N,N,Gloucester,England,169,2,8,Y,,Y,,N
+13,Chris Ramsey,10,50,170,2.70,2.80,100,26,44.85,4,-0.09,3.25,26.67,18.18,30,3.67,03-Aug-1986,Leo,35,3,Y,N,South Shields,England,178,2,NA,Nom,,,,N
+13,Judi Love,10,50,142,2.60,2.30,76,26,38.38,10,0.16,3,11.11,27.27,0,4.33,04-Jun-1980,Gemini,41,4,Y,N,London,England,167,2,4,N,,,,N
+13,Sophie Duker,10,50,173,3.10,3.50,90,26,38.08,6,-0.20,3.50,24.44,13.64,30,4.33,31-Jan-1990,Aquarius,32,5,OXBRIDGE,N,London,England,167,0,NA,Nom,,,,N
+14,Dara Ó Briain,10,50,184,3.40,4.30,92,24,48.84,8,-0.08,2.80,39.53,9.3,30,2.78,04-Feb-1972,Aquarius,50,1,Y,N,Bray,Ireland,195,3,Multiple,N,,,,N
+14,Fern Brady,10,50,144,2.90,3,70,24,41.86,12,1.21,1.80,16.28,25.58,10,2.78,26-May-1986,Gemini,36,2,Y,N,Bathgate,Scotland,172,0,1,N,,,Stitch Head,Will Run In 2026
+14,John Kearns,10,50,144,2.60,2.60,72,24,44.19,8,0.36,1,16.28,27.91,20,3.33,10-Apr-1987,Aries,35,3,Y,N,London,England,179,1,NA,Y,,,,N
+14,Munya Chawawa,10,50,150,2.20,3.20,70,24,39.53,8,-0.42,2.40,13.95,25.58,10,4,29-Dec-1992,Capricorn,29,4,Y,N,Derby,England,170.2,0,1,N,,,Rye Lane,N
+14,Sarah Millican,10,50,174,3.20,3.30,83,24,37.21,4,0.41,3.20,27.91,9.3,30,4,29-May-1975,Gemini,47,5,N,N,South Shields,England,170,0,1,Newcomer,,,,N
+15,Frankie Boyle,10,50,150,3.70,2.10,71,24,55.46,14,0.81,2.50,26.19,29.27,0,3,16-Aug-1972,Leo,50,1,Y,N,Glasgow,Scotland,183,2,NA,N,,,,N
+15,Ivo Graham,10,50,131,2.90,2.10,60,24,38.73,18,0.92,0.50,11.9,26.83,20,3,05-Sep-1990,Virgo,32,2,OXBRIDGE,N,Tokyo,Japan,170,1,1,Nom,,,,Y
+15,Jenny Eclair,10,50,152,3,3.90,56,24,38.68,8,0.01,2.25,14.29,24.39,20,5.25,16-Mar-1960,Pisces,63,3,Y,N,Kuala Lumpur,Malaysia,162.6,1,2,Y,,,,N
+15,Kiell Smith-Bynoe,10,50,158,3.50,2.70,69,24,48.2,14,0.61,3,23.81,24.39,30,5.25,05-Mar-1989,Pisces,34,4,N,N,London,England,183,0,NA,N,,Y,,N
+15,Mae Martin,10,50,174,3,3.50,82,24,55.34,14,0.20,3.75,30.95,24.39,30,5.25,02-May-1987,Taurus,35,5,N,N,Toronto,Canada,167,0,1,Nom,,,Zootropolis 2,N
+16,Julian Clary,10,50,155,3.50,3.40,71,26,49.39,10,0.46,3.55,25.58,23.81,20,3.83,25-May-1959,Gemini,64,1,Y,N,Surrey,England,189,0,2,N,,,,N
+16,Lucy Beaumont,10,50,129,2.70,3,57,26,47.29,12,0.05,2.27,13.95,33.33,20,3.83,10-Aug-1983,Leo,40,2,Y,N,Truro,England,154.9,1,NA,Nom,,,,N
+16,Sam Campbell,10,50,161,2.80,3.70,81,26,51.61,6,-0.17,3.27,32.56,19.05,20,3.83,19-Sep-1992,Virgo,31,3,NA,N,Atherton,Australia,171,0,NA,Y,,,,N
+16,Sue Perkins,10,50,137,3.60,2.70,62,26,56.53,16,1.69,1.64,25.58,30.95,30,2.83,22-Sep-1969,Virgo,53,4,OXBRIDGE,Y,London,England,166,0,2,N,,,Last Christmas,N
+16,Susan Wokoma,10,50,139,2.80,2.70,72,26,32.95,10,0.81,2.82,16.28,16.67,10,2.83,31-Dec-1987,Capricorn,35,5,RADA,N,London,England,163,0,1,N,,,,N
+17,Joanne McNally,10,50,171,3,3.30,77,24,38.1,2,-0.47,3.63,19.05,19.05,10,5.13,07-May-1983,Taurus,40,1,Y,N,Roscommon,Ireland,171.7,0,1,N,,,,N
+17,John Robins,10,50,192,3.20,3.90,90,24,38.1,4,-0.39,3.50,28.57,9.52,50,5.13,04-May-1982,Taurus,41,2,OXBRIDGE,N,Bristol,England,180,0,1,Y,,,,Park Run
+17,Nick Mohammed,10,50,131,2.60,2.50,60,24,47.62,12,0.55,1.88,16.67,30.95,10,2.88,04-Oct-1980,Libra,43,3,Y,Y,Yorkshire,England,164,3,NA,Emmy Nom,,,The Martian,N
+17,Sophie Willan,10,50,144,2.70,2.80,58,24,45.24,8,-0.07,2.63,19.05,26.19,10,5.13,21-Oct-1987,Libra,36,4,N,N,Bolton,England,162.56,0,NA,Nom,,,,N
+17,Steve Pemberton,10,50,153,3.90,2.50,69,24,40.48,12,1.08,2.50,21.43,19.05,20,2.88,01-Sep-1967,Virgo,56,5,Y,N,Blackburn,England,175,3,NA,Y,Y,,Better Man,N
+18,Andy Zaltzman,10,50,160,3.80,2.50,76,25,40.97,12,0.58,3.64,25.58,15.38,30,4,06-Oct-1974,Libra,49,1,OXBRIDGE,N,London,England,178,2,1,Nom,,,,N
+18,Babatunde Aléshé,10,50,147,2.30,2.10,82,25,34.23,10,-0.23,3.45,16.28,17.95,10,4,02-Aug-1986,Leo,38,2,RCSoSD,N,London,England,171,2,NA,Amused Moose,Y,,Sumotherhood,N
+18,Emma Sidi,10,50,152,3.50,2,76,25,43.53,10,0.27,3.36,25.58,17.95,40,4,05-Feb-1991,Aquarius,33,3,OXBRIDGE,Y,NA,USA,167,0,2,N,,Y,Paddington in Peru,N
+18,Jack Dee,10,50,157,3,2.80,90,25,35.84,8,0.35,2.73,25.58,10.26,10,1.71,24-Sep-1961,Virgo,62,4,N,N,Kent,England,169,4,2,Brit Com Award,,,,N
+18,Rosie Jones,10,50,137,3.60,1.90,73,25,31.43,10,0.93,2.55,18.6,12.82,10,1.71,24-Jun-1990,Cancer,34,5,Y,N,Humberside,England,164,0,1,N,,,,Y
+19,Fatiha El-Ghorri,10,50,141,2.30,2.50,75,25,42.86,4,-0.39,4,14.29,28.57,10,3.75,19-Apr-1981,Aries,44,1,N,N,London,England,165,0,12,N,,,,N
+19,Jason Mantzoukas,10,50,150,3.70,2.90,71,25,47.62,6,0.81,2,23.81,23.81,20,3.25,18-Dec-1972,Sagittarius,52,2,Y,N,Massachusetts,USA,178,0,1,N,,,John Wick 3: Parabellum,N
+19,Mathew Baynton,10,50,169,3.70,3.30,81,25,40.48,4,0.67,3.60,26.19,14.29,40,3.75,18-Nov-1980,Scorpio,44,3,Y,N,Essex,England,178,2,2,N,,Y,Wonka,N
+19,Rosie Ramsey,10,50,149,2.60,2.90,76,25,33.33,4,-0.45,3.10,16.67,16.67,10,3.75,30-Aug-1986,Virgo,38,4,N,N,South Shields,England,164,2,2,N,,,,N
+19,Stevie Martin,10,50,154,2.80,3.40,79,25,40.48,6,0.25,2.90,21.43,19.05,20,3.25,12-May-1988,Taurus,36,5,Y,N,Chester,England,173,0,1,N,,,,N
+20,Ania Magliano,10,50,151,3.40,2.50,76,24,53.99,12,0.84,3.50,32.56,21.43,20,2.29,17-Feb-1998,Aquarius,27,1,OXBRIDGE,Y,Buckinghamshire,England,168,0,NA,Nom,,,,N
+20,Maisie Adam,10,50,151,4.10,2.50,65,24,42.3,8,0.52,3.17,23.26,19.05,30,3.57,24-Jan-1994,Aquarius,31,2,Y,N,Harrogate,England,180,0,1,Nom,,,,Y
+20,Phil Ellis,10,50,151,2.70,2.60,84,24,39.92,8,0.28,2.50,23.26,16.67,30,2,01-Jan-1981,NA,44,3,Y,N,Preston,England,176,0,NA,Nom,,,,N
+20,Reece Shearsmith,10,50,148,3.20,3.20,62,24,37.76,10,1.44,2.33,13.95,23.81,10,3.86,27-Aug-1969,Virgo,56,4,Y,N,Hull,England,169,2,1,Y,Y,,Shaun of the Dead,N
+20,Sanjeev Bhaskar,10,50,143,2.90,2,79,24,47.01,12,0.59,3.17,25.58,21.43,0,2.14,31-Oct-1963,Scorpio,61,5,Y,N,London,England,165,1,1,N,Y,,Paddington 2,N
+21,Amy Gledhill,10,50,155,2.90,2.70,81,25,37.6,2,0.25,3.20,20.93,16.67,30,3.57,03-Nov-1987,Scorpio,38,1,Y,N,Hull,England,168,0,6,Y,,,,N
+21,Armando Iannucci,10,50,161,3.80,3.20,70,25,42.3,8,0.88,2.20,23.26,19.05,30,4.14,28-Nov-1963,Sagittarius,62,2,OXBRIDGE,N,Glasgow,Scotland,165,3,3,N,,,Death of Stalin (writer/director),N
+21,Joanna Page,10,50,165,3.10,3,83,25,35.22,0,-0.25,4,20.93,14.29,10,4.14,23-Mar-1977,Aries,49,3,RADA,N,Swansea,Wales,158,4,0,N,Y,,Love Actually,N
+21,Joel Dommett,10,50,150,3,2.80,74,25,40.03,4,0.83,3.30,18.6,21.43,20,3.57,08-Jun-1985,Gemini,40,4,N,N,Gloucestershire,England,182,1,1,N,,,,Y
+21,Kumail Nanjiani,10,50,160,2.80,3.40,80,25,35.22,2,-0.17,2.60,20.93,14.29,10,3.57,02-May-1978,Taurus,47,5,Y,N,Karachi,Pakistan,174,0,1,N,,,Eternals,N
+22,Chloe Petts,4,20,67,3.25,3.75,30,10,39.87,5,0.78,3.50,22.22,17.65,50,4.50,01-Oct-1993,Libra,32,1,Y,N,Kent,England,183,0,1,N,,,,Half Marathon
+22,Isy Suttie,4,20,59,4,2.75,25,10,68.63,15,1.51,2,33.33,35.29,25,3.50,11-Aug-1978,Leo,48,2,N,N,Hull,England,163,2,1,N,,,Wonka,N
+22,Matt Lucas,4,20,56,3.50,2.25,24,10,40.2,10,0.77,3.33,16.67,23.53,0,4.50,05-Mar-1974,Pisces,52,3,Y,N,London,England,166.4,0,1,N,Y,N,Alice in Wonderland,N
+22,Nina Conti,4,20,70,2.75,1.50,46,10,45.1,10,0.30,3.33,33.33,11.76,0,3.50,05-Jun-1974,Gemini,52,4,Y,N,London,England,173,2,0,N,,,For Your Consideration,N
+22,Richard Ayoade,4,20,47,2,1.75,23,10,46.41,20,0.17,1.83,11.11,35.29,25,4.50,23-May-1977,Gemini,49,5,OXBRIDGE,Y,London,England,188,2,0,Y,,,The Bad Guys 2,N

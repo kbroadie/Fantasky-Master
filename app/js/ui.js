@@ -40,7 +40,7 @@ export const framed = (c) => `<img class="fp" src="${c.img}" alt="${esc(c.key)}"
 /** A contestant's first name in their accent colour. */
 export const named = (c) => `<b class="cn" style="color:${c.color}">${esc(c.key)}</b>`;
 
-export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0, stats: null };
+export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0, stats: null, allTime: [] };
 
 /**
  * Mean and standard deviation of points per episode, over every contestant
