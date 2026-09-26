@@ -215,7 +215,10 @@ strong { color: var(--t1); font-weight: 700; }
    edge that would glow. Positions inside are measured from the bled box, so
    the row's own top is at --bleed; horizontally the bleed is symmetric, so
    50cqw is still the row's centre. */
-.pc-bg { --bleed: 24px; position: absolute; inset: calc(-1 * var(--bleed)); z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
+/* Its height is fixed (taller than any opened row, which is at most ~200px),
+   so opening a row only uncovers more of it: the backdrop's layer is never
+   resized, and so never redrawn, while the row grows. */
+.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
 .pc-bg img, .pc-bg .edge {
   /* Head --face across, and at least wide enough to span the row, unless
      --cap limits how far that can enlarge the head (Patatas: a narrow photo
@@ -230,7 +233,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* A capped photo that doesn't span the row fades into it at both edges. */
 .pc-bg .edge { top: 0; bottom: 0; background: linear-gradient(90deg, var(--s1), transparent 48px, transparent calc(100% - 48px), var(--s1)); }
 /* Reshade: darker behind the name and the numbers, clear over the eyes;
-   the uncovered part below the head is dimmed a little for the picks.
+   the dimming behind the picks is on .pc-more, outside this layer.
    The photo and its shade are one compositing layer (.pc-bg is isolated;
    the image has no filter, will-change or 3D transform of its own). As
    separate layers, iOS Safari could draw the photo unshaded for a frame
@@ -251,7 +254,6 @@ strong { color: var(--t1); font-weight: 700; }
      the bleed); the ends carry on flat through the bleed. */
   --r: calc(100% - 2 * var(--bleed));
   background:
-    linear-gradient(180deg, transparent calc(var(--bleed) + var(--head)), rgba(16, 13, 16, .5) calc(var(--bleed) + var(--head) + 24px)),
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
     linear-gradient(90deg, rgba(16, 13, 16, .82) var(--bleed), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .22), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .4), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .54), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .66), rgba(16, 13, 16, .84) calc(var(--bleed) + var(--r) * .8));
 }
@@ -262,6 +264,10 @@ strong { color: var(--t1); font-weight: 700; }
 .pc-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .pc.open .pc-more { grid-template-rows: 1fr; }
 .pc-more > div { overflow: hidden; min-height: 0; }
+/* The dimming behind the picks, for contrast. It's painted here, on the
+   picks strip, not inside the blurred backdrop layer, so opening a row
+   doesn't redraw that layer. */
+.pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
 .pk-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; padding: 4px var(--px) 14px; }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
