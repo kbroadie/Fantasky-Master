@@ -200,6 +200,16 @@ $("#p-standings").addEventListener("click", (e) => {
     state.sort = s.dataset.sort;
     return renderRows();
   }
+  // "Show" / "League" in the hero: open a line explaining it; tap again to close.
+  const term = e.target.closest(".st-term");
+  if (term) {
+    const hero = term.closest(".st-hero"), t = term.dataset.term;
+    const open = !(hero.classList.contains("explain") && hero.dataset.term === t);
+    hero.dataset.term = t;
+    hero.classList.toggle("explain", open);
+    for (const b of hero.querySelectorAll(".st-term")) b.setAttribute("aria-expanded", open && b.dataset.term === t);
+    return;
+  }
   const head = e.target.closest(".pc-head");
   if (head) {
     head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));

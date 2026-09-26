@@ -138,6 +138,15 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero .ep-sub { margin-top: 5px; }
 .st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
 .st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
+/* "Show" and "League" are dotted-underlined buttons; each opens one line
+   below explaining it (the hero grows by that line; tap again to close). */
+.st-term { color: inherit; text-decoration: underline dotted rgba(182, 151, 123, .7); text-underline-offset: 3px; }
+.st-term[aria-expanded="true"] { color: var(--t1); text-decoration-color: var(--gold2); }
+.st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
+.st-hero.explain .st-explain { grid-template-rows: 1fr; }
+.st-explain > div { overflow: hidden; min-height: 0; }
+.st-explain p { display: none; max-width: 34em; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: balance; }
+.st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
@@ -223,8 +232,6 @@ strong { color: var(--t1); font-weight: 700; }
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
     linear-gradient(90deg, rgba(16, 13, 16, .82) 0, rgba(16, 13, 16, .66) 22%, rgba(16, 13, 16, .22) 40%, rgba(16, 13, 16, .22) 54%, rgba(16, 13, 16, .66) 66%, rgba(16, 13, 16, .84) 80%);
 }
-/* A pick that won: the face warms towards gold. */
-.pc-bg.won::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 22% 40px at calc(50% - 16px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 
@@ -333,6 +340,7 @@ strong { color: var(--t1); font-weight: 700; }
 .lg-row { display: flex; align-items: center; gap: 10px; padding: 9px 6px 9px 10px; border-top: 1px solid var(--b-dim); border-left: 3px solid var(--c); }
 .lg-row.win { background: linear-gradient(90deg, rgba(212, 160, 40, .14), transparent 70%); }
 .lg-who { flex: 1; min-width: 0; font-size: 16px; }
+.lg-who .cn { font-family: var(--ff-name); font-size: 17px; }
 .lg-who small { font-family: var(--fm); font-size: 11px; color: var(--t3); margin-left: 2px; }
 .backers { margin-top: 3px; font-size: 14px; line-height: 1.4; color: var(--t2); }
 .lg-row.win .backers { color: var(--gold3); }
@@ -453,7 +461,6 @@ strong { color: var(--t1); font-weight: 700; }
   .tt th:not(:first-child) { width: 64px; }
   .tt th:last-child { width: 70px; }
   .pc-bg { --tx: calc(50cqw - 42px); --face: 106px; }
-  .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
   .bars { --plot: 126px; }
 }
 @media (min-width: 760px) {
