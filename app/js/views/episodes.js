@@ -1,8 +1,15 @@
 // Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
-// swipeable episode slides. Portraits, the league's picks and the task table
-// run lowest score to highest (winner on the right), and each task-table
-// column sits under its portrait; the league's picks read winner first.
-import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon } from "../ui.js";
+// swipeable episode slides. Everywhere on the tab the cast sit in their studio
+// seat order (1–5, from the all-time stats): the portraits, the league's
+// picks, the task-table columns (each under its portrait) and the ballot.
+import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
+import { statsFor } from "../alltime.js";
+
+/** The cast in seat order; the CSV's order if the stats aren't loaded. */
+function seated(d) {
+  const seat = (n) => +(statsFor(state.allTime, state.key, d.cast[n].full)?.seat || 99);
+  return [...d.names].sort((a, b) => seat(a) - seat(b) || d.names.indexOf(a) - d.names.indexOf(b));
+}
 
 export const epTabs = (d) => d.episodes.map((e) => {
   const w = d.winners[e.ep];
@@ -22,7 +29,7 @@ function upcoming(d, e) {
       <p class="soon-sub">Who wins Episode ${e.ep}? The poll closes</p>
       <p class="soon-main">${esc(fmtWhen.format(e.air))}</p>
       <p class="soon-left">in ${untilText(e.air - Date.now())}</p>
-      <div class="ballot">${d.names.map((n) => `<span>${framed(d.cast[n])}<b style="color:${d.cast[n].color}">${esc(n)}</b></span>`).join("")}</div>
+      <div class="ballot">${seated(d).map((n) => `<span>${framed(d.cast[n])}<b style="color:${d.cast[n].color}">${esc(n)}</b></span>`).join("")}</div>
     </div>`;
 }
 
@@ -43,15 +50,14 @@ function slide(d, e) {
   const line = `Won by ${named(d.cast[w.winner])} with ${w.top}${w.tiebreak ? " after a tiebreak" : ""}`
     + ` · ${called ? `${called} of ${wk.voters} called it` : "nobody called it"}`;
 
-  const order = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a) || a.localeCompare(b));
-  const rise = [...order].reverse(); // lowest to highest, left to right
-  const col = rise.map((n) => d.idx[n]);
+  const order = seated(d);
+  const col = order.map((n) => d.idx[n]);
   // Last place (sharing it counts) gets the stink; the winner gets the gold
   // light. Both effects are drawn by podium-fx.js.
   const bottom = Math.max(...d.names.map((n) => d.placing[e.ep][n]));
   const isLast = (n) => n !== w.winner && d.placing[e.ep][n] === bottom;
 
-  const pod = rise.map((n) => {
+  const pod = order.map((n) => {
     const backers = wk.by[n].length, win = n === w.winner, last = isLast(n);
     return `
     <div class="pod-col${win ? " win" : last ? " last" : ""}"${last ? ` aria-label="${esc(n)}, last place"` : ""}>
@@ -80,13 +86,13 @@ function slide(d, e) {
   const tasks = d.epTasks(e.ep);
   const table = `
     <div class="card tt-wrap"><table class="tt">
-      <thead><tr><th>Task</th>${rise.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
+      <thead><tr><th>Task</th>${order.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
       <tbody>${tasks.map((t) => {
         const s = col.map((i) => t.s[i]), hi = Math.max(...s), lo = Math.min(...s);
         return `<tr><td><span class="tn">${icon(t.t)}<span class="tname" title="${esc(t.n)}">${esc(t.n)}</span></span></td>${s.map((v) =>
           `<td class="sc${hi > lo && v === hi ? " best" : hi > lo && v === lo ? " worst" : ""}">${v}</td>`).join("")}</tr>`;
       }).join("")}
-      <tr class="tot"><td>Total</td>${rise.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
+      <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
     </table></div>`;
 
   const notes = e.analysis ? `<div class="card note"><div class="card-head"><span>Episode analysis</span></div><p>${rich(e.analysis)}</p></div>` : "";
