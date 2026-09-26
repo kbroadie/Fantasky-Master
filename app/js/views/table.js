@@ -1,62 +1,63 @@
-import { esc, ord, listing, framed, state, meIn, link, rankSeal, deltaTag, statusLine } from "../ui.js";
-import { EPISODES } from "../league.js";
+// Standings: one sortable table (Show or League points). Tapping a row opens
+// that player's ten weekly picks.
+import { esc, listing, ord, tier, framed, state } from "../ui.js";
 
-export function viewStandings() {
-  const d = state.d, key = state.sort, other = key === "show" ? "league" : "show";
-  const me = meIn(d);
-  const P = [...d.players].sort((a, b) => a[key + "Rank"] - b[key + "Rank"] || b[other] - a[other] || a.name.localeCompare(b.name));
-  const worst = Math.max(...P.map((p) => p[key + "Rank"]));
-  const head = `
-    <header class="v-head">
-      <div><p class="kicker">Series ${state.key} · Ep ${d.weeksScored}/${EPISODES}</p><h2>The Table</h2></div>
-      <div class="seg" role="group" aria-label="Rank by">
-        <button data-sort="show" aria-pressed="${key === "show"}">Show</button>
-        <button data-sort="league" aria-pressed="${key === "league"}">League</button>
-      </div>
-    </header>`;
-  if (!P.length) return `<section class="card">${head}<p class="empty">Nobody has voted in Series ${state.key} yet.</p></section>`;
+/** The latest episode anyone has a pick for: the "this week" column. */
+export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
-  const rows = P.map((p) => {
-    const rank = p[key + "Rank"];
-    const strip = p.weeks.map((w) => {
-      const c = w.pick && d.cast[w.pick];
-      if (w.scored && c) return `<i class="${w.won ? "w" : ""}" style="--c:${c.color}" title="Ep ${w.ep}: ${esc(w.pick)}, ${w.show} Show, ${ord(w.place)}">${key === "show" ? w.show : w.league}</i>`;
-      if (w.scored) return `<i class="x" title="Ep ${w.ep}: no vote">·</i>`;
-      return c ? `<i class="soon" style="--c:${c.color}" title="Ep ${w.ep}: ${esc(w.pick)}"></i>` : `<i class="o"></i>`;
-    }).join("");
+export function standingsHead(d) {
+  const top = Math.max(...d.players.map((p) => p.show));
+  const leaders = d.players.filter((p) => p.show === top).map((p) => p.name);
+  const lead = !d.players.length ? "No picks logged yet"
+    : d.complete ? `<strong>${esc(listing(leaders))}</strong> ${leaders.length > 1 ? "win" : "wins"} with ${top} points`
+    : `<strong>${esc(listing(leaders))}</strong> ${leaders.length > 1 ? "lead" : "leads"} with ${top} points`;
+  return `
+    <div class="hero">
+      <div class="kicker">Series ${state.key} · ${d.complete ? "Final" : `Week ${d.weeksScored}`}</div>
+      <h1 class="hero-title">Standings</h1>
+      <div class="hero-sub">${lead}</div>
+    </div>
+    <div class="st-head">
+      <span class="st-rank">Rank</span>
+      <span class="st-name">Player</span>
+      <span class="st-pick">Wk ${pickWeek(d)}</span>
+      <button class="st-num" data-sort="show">Show</button>
+      <button class="st-num" data-sort="league">League</button>
+    </div>
+    <div id="rows"></div>`;
+}
+
+export function standingsRows(d) {
+  const key = state.sort, wk = pickWeek(d);
+  const rows = [...d.players].sort((a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
+  return rows.map((p) => {
+    const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
+    const now = p.weeks[wk - 1];
+    const face = now?.pick ? `<span class="mini${now.won ? " won" : ""}">${framed(d.cast[now.pick])}</span>` : `<span class="mini none">–</span>`;
     return `
-    <li class="row ${p.name === me ? "me" : ""} ${rank === worst && P.length > 2 ? "crooked" : ""}" ${p.name === me ? 'id="me-row"' : ""}>
-      <a href="${link("player", p.name)}">
-        ${rankSeal(rank)}
-        <span class="who"><b class="pname">${esc(p.name)}</b>${p.status ? statusLine(p.status) : ""}</span>
-        <span class="strip" aria-hidden="true">${strip}</span>
-        <span class="pts"><b data-count="${p[key]}">${p[key]}</b><small>${p[other]} ${other === "show" ? "S" : "L"}</small></span>
-        ${deltaTag(p[key + "Delta"])}
-      </a>
-    </li>`;
+    <div class="pc${p.showRank === 1 ? " lead" : ""}">
+      <button class="pc-head" aria-expanded="false">
+        <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
+        <span class="pc-name">${esc(p.name)}</span>
+        ${face}
+        <span class="pc-num${tier(p.showRank)}">${p.show}</span>
+        <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
+      </button>
+      <div class="pc-more"><div>${picks(d, p)}</div></div>
+    </div>`;
   }).join("");
-
-  const mp = me && d.byName[me];
-  return `
-  <section class="card table">
-    ${head}
-    ${d.weeksScored ? weekStrip(d.weeksScored) : ""}
-    <div class="legend"><span>Rank</span><span>Player</span><span class="lg-strip">Ep 1–10 · ${key} pts</span><span>Total</span></div>
-    <ol class="rows">${rows}</ol>
-    ${d.inactive.length ? `<p class="foot">Yet to vote: ${d.inactive.map(esc).join(", ")}</p>` : ""}
-  </section>
-  ${mp ? `<button class="me-float" id="me-float" type="button" data-jump-me hidden>${rankSeal(mp[key + "Rank"])}<b>${esc(me)}</b><span>${mp[key]} ${key}</span><em>find me</em></button>` : ""}`;
 }
 
-export function weekStrip(e) {
-  const d = state.d, w = d.winners[e], wk = d.weekly[e], c = d.cast[w.winner], me = meIn(d);
-  const hits = wk.hits.map((n) => (n === me ? "<b>you</b>" : esc(n)));
-  return `
-    <a class="week-strip" href="${link("episodes", e)}" style="--c:${c.color}">
-      ${framed(c, "fp-s")}
-      <span><small>Episode ${e}</small><b>${esc(c.key)} won${w.tiebreak ? " on a tiebreak" : ""}.</b>
-      ${wk.hits.length ? `${wk.hits.length}/${wk.voters} backed ${esc(c.key)}: ${listing(hits)}.` : "Nobody backed the winner."} Avg ${wk.avgShow.toFixed(1)} pts.</span>
-    </a>`;
-}
+const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
 
-// You ------------------------------------------------------------------------
+function picks(d, p) {
+  const league = state.sort === "league";
+  const cells = p.weeks.map((w) => {
+    if (!w.pick) return `<div class="pk"><small>E${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
+    const pts = w.show == null ? "…" : league ? w.league : w.show;
+    return `<div class="pk${w.won ? " won" : ""}"><small>E${w.ep}</small>${framed(d.cast[w.pick])}<b>${pts}</b></div>`;
+  }).join("");
+  const best = p.best ? `best ${p.best.show} with ${esc(p.best.pick)} in E${p.best.ep}` : "";
+  const hits = p.hits ? `called ${p.hits} winner${p.hits > 1 ? "s" : ""} ★` : "no winners called yet";
+  return `<div class="pk-grid">${cells}</div><p class="pk-note">${[hits, best, `${ord(p.showRank)} on Show, ${ord(p.leagueRank)} on League`].filter(Boolean).join(" · ")}</p>`;
+}

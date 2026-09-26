@@ -2,8 +2,8 @@
 // without opening a browser. Serves the repo itself, so run from anywhere:
 //   npm ci && npx playwright install chromium   (once)
 //   node tools/screenshots.mjs [outDir]         (default: shots/)
-// FM_CURL_IMAGES=1 fetches Imgur images through curl (for sandboxes whose
-// headless browser can't reach it directly).
+// FM_CURL_IMAGES=1 fetches Imgur images and Google Fonts through curl (for
+// sandboxes whose headless browser can't reach them directly).
 
 import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
@@ -27,20 +27,20 @@ const BASE = `http://127.0.0.1:${server.address().port}/app/`;
 
 // [name, width, height, hash, action?]
 const SHOTS = [
-  ["phone-table", 390, 844, "#/"],
-  ["phone-table-rows", 390, 844, "#/", (p) => p.evaluate(() => scrollTo(0, 600))],
-  ["phone-you", 390, 844, "#/{S}/player/{ME}"],
+  ["phone-standings", 390, 844, "#/"],
+  ["phone-standings-open", 390, 844, "#/", (p) => p.click(".pc-head")],
   ["phone-episode", 390, 844, "#/{S}/episodes"],
-  ["phone-episode-scoreboard", 390, 844, "#/{S}/episodes", async (p) => { await p.click('[data-epsub="score"]'); await p.waitForTimeout(4500); }],
+  ["phone-episode-table", 390, 844, "#/{S}/episodes", (p) => p.evaluate(() => scrollTo(0, 800))],
   ["phone-cast", 390, 844, "#/{S}/cast"],
-  ["desktop-table", 1440, 900, "#/"],
+  ["desktop-standings", 1440, 900, "#/"],
   ["desktop-cast", 1440, 900, "#/{S}/cast"],
 ];
 
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 const cache = new Map();
-let series = null, me = null;
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"; // so Google serves woff2
+let series = null;
 
 for (const [name, w, h, hash, action] of SHOTS) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: w < 600 ? 2 : 1, hasTouch: w < 600 });
@@ -48,20 +48,16 @@ for (const [name, w, h, hash, action] of SHOTS) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   if (process.env.FM_CURL_IMAGES) {
-    await page.route(/i\.imgur\.com/, async (r) => {
+    await page.route(/i\.imgur\.com|fonts\.googleapis\.com|fonts\.gstatic\.com/, async (r) => {
       const u = r.request().url();
-      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", u]));
-      await r.fulfill({ body: cache.get(u), headers: { "content-type": "image/webp" } });
+      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", "-A", UA, u]));
+      const type = u.includes("googleapis") ? "text/css" : u.includes("gstatic") ? "font/woff2" : "image/webp";
+      await r.fulfill({ body: cache.get(u), headers: { "content-type": type, "access-control-allow-origin": "*" } });
     });
   }
-  if (me) await ctx.addInitScript((m) => localStorage.setItem("fm-me", JSON.stringify(m)), me);
-  await page.goto(BASE + hash.replace("{S}", series).replace("{ME}", encodeURIComponent(me || "")));
+  await page.goto(BASE + hash.replace("{S}", series));
   await page.waitForTimeout(2500);
-  if (!series) {
-    // Learn the current series and pick the table leader as "you" for later shots.
-    series = await page.evaluate(() => location.hash.split("/")[1]);
-    me = await page.evaluate(() => document.querySelector(".rows .pname")?.textContent || null);
-  }
+  if (!series) series = await page.evaluate(() => location.hash.split("/")[1]); // current series, for later shots
   if (action) { await action(page); await page.waitForTimeout(600); }
   await page.screenshot({ path: join(OUT, `${name}.png`) });
   console.log(`${errors.length ? "✗" : "✓"} ${name}${errors.length ? `: ${errors.join("; ")}` : ""}`);

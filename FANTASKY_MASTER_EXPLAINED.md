@@ -166,7 +166,7 @@ WEEKS_SCORED = max(ep over TASKS), or 0 if TASKS is empty
 
 - **Normally equal.** Between an episode airing and the host entering its results, `WEEKS_SCORED = WEEKS_AIRED − 1`.
 - **Rule:** everything about **scores** uses `WEEKS_SCORED`; everything about the **schedule or open/closed polls** uses `WEEKS_AIRED`.
-- **Why the split matters:** an unscored episode has all contestants on 0. If it were counted, the rank-points rule would read it as a five-way tie for 1st and award every pick 5 League points.
+- **Why the split matters:** an unscored episode has all contestants on 0. If it were counted, the League points rule would read it as a five-way tie for 1st and award every pick 5 League points.
 
 ### 5.3 Current series
 
@@ -248,7 +248,7 @@ For each episode `e`:
 Example (Series 22, ep 2): totals Richard 14, Matt 14, Nina 14, Isy 13, Chloe 8, with `tb = Richard`:
 - ranks before the tiebreak: 1, 1, 1, 4, 5;
 - ranks after: 1, 2, 2, 4, 5;
-- rank points: 5, 4, 4, 2, 1.
+- League points: 5, 4, 4, 2, 1.
 
 The tiebreak never changes `EPS`, so Show points are unaffected.
 

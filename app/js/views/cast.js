@@ -1,69 +1,47 @@
-import { esc, rich, ord, framed, state, swiperHTML } from "../ui.js";
-import { metaFor } from "../meta.js";
+// Cast: a name strip (in standings order) above swipeable contestant slides.
+import { esc, rich, tier, framed, ICON } from "../ui.js";
 
-export const castOrder = (d) => [...d.contestants].sort((a, b) => b.rank - a.rank || b.key.localeCompare(a.key));
+/** Contestants by series total, best first. */
+export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
 
-export function viewCast() {
-  const d = state.d, m = metaFor(state.key);
-  const order = castOrder(d);
-  const idx = Math.max(0, order.findIndex((c) => c.key === (state.arg || order.at(-1).key)));
-  const worst = Math.max(...d.contestants.map((c) => c.rank));
-  const overlay = order.every((c) => m.heroes?.[c.key]);
-  const wall = order.map((c, i) => `
-    <button class="frame ${i === idx ? "on" : ""} ${c.rank === worst && d.weeksScored ? "crooked" : ""}" data-go="${i}" data-swiper="cast-swiper" style="--c:${c.color}" aria-label="${esc(c.full)}, ${ord(c.rank)} on ${c.total}">
-      ${framed(c)}<b class="frame-score">${c.total}</b>
-    </button>`).join("");
+export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}">${esc(c.key)}</button>`).join("");
 
-  const maxEp = Math.max(...d.contestants.flatMap((c) => c.eps), 1);
-  const cards = order.map((c) => {
-    const bars = c.eps.map((v, i) => {
-      const ep = i + 1, scored = ep <= d.weeksScored;
-      return `<li class="${scored ? "" : "future"} ${d.winners[ep]?.winner === c.key ? "won" : ""}" style="--h:${scored ? (v / maxEp) * 100 : 0}%"><b>${scored ? v : ""}</b><span class="bar"></span><small>${ep}</small></li>`;
-    }).join("");
-    const hero = m.heroes?.[c.key];
-    const kv = `
-          <dl class="kv tight">
-            <div><dt>Total</dt><dd>${c.total}</dd></div>
-            <div><dt>Per ep</dt><dd>${c.avg.toFixed(1)}</dd></div>
-            <div><dt>Ep wins</dt><dd>${c.wins}</dd></div>
-            <div><dt>5-pointers</dt><dd>${c.fives}</dd></div>
-            <div><dt>Picked</dt><dd>${c.pickedBy}<small>×</small></dd></div>
-            <div><dt>To backers</dt><dd>${c.deliveredTo}</dd></div>
-          </dl>
-          <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>`;
-    const rank = d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`;
-    if (hero) {
-      // The hero shot is the card's backdrop. The portrait wall floats over the
-      // top of it, the photo is dropped just enough that heads start below the
-      // wall, and faces (~19–45% of the photo's height) are kept clear by the
-      // .cc-face spacer; the name and stats begin under the chin.
-      return `
-    <article class="card cast-card has-hero" style="--c:${c.color}">
-      <div class="cc-bg" aria-hidden="true"><img src="${hero}" alt="" width="640" height="865" loading="lazy" decoding="async"></div>
-      <div class="cc-face"></div>
-      <header class="cc-name"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></header>
-      <div class="cc-body">
-        ${kv}
-        <figure class="ep-chart"><ol>${bars}</ol></figure>
-        ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
-        ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
-      </div>
-    </article>`;
-    }
-    return `
-    <article class="card cast-card" style="--c:${c.color}">
-      <div class="cc-top">
-        ${framed(c, "fp-l")}
-        <div class="cc-info"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2>${kv}</div>
-      </div>
-      <figure class="ep-chart"><ol>${bars}</ol></figure>
-      ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
-      ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
-    </article>`;
-  });
+export const castSlides = (d) => castOrder(d).map((c) => `<section class="slide">${slide(d, c)}</section>`).join("");
+
+function slide(d, c) {
+  const i = d.idx[c.key], scored = d.weeksScored;
+  const eps = c.eps.slice(0, scored), hi = Math.max(...eps), lo = Math.min(...eps);
+  const sum = (ep, types) => d.epTasks(ep).filter((t) => types.includes(t.t)).reduce((a, t) => a + t.s[i], 0);
+  const row = (label, types) => {
+    const cells = d.episodes.map((e) => e.ep > scored ? `<td class="blank">–</td>` : `<td>${sum(e.ep, types)}</td>`).join("");
+    return `<tr><th>${label}</th>${cells}<td class="sum">${types.reduce((a, t) => a + c.ty[t], 0)}</td></tr>`;
+  };
+  const totals = d.episodes.map((e) => {
+    if (e.ep > scored) return `<td class="blank">–</td>`;
+    const v = c.eps[e.ep - 1];
+    return `<td class="${v === hi && hi > lo ? "best" : v === lo && hi > lo ? "worst" : ""}${d.winners[e.ep]?.winner === c.key ? " won" : ""}">${v}</td>`;
+  }).join("");
+  const rk = (r) => `<b class="${tier(r) || "t0"}">#${r}</b>`;
+
   return `
-  <div class="cast-view ${overlay ? "overlay" : ""}">
-    <div class="wall" aria-label="Contestants by standing, first place on the right">${wall}</div>
-    ${swiperHTML("cast-swiper", cards)}
-  </div>`;
+    <div class="cd-hero">
+      <div class="cd-img">${framed(c)}</div>
+      <div class="cd-info">
+        <h2 class="cd-name" style="color:${c.color}">${esc(c.full)}</h2>
+        <div class="cd-sub">Rank #${c.rank} · avg ${c.avg.toFixed(1)}/ep${c.wins ? ` · ${c.wins} win${c.wins > 1 ? "s" : ""}` : ""}</div>
+        <div class="cd-pts">${c.total}</div>
+        <div class="cd-pts-l">total points</div>
+        <div class="cd-ranks"><span>${ICON.P} ${rk(c.prizeRank)} prize</span><span>${ICON.F} ${rk(c.filmedRank)} filmed</span><span>${ICON.L} ${rk(c.liveRank)} live</span></div>
+      </div>
+    </div>
+    <div class="cd-league">Picked <b>${c.pickedBy}</b> time${c.pickedBy === 1 ? "" : "s"} by the league · earned them <b>${c.deliveredTo}</b> points</div>
+    <div class="card tt-wrap"><table class="bs">
+      <thead><tr><th></th>${d.episodes.map((e) => `<th>E${e.ep}</th>`).join("")}<th class="sum">Tot</th></tr></thead>
+      <tbody>
+        <tr class="tot"><th>Tot</th>${totals}<td class="sum best">${c.total}</td></tr>
+        ${row(ICON.P, ["P"])}${row(ICON.F, ["F", "T"])}${row(ICON.L, ["L"])}
+      </tbody>
+    </table></div>
+    ${c.bio ? `<div class="card note"><div class="card-head"><span>Profile</span></div><p>${rich(c.bio)}</p></div>` : ""}
+    ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
 }

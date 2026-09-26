@@ -1,358 +1,217 @@
+// Wiring: loads the CSV, renders all three pages up front (so switching tabs
+// is instant), and handles the tabs, swipers, sorting, series toggle and the
+// countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
-import { derive, currentSeriesKey, tzOffset, EPISODES } from "./league.js";
-import { metaFor } from "./meta.js";
-import { createStage, epState } from "./stage.js";
-import { startSky } from "./gl.js";
-import { burstAt } from "./fx.js";
-import { $$, $, esc, ord, listing, reducedMotion, YT, fmtLocal, zoneHour, pad, splitTime, store, state, meIn, link, rankSeal, deltaTag, statusLine, fitHeight, bindSwiper, heroParallax, goSlide, quietHash } from "./ui.js";
-import { viewStandings } from "./views/table.js";
-import { viewPlayer, planKey, planner } from "./views/player.js";
-import { selectedEp, viewEpisodes, playRace } from "./views/episodes.js";
-import { castOrder, viewCast } from "./views/cast.js";
+import { derive, currentSeriesKey } from "./league.js";
+import { $, $$, esc, reducedMotion, state } from "./ui.js";
+import { standingsHead, standingsRows } from "./views/table.js";
+import { epTabs, epSlides } from "./views/episodes.js";
+import { castOrder, castTabs, castSlides } from "./views/cast.js";
 
+const PAGES = ["standings", "episodes", "cast"];
+let SERIES = {}, CURRENT = null;
 
-// ── State ────────────────────────────────────────────────────────────────────
+// ── Routing ──────────────────────────────────────────────────────────────────
 
-let SERIES = {}, CURRENT = null, sky = null, stage = null;
-const VIEWS = ["standings", "player", "episodes", "cast"];
-
-function parseHash() {
-  const [, key, view, arg] = location.hash.replace(/^#/, "").split("/");
-  return { key: SERIES[key] ? key : CURRENT, view: VIEWS.includes(view) ? view : "standings", arg: arg ? decodeURIComponent(arg) : null };
+function readHash() {
+  const [, key, page, arg] = location.hash.replace(/^#/, "").split("/");
+  return { key: SERIES[key] ? key : CURRENT, page: PAGES.includes(page) ? page : "standings", arg: arg ? decodeURIComponent(arg) : null };
+}
+function writeHash() {
+  const arg = state.page === "episodes" ? state.ep : state.page === "cast" ? castOrder(state.d)[state.cast]?.key : null;
+  history.replaceState(null, "", `#/${state.key}/${state.page}${arg != null ? `/${encodeURIComponent(arg)}` : ""}`);
+}
+function applyArg(page, arg) {
+  if (arg == null) return;
+  if (page === "episodes" && +arg >= 1 && +arg <= state.d.episodes.length) state.ep = +arg;
+  if (page === "cast") state.cast = Math.max(0, castOrder(state.d).findIndex((c) => c.key === arg));
 }
 
-
-function setMe(name) {
-  state.me = name;
-  store.set("fm-me", name);
-  renderMe();
-  renderView(false);
-}
+// ── Rendering ────────────────────────────────────────────────────────────────
 
 function loadSeries(key) {
+  const d = state.d = derive(SERIES[key], new Date());
   state.key = key;
-  state.d = derive(SERIES[key], new Date());
-  const m = metaFor(key);
-  document.body.dataset.theme = m.theme;
-  document.body.classList.toggle("past", key !== CURRENT);
-  sky?.setTheme(m.theme);
-  stage?.update(state.d, m.theme, (ep) => link("episodes", ep));
-  renderTop();
-  renderDialog();
-  renderMe();
+  state.ep = Math.max(1, d.weeksScored);
+  state.cast = 0;
+  const btn = $("#series");
+  btn.textContent = key;
+  btn.classList.toggle("past", key !== CURRENT);
+  btn.setAttribute("aria-label", `Series ${key}. Tap to switch series`);
+  $("#p-standings").innerHTML = standingsHead(d);
+  renderRows();
+  $("#ep-tabs").innerHTML = epTabs(d);
+  $("#ep-body").innerHTML = epSlides(d);
+  $("#cast-tabs").innerHTML = castTabs(d);
+  $("#cast-body").innerHTML = castSlides(d);
+  for (const id of ["#ep-body", "#cast-body"]) for (const s of $(id).children) sizes.observe(s);
+  countdown();
 }
 
-// ── Top bar ──────────────────────────────────────────────────────────────────
-
-function renderTop() {
-  const keys = Object.keys(SERIES).sort((a, b) => b - a);
-  $("#series-num").textContent = state.key;
-  $("#series-btn").setAttribute("aria-label", `Series ${state.key}. Switch series`);
-  $("#series-menu").innerHTML = `
-    <p class="menu-title">Switch series</p>
-    ${keys.map((k) => {
-      const m = metaFor(k);
-      return `<a href="#/${k}/${state.view}" class="menu-item ${k === state.key ? "on" : ""}">
-        <span class="mini-seal">${k}</span>
-        <span><b>Series ${k}</b><small>${esc(m.themeName)}${k === CURRENT ? " · <em>now showing</em>" : ""}</small></span></a>`;
-    }).join("")}`;
+function renderRows() {
+  $("#rows").innerHTML = standingsRows(state.d);
+  $$(".st-num").forEach((b) => b.classList.toggle("on", b.dataset.sort === state.sort));
 }
 
-// ── Home: dialog box and "you" ───────────────────────────────────────────────
-
-function leaders(d, key) {
-  const top = Math.max(...d.players.map((p) => p[key]));
-  return d.players.filter((p) => p[key] === top);
+function show(page) {
+  state.page = page;
+  const i = PAGES.indexOf(page);
+  $(".tabs").style.setProperty("--i", i);
+  $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
+  $$(".page").forEach((p, j) => p.classList.toggle("active", j === i));
+  scrollTo(0, 0);
+  if (page === "episodes") jump(EP, state.ep - 1);
+  if (page === "cast") jump(CAST, state.cast);
+  writeHash();
 }
 
-function renderDialog() {
-  const d = state.d, box = $("#dialog");
-  const pending = d.weeksAired > d.weeksScored ? `<p class="dl-note">Episode ${d.weeksAired} has aired · results coming soon</p>` : "";
-  if (!d.nextEp) {
-    const champ = [...d.contestants].sort((a, b) => a.rank - b.rank)[0];
-    const show = leaders(d, "show"), league = leaders(d, "league");
-    box.innerHTML = `
-      <p class="dl-who">Series ${state.key} · complete</p>
-      <p class="dl-main" data-main>${show.length ? `League champion${show.length > 1 ? "s" : ""}: <b>${esc(listing(show.map((p) => p.name)))}</b> on ${show[0].show}` : `Series ${state.key} is complete`}</p>
-      <p class="dl-sub">League table: ${esc(listing(league.map((p) => p.name)))} (${league[0]?.league ?? 0}) · Golden head: ${esc(champ.full)}</p>
-      ${state.key !== CURRENT ? `<a class="dl-link" href="#/${CURRENT}/standings">▶ Back to Series ${CURRENT}</a>` : ""}${pending}`;
-    return;
-  }
-  const e = d.nextEp;
-  const ny = zoneHour(e.air, "America/New_York"), la = zoneHour(e.air, "America/Los_Angeles");
-  const gap = (tzOffset(e.air, "Europe/London") - tzOffset(e.air, "America/New_York")) / 60;
-  box.innerHTML = `
-    <p class="dl-who">Task · Episode ${e.ep} of ${EPISODES}</p>
-    <p class="dl-main" data-main>Pick the winner of <b>${e.title ? `“${esc(e.title)}”` : `Episode ${e.ep}`}</b></p>
-    <p class="dl-cd"><span>Poll closes in</span> <time id="cd"></time></p>
-    <p class="dl-sub">${esc(fmtLocal.format(e.air))} · London 10pm · ET ${ny} · PT ${la} · <a href="${YT}" target="_blank" rel="noopener">YouTube ↗</a></p>
-    ${gap !== 5 ? `<p class="dl-note">Clocks change on different weekends: this week it's ${ny} Eastern / ${la} Pacific.</p>` : ""}${pending}`;
-  tick();
+// ── Swipers: a tab strip over a row of scroll-snapped slides ─────────────────
+
+const EP = { body: "#ep-body", tabs: "#ep-tabs", get: () => state.ep - 1, set: (i) => { state.ep = i + 1; } };
+const CAST = { body: "#cast-body", tabs: "#cast-tabs", get: () => state.cast, set: (i) => { state.cast = i; } };
+
+const idxOf = (body) => Math.round(body.scrollLeft / body.clientWidth);
+/** The row is only as tall as the slide on screen. */
+function fit(body) {
+  const s = body.children[idxOf(body)];
+  if (s) body.style.height = `${s.offsetHeight}px`;
 }
-
-const QUIPS = [
-  "All the information is on the task.", "Your time starts now.", "No vote, no points.",
-  "Polls close the moment the livestream starts.", "You must pick every contestant at least once.",
-  "Tiebreaks only matter for the League table.", "Please don't touch the caravan.",
-];
-let quipI = Math.floor(Math.random() * QUIPS.length), quipTimer = 0;
-function knock() {
-  const main = $("#dialog [data-main]");
-  if (!main) return;
-  const text = QUIPS[quipI++ % QUIPS.length];
-  clearTimeout(quipTimer);
-  main.innerHTML = `<b>Alex:</b> <span class="typed"></span>`;
-  const span = main.querySelector(".typed");
-  let i = 0;
-  const type = () => { span.textContent = text.slice(0, ++i); if (i < text.length) quipTimer = setTimeout(type, reducedMotion ? 0 : 28); else quipTimer = setTimeout(renderDialog, 3200); };
-  type();
-}
-
-function renderMe() {
-  const d = state.d, box = $("#me");
-  if (!d || !box) return;
-  const me = meIn(d), p = me && d.byName[me];
-  if (!me) {
-    box.innerHTML = `<label class="me-pick"><span>Which player are you?</span>
-      <select data-me-select><option value="">Choose your name…</option>${[...d.allPlayers].sort().map((n) => `<option>${esc(n)}</option>`).join("")}</select></label>`;
-    return;
-  }
-  if (!p) {
-    box.innerHTML = `<div class="me-card quiet"><span class="me-label">You</span><b class="me-name">${esc(me)}</b><span class="me-line">No votes yet in Series ${state.key}.</span><button class="linkish" data-me-clear type="button">Not you?</button></div>`;
-    return;
-  }
-  const lastW = d.weeksScored ? p.weeks[d.weeksScored - 1] : null;
-  const next = d.nextEp ? p.weeks[d.nextEp.ep - 1] : null;
-  box.innerHTML = `
-    <div class="me-card">
-      <a class="me-main" href="${link("player", me)}">
-        <span class="me-label">You</span><b class="me-name">${esc(me)}</b>
-        <span class="me-b">${rankSeal(p.showRank)}<b>${p.show}</b><small>Show</small>${deltaTag(p.showDelta)}</span>
-        <span class="me-b">${rankSeal(p.leagueRank)}<b>${p.league}</b><small>League</small>${deltaTag(p.leagueDelta)}</span>
-      </a>
-      <p class="me-line">${lastW ? (lastW.show != null ? `Ep ${d.weeksScored}: ${esc(lastW.pick)} got you <b>${lastW.show}</b> (${ord(lastW.place)})` : `No vote in Ep ${d.weeksScored}`) : ""}${next?.pick ? ` · Ep ${next.ep} pick in: ${esc(next.pick)}` : ""}
-        ${p.status ? ` · ${statusLine(p.status)}` : ""} <button class="linkish" data-me-clear type="button">Not you?</button></p>
-    </div>`;
-}
-
-function tick() {
-  const d = state.d;
-  if (!d?.nextEp) return;
-  const ms = d.nextEp.air - Date.now();
-  if (ms <= 0) { loadSeries(state.key); renderView(false); return; }
-  const t = splitTime(ms);
-  const cd = $("#cd");
-  if (cd) cd.textContent = `${t.d ? `${t.d}d ` : ""}${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`;
-  for (const el of $$("[data-countdown]")) el.textContent = t.d ? `${t.d}d ${t.h}h` : `${t.h}h ${pad(t.m)}m`;
-}
-
-
-// ── Views ────────────────────────────────────────────────────────────────────
-
-function renderView(animate = true) {
-  const main = $("#view");
-  document.body.dataset.view = state.view;
-  const html = { standings: viewStandings, player: viewPlayer, episodes: viewEpisodes, cast: viewCast }[state.view]();
-  const swap = () => {
-    main.innerHTML = html;
-    for (const t of $$(".tabs a")) {
-      const v = t.dataset.view;
-      t.setAttribute("aria-current", v === state.view ? "page" : "false");
-      t.href = v === "player" ? link("player", meIn(state.d) ?? undefined) : link(v);
-    }
-    moveTabInk();
-    afterRender();
-  };
-  if (animate && document.startViewTransition && !reducedMotion) document.startViewTransition(swap);
-  else swap();
-}
-
-// Table ----------------------------------------------------------------------
-
-// ── After render ────────────────────────────────────────────────────────────
-
-let meObserver = null;
-function afterRender() {
-  tick();
-  meObserver?.disconnect();
-  const d = state.d;
-
-  if (state.view === "standings") {
-    const row = $("#me-row"), float = $("#me-float");
-    if (row && float) {
-      meObserver = new IntersectionObserver(([en]) => { float.hidden = en.isIntersecting || scrollY < 200; });
-      meObserver.observe(row);
-    }
-  }
-  if (state.view === "episodes") {
-    const sel = selectedEp();
-    bindSwiper("ep-swiper", sel - 1, (i) => {
-      state.arg = String(i + 1);
-      quietHash(link("episodes", i + 1));
-      $$(".pager .pg").forEach((b, j) => b.classList.toggle("on", j === i));
-      $(".pager .pg.on")?.scrollIntoView({ block: "nearest", inline: "center", behavior: reducedMotion ? "auto" : "smooth" });
-      if (state.epSub === "score") playRace(i + 1);
-    });
-    $(".pager .pg.on")?.scrollIntoView({ block: "nearest", inline: "center" });
-    for (let e = 1; e <= d.weeksScored; e++) playRace(e, true);
-    if (state.epSub === "score") playRace(sel);
-  }
-  if (state.view === "cast") {
-    const idx = $$(".wall .frame").findIndex((f) => f.classList.contains("on"));
-    heroParallax($("#cast-swiper"));
-    bindSwiper("cast-swiper", idx, (i) => {
-      state.arg = castOrder(d)[i].key;
-      quietHash(link("cast", state.arg));
-      $$(".wall .frame").forEach((f, j) => f.classList.toggle("on", j === i));
-    });
-  }
-  if (state.view === "player") {
-    bindSwiper("pl-swiper", state.plSub, (i) => {
-      state.plSub = i;
-      $$(".player .subtabs button").forEach((b, j) => b.setAttribute("aria-selected", j === i));
-    });
-  }
-  if (pendingReveal) $("#view").scrollIntoView({ behavior: "auto", block: "start" });
-  pendingReveal = false;
-  countUp();
-}
-
-function countUp() {
-  if (reducedMotion) return;
-  for (const el of $$("[data-count]")) {
-    const to = +el.dataset.count, t0 = performance.now();
-    const step = (t) => { const k = Math.min(1, (t - t0) / 600); el.textContent = Math.round(to * (1 - (1 - k) ** 3)); if (k < 1) requestAnimationFrame(step); };
-    requestAnimationFrame(step);
-  }
-}
-
-function moveTabInk() {
-  const a = $(`.tabs a[data-view="${state.view}"]`), ink = $(".tab-ink");
-  if (!a || !ink) return;
-  ink.style.width = `${a.offsetWidth}px`;
-  ink.style.transform = `translateX(${a.offsetLeft}px)`;
-}
-
-// ── Routing ─────────────────────────────────────────────────────────────────
-
-let pendingReveal = false;
-function route() {
-  if (location.hash && !location.hash.startsWith("#/")) return;
-  const r = parseHash();
-  const viewChanged = r.view !== state.view;
-  pendingReveal = viewChanged && r.view !== "standings" && scrollY > $("#view").offsetTop;
-  state.view = r.view;
-  state.arg = r.arg;
-  if (r.key !== state.key) {
-    const first = state.key === null;
-    const go = () => { loadSeries(r.key); renderView(false); };
-    if (!first && document.startViewTransition && !reducedMotion) {
-      document.documentElement.classList.add("vt-series");
-      document.startViewTransition(go).finished.finally(() => document.documentElement.classList.remove("vt-series"));
-      burstAt($("#series-btn"), metaFor(r.key).theme === "diner" ? { kind: "spark", colors: ["#ff4f9a", "#37d6c8", "#fff"], count: 36 } : { kind: "steam", count: 16 });
-    } else go();
-    document.title = `Series ${r.key} · Fantasky Master`;
-    return;
-  }
-  // Swipes rewrite the hash quietly; if the target is already on screen, just slide to it.
-  if (!viewChanged && (r.view === "episodes" || r.view === "cast") && r.arg) {
-    const i = r.view === "episodes" ? +r.arg - 1 : castOrder(state.d).findIndex((c) => c.key === r.arg);
-    if (i >= 0) { goSlide(r.view === "episodes" ? "ep-swiper" : "cast-swiper", i); return; }
-  }
-  renderView(viewChanged);
-}
-
-// ── Events ──────────────────────────────────────────────────────────────────
-
-document.addEventListener("click", (e) => {
-  const t = e.target;
-  const sortBtn = t.closest("[data-sort]");
-  if (sortBtn) { const y = scrollY; state.sort = sortBtn.dataset.sort; renderView(false); scrollTo(0, y); return; }
-  const go = t.closest("[data-go]");
-  if (go) {
-    const i = +go.dataset.go;
-    goSlide(go.dataset.swiper, i);
-    if (go.dataset.swiper === "pl-swiper") { state.plSub = i; $$(".player .subtabs button").forEach((b, j) => b.setAttribute("aria-selected", j === i)); }
-    return;
-  }
-  const sub = t.closest("[data-epsub]");
-  if (sub) {
-    state.epSub = sub.dataset.epsub;
-    const sw = $("#ep-swiper");
-    sw.dataset.sub = state.epSub;
-    $$("[data-epsub]").forEach((b) => b.setAttribute("aria-selected", b === sub));
-    fitHeight(sw);
-    if (state.epSub === "score") playRace(selectedEp());
-    return;
-  }
-  const replay = t.closest(".replay");
-  if (replay) { playRace(+replay.dataset.ep); return; }
-  if (t.closest("[data-jump-me]")) { $("#me-row")?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "center" }); return; }
-  if (t.closest("[data-me-clear]")) { setMe(null); return; }
-  const meSet = t.closest("[data-me-set]");
-  if (meSet) { burstAt(meSet, { count: 40 }); setMe(meSet.dataset.meSet); return; }
-
-  const plan = t.closest("[data-plan]");
-  if (plan && !plan.disabled) {
-    const key = planKey(meIn(state.d)), p = store.get(key, {}), ep = plan.dataset.plan;
-    p[ep] = p[ep] === plan.dataset.name ? null : plan.dataset.name;
-    store.set(key, p);
-    rerenderPlanner();
-    return;
-  }
-  if (t.closest("[data-plan-clear]")) { store.set(planKey(meIn(state.d)), {}); rerenderPlanner(); return; }
-  const copy = t.closest("[data-plan-copy]");
-  if (copy) {
-    const d = state.d, name = meIn(d), p = d.byName[name], plan = store.get(planKey(name), {});
-    const text = `${name}'s Series ${state.key} picks: ` + Array.from({ length: EPISODES }, (_, i) => `Ep${i + 1} ${p?.weeks[i].pick || plan[i + 1] || "–"}`).join(", ");
-    navigator.clipboard?.writeText(text).then(() => { copy.textContent = "Copied ✓"; setTimeout(() => (copy.textContent = "Copy plan"), 1500); }, () => prompt("Copy your plan:", text));
-    return;
-  }
-  if (t.closest(".menu-item")) $("#series-menu").hidePopover?.();
+const sizes = new ResizeObserver((entries) => {
+  for (const b of new Set(entries.map((e) => e.target.parentElement))) if (b?.isConnected) fit(b);
 });
 
-function rerenderPlanner() {
-  const box = $(".planner");
-  if (!box) return;
-  const tmp = document.createElement("div");
-  tmp.innerHTML = planner(meIn(state.d));
-  box.replaceWith(tmp.firstElementChild);
-  fitHeight($("#pl-swiper"));
+function mark(sw, i, smooth = true) {
+  const tabs = $(sw.tabs), t = tabs.children[i];
+  [...tabs.children].forEach((b, j) => b.classList.toggle("on", j === i));
+  if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
+}
+function jump(sw, i) {
+  const body = $(sw.body);
+  body.scrollLeft = i * body.clientWidth;
+  mark(sw, i, false);
+  fit(body);
 }
 
-document.addEventListener("change", (e) => {
-  if (e.target.matches("[data-me-select]") && e.target.value) { setMe(e.target.value); burstAt($("#me"), { count: 40 }); }
-  if (e.target.matches("[data-player-select]") && e.target.value) location.hash = link("player", e.target.value);
-});
-
-let scrollRaf = 0;
-addEventListener("scroll", () => {
-  if (scrollRaf) return;
-  scrollRaf = requestAnimationFrame(() => {
-    scrollRaf = 0;
-    const h = $(".home").offsetHeight || 1;
-    sky?.setScroll(Math.min(1, scrollY / h));
+function bindSwiper(sw, onEdge) {
+  const body = $(sw.body);
+  let raf = 0, settle = 0;
+  body.addEventListener("scroll", () => {
+    if (!raf) raf = requestAnimationFrame(() => {
+      raf = 0;
+      const i = idxOf(body);
+      if (i !== sw.get()) { sw.set(i); mark(sw, i); writeHash(); }
+    });
+    clearTimeout(settle);
+    settle = setTimeout(() => fit(body), 120);
+  }, { passive: true });
+  $(sw.tabs).addEventListener("click", (e) => {
+    const b = e.target.closest("[data-slide]");
+    if (b) body.scrollTo({ left: b.dataset.slide * body.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
   });
+  // Swiping past either end carries on into the neighbouring tab.
+  let x0 = null, y0 = 0, atStart = false, atEnd = false;
+  body.addEventListener("touchstart", (e) => {
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    atStart = body.scrollLeft <= 2;
+    atEnd = body.scrollLeft >= body.scrollWidth - body.clientWidth - 2;
+  }, { passive: true });
+  body.addEventListener("touchend", (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (atStart && dx > 0) onEdge(-1);
+    if (atEnd && dx < 0) onEdge(1);
+  }, { passive: true });
+}
+
+// ── Countdown: a red seven-segment clock to the next episode ─────────────────
+
+const SEGS = { 0: "abcdef", 1: "bc", 2: "abged", 3: "abgcd", 4: "fgbc", 5: "afgcd", 6: "afgecd", 7: "abc", 8: "abcdefg", 9: "abcdfg" };
+const digit = (ch) => `<span class="seg">${[..."abcdefg"].map((s) => `<i class="s${s}${SEGS[ch].includes(s) ? " on" : ""}"></i>`).join("")}</span>`;
+const two = (n) => [...String(Math.min(n, 99)).padStart(2, "0")].map(digit).join("");
+let timer = 0;
+
+function countdown() {
+  clearInterval(timer);
+  const el = $("#cd"), e = state.d.nextEp;
+  if (!e) { el.innerHTML = `<span class="cd-label">Series complete</span>`; return; }
+  const unit = (id, l) => `<span class="cd-unit"><span class="cd-nums" id="cd-${id}"></span><small>${l}</small></span>`;
+  const colon = `<span class="cd-colon"><i></i><i></i></span>`;
+  el.innerHTML = `<span class="cd-label">Episode ${e.ep}</span><span class="cd-digits">${unit("d", "Days")}${colon}${unit("h", "Hrs")}${colon}${unit("m", "Mins")}</span>`;
+  el.setAttribute("aria-label", `Episode ${e.ep} airs ${e.air.toLocaleString()}`);
+  let last = "";
+  const tick = () => {
+    const m = Math.max(0, Math.floor((e.air - Date.now()) / 60000));
+    const s = `${Math.floor(m / 1440)}|${Math.floor(m / 60) % 24}|${m % 60}`;
+    if (s === last) return;
+    last = s;
+    const [dd, hh, mm] = s.split("|").map(Number);
+    $("#cd-d").innerHTML = two(dd); $("#cd-h").innerHTML = two(hh); $("#cd-m").innerHTML = two(mm);
+    if (!m) clearInterval(timer);
+  };
+  tick();
+  timer = setInterval(tick, 1000);
+}
+
+// ── Events ───────────────────────────────────────────────────────────────────
+
+$(".tabs").addEventListener("click", (e) => {
+  const t = e.target.closest("[data-page]");
+  if (t) show(t.dataset.page);
+});
+
+$("#series").addEventListener("click", () => {
+  const keys = Object.keys(SERIES).sort((a, b) => a - b);
+  loadSeries(keys[(keys.indexOf(state.key) + 1) % keys.length]);
+  show(state.page);
+});
+
+$("#p-standings").addEventListener("click", (e) => {
+  const s = e.target.closest("[data-sort]");
+  if (s) {
+    state.dir = state.sort === s.dataset.sort ? -state.dir : -1;
+    state.sort = s.dataset.sort;
+    return renderRows();
+  }
+  const head = e.target.closest(".pc-head");
+  if (head) head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
+});
+
+bindSwiper(EP, (dir) => {
+  if (dir < 0) show("standings");
+  else { state.cast = 0; show("cast"); }
+});
+bindSwiper(CAST, (dir) => {
+  if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
+});
+
+const hdr = $(".hdr");
+let hraf = 0;
+addEventListener("scroll", () => {
+  if (!hraf) hraf = requestAnimationFrame(() => { hraf = 0; hdr.classList.toggle("compact", scrollY > 8); });
 }, { passive: true });
-addEventListener("resize", moveTabInk, { passive: true });
 
-// ── Boot ────────────────────────────────────────────────────────────────────
+addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); });
 
-try { sky = startSky($("#sky"), { reducedMotion }); } catch (err) { console.warn("Sky shader unavailable:", err); }
-if (!sky) document.body.classList.add("no-gl");
-stage = createStage($("#stage"), { reducedMotion, onCaravan: knock });
+addEventListener("hashchange", () => {
+  const h = readHash();
+  if (h.key !== state.key) loadSeries(h.key);
+  applyArg(h.page, h.arg);
+  show(h.page);
+});
+
+// ── Boot ─────────────────────────────────────────────────────────────────────
 
 try {
   SERIES = await loadData();
   CURRENT = currentSeriesKey(SERIES, new Date());
-  if (!location.hash) history.replaceState(null, "", `#/${CURRENT}/standings`);
-  addEventListener("hashchange", route);
-  route();
-  setInterval(tick, 1000);
-  document.fonts?.ready.then(moveTabInk);
+  const h = readHash();
+  loadSeries(h.key);
+  applyArg(h.page, h.arg);
+  show(h.page);
 } catch (err) {
   console.error(err);
-  $("#view").innerHTML = `<section class="card"><h2>Envelope jammed</h2><p>The league data couldn't be loaded. Check your connection and refresh.</p></section>`;
-} finally {
-  document.body.classList.remove("loading");
+  $("#p-standings").innerHTML = `<p class="err">Couldn't load the league data. ${esc(err.message)}</p>`;
 }
+document.body.classList.remove("loading");
