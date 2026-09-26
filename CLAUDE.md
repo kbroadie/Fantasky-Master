@@ -36,8 +36,8 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Below them, three segmented tabs, with a gold panel that slides behind the active one.
   - On scroll it compacts to one thin line plus label-only tabs. The height it saves goes back as margin (`--hdr-h`, `--tabs-h`… in `:root`), so the layout height never changes. Keep that invariant, or scroll anchoring makes the bar flicker.
 - **Standings:**
-  - The hero at the top: the Show and League leaders side by side (`leadersHero` in `table.js`), under a kicker "Series 22 · After episode 4" ("Final" once the series is over). Each tile: "👑 Show leader" / "🏆 League leader" ("champion" when final), the name large in gold, their points, and how far clear they are ("4 clear", or "tied" when players share the lead). Before the first episode it says when the series starts.
-  - Then one table sorted by Show or League, in a rounded card (`.card.board`) inset like the cards on the other tabs. The active header shows ▼/▲; tap again to reverse.
+  - The hero at the top is one headline, "Week 4 Standings" (`standingsHero` in `table.js`), set like an episode title. Before the first episode it says when the series starts. No leaders, scores or last-week result (removed on request).
+  - Then one table sorted by Show or League, in a rounded card (`.card.board`) inset like the cards on the other tabs. Its header row is the same height as a card head on the other tabs; the sort buttons' tap area reaches past it with negative margins. The active header shows ▼/▲; tap again to reverse.
   - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
   - **Series with a group photo (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
     - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). Every head is drawn the same size: the photo is scaled so the head is `--face` across (83px on phones, 106px from 600px up; `head` in `heroes.js` is each head's size as a fraction of the photo's width, the geometric mean of eye-to-chin and cheek-to-cheek, set so all match Richard's), and never smaller than it takes to span the row edge to edge. Pupil distance was too noisy a yardstick (glasses, head turns). Pillars and neighbours at the sides are fine; the reshade darkens them.
@@ -46,7 +46,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
     - A slight vertical scroll parallax (`parallax` in `main.js`, 6% of the row's distance from mid-screen, keyed to the top line so an opened row's own photo doesn't move). Off under reduced motion.
     - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
   - **Series without a group photo (21):** no pick is shown in the rows.
-  - 👑 marks the Show leader and 🏆 the League leader in the hero only, not on the rows. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
+  - No 👑/🏆 on Standings. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
   - The five columns (rank, player, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.
   - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).

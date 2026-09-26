@@ -1,44 +1,16 @@
-// Standings: the Show and League leaders, then one sortable table (Show or League).
+// Standings: a "Week 4 Standings" headline, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
-import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
+import { esc, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
-/** 👑 marks the Show points leader and 🏆 the League points leader. */
-const CROWN = `<span role="img" aria-label="Show">👑</span>`;
-const TROPHY = `<span role="img" aria-label="League">🏆</span>`;
-
-/** Who leads a board (ties share it), their points, and the gap to the next player. */
-function leader(d, key) {
-  const pts = d.players.map((p) => p[key]), top = Math.max(...pts);
-  const names = d.players.filter((p) => p[key] === top).map((p) => p.name);
-  const next = Math.max(...pts.filter((v) => v < top));
-  return { names, top, gap: names.length > 1 ? 0 : Number.isFinite(next) ? top - next : 0 };
-}
-
-/** The hero: the Show and League leaders side by side (👑 and 🏆). */
-function leadersHero(d) {
+/** The hero: one headline, "Week 4 Standings", or when the series starts. */
+function standingsHero(d) {
   const e = d.weeksScored;
-  if (!e) {
-    const first = d.episodes[0];
-    return `<div class="last"><div class="last-txt"><span class="kicker">Series ${state.key}</span>
-      <b class="last-main">Starts ${esc(fmtWhen.format(first.air))}</b></div></div>`;
-  }
-  const tile = (key, badge, label) => {
-    const l = leader(d, key);
-    const sub = l.names.length > 1 ? "tied" : l.gap ? `${l.gap} clear` : "";
-    return `
-      <div class="ld">
-        <span class="ld-label">${badge} ${d.complete ? `${label} champion` : `${label} leader`}</span>
-        <b class="ld-name">${esc(listing(l.names))}</b>
-        <span class="ld-pts"><b>${l.top}</b> pts${sub ? `<i>${sub}</i>` : ""}</span>
-      </div>`;
-  };
-  return `
-    <p class="kicker ld-kicker">Series ${state.key} · ${d.complete ? "Final" : `After episode ${e}`}</p>
-    <div class="leaders">${tile("show", CROWN, "Show")}${tile("league", TROPHY, "League")}</div>`;
+  if (!e) return `<h2 class="ep-title">Series ${state.key} starts</h2><div class="ep-sub">${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
+  return `<h2 class="ep-title">Week ${e} Standings</h2>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -46,7 +18,7 @@ const heroRows = () => !!GROUP[state.key]?.faces;
 
 export function standingsHead(d) {
   return `
-    <div class="hero">${leadersHero(d)}</div>
+    <div class="hero st-hero">${standingsHero(d)}</div>
     <div class="card board">
       <div class="st-head">
         <span class="st-rank">Rank</span>

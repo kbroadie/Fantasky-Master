@@ -132,25 +132,10 @@ strong { color: var(--t1); font-weight: 700; }
 .ep-head { text-align: center; padding-block: 16px 14px; }
 .ep-sub { font-family: var(--fm); font-size: 12px; color: var(--t2); letter-spacing: .03em; }
 
-/* Standings hero: before the series, when it starts */
-.last { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; }
-.last-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.last-txt .kicker { margin: 0; }
-.last-main { font-family: var(--ff-name); font-size: 20px; font-weight: 600; line-height: 1.2; }
-/* The two leaders side by side: 👑 Show and 🏆 League */
-.ld-kicker { margin-bottom: 8px; }
-.leaders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.ld {
-  display: flex; flex-direction: column; gap: 2px; min-width: 0; padding: 10px 12px 11px;
-  border: 1px solid var(--b-gold); border-radius: 12px;
-  background: linear-gradient(160deg, rgba(236, 192, 64, .12), rgba(16, 13, 16, .35) 70%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
-}
-.ld-label { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); white-space: nowrap; }
-.ld-name { font-family: var(--ff-name); font-size: clamp(20px, 6vw, 26px); font-weight: 700; line-height: 1.15; color: var(--gold2); text-shadow: 0 0 12px var(--gold-glow); overflow-wrap: anywhere; }
-.ld-pts { display: flex; align-items: baseline; gap: 4px; margin-top: auto; padding-top: 2px; font-size: 13px; color: var(--t2); }
-.ld-pts b { font-size: 24px; font-weight: 800; letter-spacing: -.02em; color: var(--t1); }
-.ld-pts i { margin-left: auto; font-style: normal; font-family: var(--fm); font-size: 11px; color: var(--t3); white-space: nowrap; }
+/* Standings hero: one headline, "Week 4 Standings", set like an episode title */
+.st-hero { text-align: center; padding-block: 16px 12px; }
+.st-hero .ep-title { margin-bottom: 0; }
+.st-hero .ep-sub { margin-top: 5px; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
@@ -163,18 +148,19 @@ strong { color: var(--t1); font-weight: 700; }
 .st-head > :nth-child(3), .pc-head > :nth-child(3),
 .st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: right; }
 .st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
-/* The table sits in a rounded card, like the cards on the other tabs */
+/* The table sits in a rounded card, like the cards on the other tabs.
+   The sort buttons' tap area reaches past the slim header row. */
 .card.board { margin: 12px var(--px); }
 .board .st-head, .board .pc-head { padding-inline: 12px; }
 .board .pk-grid { padding-inline: 12px; }
 .board .pc:last-child { border-bottom: 0; }
 .st-head {
-  padding-block: 7px; border-bottom: 1px solid var(--b-gold);
+  padding-block: 9px 7px; /* the same height as a card head on the other tabs */ border-bottom: 1px solid var(--b-gold);
   background: linear-gradient(180deg, var(--s3), var(--s2));
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
 }
 .st-rank { white-space: nowrap; }
-.st-num { display: flex; justify-content: flex-end; align-items: center; gap: 2px; padding: 0; min-height: 36px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
+.st-num { display: flex; justify-content: flex-end; align-items: center; gap: 2px; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
 .st-num .arr { font-style: normal; font-size: 11px; width: 1em; visibility: hidden; }
 .st-num.on { text-decoration: none; }
 .st-num.on .arr { visibility: visible; }
