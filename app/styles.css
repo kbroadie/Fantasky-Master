@@ -136,17 +136,19 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero { text-align: center; padding-block: 16px 14px; } /* the same as .ep-head */
 .st-hero .ep-title { margin-bottom: 0; }
 .st-hero .ep-sub { margin-top: 5px; }
+.st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
+.st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
-   rank (centre) · player (left) · Show and League (right, numbers line up)
+   rank (centre) · player (left) · Show and League (centre, under their headers)
    · chevron (centre). With a group photo (Series 22) the week's pick is the
    row's backdrop (.pc-bg); without them (Series 21) it isn't shown. */
 .st-head, .pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
 .st-head > :nth-child(1), .pc-head > :nth-child(1) { justify-self: center; }
 .st-head > :nth-child(2), .pc-head > :nth-child(2) { justify-self: start; }
 .st-head > :nth-child(3), .pc-head > :nth-child(3),
-.st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: right; }
+.st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: center; }
 .st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
 /* The table sits in a rounded card, like the cards on the other tabs.
    The sort buttons' tap area reaches past the slim header row. */
@@ -160,8 +162,10 @@ strong { color: var(--t1); font-weight: 700; }
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
 }
 .st-rank { white-space: nowrap; }
-.st-num { display: flex; justify-content: flex-end; align-items: center; gap: 2px; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
-.st-num .arr { font-style: normal; font-size: 11px; width: 1em; visibility: hidden; }
+.st-num { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
+/* The label is centred over its column; the sort arrow hangs off its left */
+.st-num > span { position: relative; }
+.st-num .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
 .st-num.on { text-decoration: none; }
 .st-num.on .arr { visibility: visible; }
 .st-num.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
@@ -180,7 +184,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* A chevron: rows open on tap */
 .chev { justify-self: end; width: 8px; height: 8px; border-right: 2px solid var(--t3); border-bottom: 2px solid var(--t3); transform: rotate(45deg) translate(-2px, -2px); transition: transform .3s var(--ease); }
 .pc.open .chev { transform: rotate(225deg) translate(-2px, -2px); }
-.pc-num { text-align: right; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; }
+.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }

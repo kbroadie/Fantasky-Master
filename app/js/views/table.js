@@ -1,16 +1,35 @@
-// Standings: a "Week 4 Standings" headline, then one sortable table (Show or League).
+// Standings: a "Week 4 Standings" headline and the leaders, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
-import { esc, tier, framed, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
-/** The hero: one headline, "Week 4 Standings", or when the series starts. */
+/** 👑 marks the Show points leader and 🏆 the League points leader. */
+const CROWN = `<span role="img" aria-label="Show">👑</span>`;
+const TROPHY = `<span role="img" aria-label="League">🏆</span>`;
+
+/** Everyone on the top score of a board (ties share the lead). */
+function leaders(d, key) {
+  const top = Math.max(...d.players.map((p) => p[key]));
+  return d.players.filter((p) => p[key] === top).map((p) => p.name);
+}
+
+/** "👑 Riley leads Show   🏆 Jamie leads League" ("win" once the series is over). */
+function leaderLine(d) {
+  const show = leaders(d, "show"), league = leaders(d, "league");
+  const verb = (names) => (d.complete ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
+  const who = (names) => `<b>${esc(listing(names))}</b>`;
+  if (listing(show) === listing(league)) return `<span>${CROWN}${TROPHY} ${who(show)} ${verb(show)} Show and League</span>`;
+  return `<span>${CROWN} ${who(show)} ${verb(show)} Show</span><span>${TROPHY} ${who(league)} ${verb(league)} League</span>`;
+}
+
+/** The hero: "Week 4 Standings" and who leads each board, or when the series starts. */
 function standingsHero(d) {
   const e = d.weeksScored;
   if (!e) return `<h2 class="ep-title">Series ${state.key} starts</h2><div class="ep-sub">${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
-  return `<h2 class="ep-title">Week ${e} Standings</h2>`;
+  return `<h2 class="ep-title">Week ${e} Standings</h2><p class="st-leaders">${leaderLine(d)}</p>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -23,8 +42,8 @@ export function standingsHead(d) {
       <div class="st-head">
         <span class="st-rank">Rank</span>
         <span class="st-name">Player</span>
-        <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
-        <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
+        <button class="st-num" data-sort="show"><span><i class="arr"></i>Show</span></button>
+        <button class="st-num" data-sort="league"><span><i class="arr"></i>League</span></button>
         <span></span>
       </div>
       <div id="rows"></div>
