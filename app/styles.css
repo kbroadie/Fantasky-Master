@@ -320,8 +320,8 @@ strong { color: var(--t1); font-weight: 700; }
 .rc-grid { stroke: var(--b-dim); stroke-width: 1; }
 .rc-axis { font-family: var(--fm); font-size: 11px; fill: var(--t4); }
 .rc-axis.now { fill: var(--gold2); }
+.rc-axis.later { opacity: .45; }
 .race path { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.rc-grid.lead { stroke: var(--gold4); stroke-dasharray: 3 3; } /* 0: the leader's line */
 .race .rc-tap { stroke: transparent; stroke-width: 16; cursor: pointer; } /* a wide, invisible target along each line */
 .rc-name { cursor: pointer; }
 /* Tap a line: it comes forward (moved last in main.js) and the rest fade */
@@ -330,6 +330,8 @@ strong { color: var(--t1); font-weight: 700; }
 .race .rc-lead { stroke-width: 1; opacity: .6; }
 .rc-pt { stroke: var(--s2); stroke-width: 2; } /* a ring of the card's colour where lines cross */
 .rc-name { font-family: var(--fm); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; } /* like the task table's column heads */
+/* A halo in the card's colour, so gridlines and lines pass behind a label */
+.rc-name { paint-order: stroke; stroke: var(--s2); stroke-width: 4px; stroke-linejoin: round; }
 .rc-total { font-family: var(--ff); font-weight: 800; letter-spacing: 0; fill: var(--t2); }
 .rc-hit { fill: transparent; cursor: pointer; }
 .rc-hit.on { stroke: var(--t1); stroke-width: 1.5; fill: none; }

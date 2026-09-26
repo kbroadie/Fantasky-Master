@@ -86,8 +86,8 @@ function slide(d, e) {
 
 // ── The race so far ─────────────────────────────────────────────────────────
 // How far each contestant is behind the leader after every episode up to this
-// one (the leader runs flat along 0 at the top; the x axis starts at episode
-// 1): a smooth line in their colour (a monotone cubic Bézier, so it
+// one (the leader runs flat along 0 at the top; the x axis always runs 1 to
+// 10, so the race builds rightwards week by week): a smooth line in their colour (a monotone cubic Bézier, so it
 // never overshoots a point, e.g. above the leader's 0 or past a real low),
 // labelled at the
 // end with the first three letters of their name, like the task table's
@@ -128,25 +128,33 @@ function raceChart(d, upTo) {
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
   const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const W = 340, L = 10, R = 262, T = 12, B = 160, H = B + 24; // R leaves room for "NIN 70"
-  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => T + (v / yMin) * (B - T);
+  const W = 340, L = 10, R = 330, T = 12, B = 160, H = B + 24; // the plot fills the card
+  // The x axis always runs 1 to 10: the race starts at the left edge and
+  // builds to the right week by week; episodes still to come are faint.
+  // The plot fills the card (to R); only when this episode's dots would leave
+  // too little room for their labels (about 66 units: "JOA 165", so episodes
+  // 9 and 10) does the axis tighten just enough to keep them to the right.
+  const last = d.episodes.length, LBL = 66;
+  const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, upTo - 1));
+  const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
-  const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
-  const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === upTo ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
-  // they crowd, cap the lowest just into the axis margin, then push up only
-  // the ones that still crowd. A hairline joins a moved label to its line.
+  // they crowd, cap the lowest at the plot's bottom (clear of the episode
+  // numbers), then push up only the ones that still crowd. A hairline joins a moved label to its line.
   const ends = sorted(upTo), labelY = {};
   ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, upTo)), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
-  labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B + 6);
+  labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
   for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
   // Leader drawn last, so its line sits on top. Each contestant is one group
   // (data-who) so a tap can bring it forward and fade the rest.
   const lines = [...ends].reverse().map((name) => {
     const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(gap(name, e))]);
     const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
-    const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    // No points on the lines; only Episode 1, with no lines yet, shows dots.
+    const dots = upTo > 1 ? "" : pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
     const [lx, ly] = pts.at(-1), ty = labelY[name], g = gap(name, upTo);
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
     const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
