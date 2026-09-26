@@ -133,7 +133,7 @@ strong { color: var(--t1); font-weight: 700; }
 .ep-sub { font-family: var(--fm); font-size: 12px; color: var(--t2); letter-spacing: .03em; }
 
 /* Standings hero: one headline, "Week 4 Standings", set like an episode title */
-.st-hero { text-align: center; padding-block: 16px 12px; }
+.st-hero { text-align: center; padding-block: 16px 14px; } /* the same as .ep-head */
 .st-hero .ep-title { margin-bottom: 0; }
 .st-hero .ep-sub { margin-top: 5px; }
 
@@ -151,7 +151,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* The table sits in a rounded card, like the cards on the other tabs.
    The sort buttons' tap area reaches past the slim header row. */
 .card.board { margin: 12px var(--px); }
-.board .st-head, .board .pc-head { padding-inline: 12px; }
+.board .st-head, .board .pc-head { padding-inline: 12px; } /* the card head's 12px sides */
 .board .pk-grid { padding-inline: 12px; }
 .board .pc:last-child { border-bottom: 0; }
 .st-head {
