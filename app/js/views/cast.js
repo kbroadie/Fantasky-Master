@@ -36,8 +36,8 @@ function slide(d, c, max, med) {
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
 
   return `
-    <div class="ep-head cd-head">
-      <div class="cd-img">${framed(c)}</div>
+    <div class="ep-head cd-head${c.rank === 1 ? " fx-stage" : ""}">
+      <div class="cd-img${c.rank === 1 ? " pod-col win" : ""}">${framed(c)}</div>
       <div class="kicker">${ord(c.rank)} of ${d.contestants.length} · Series ${state.key}</div>
       <h2 class="ep-title">${esc(c.full)}</h2>
       <div class="ep-sub"><b style="color:${c.color}">${c.total}</b> points · ${c.avg.toFixed(1)} an episode${c.wins ? ` · ${c.wins} win${c.wins > 1 ? "s" : ""}` : ""}</div>

@@ -48,6 +48,7 @@ function loadSeries(key) {
   mountPodiumFx($("#ep-body"));
   $("#cast-tabs").innerHTML = castTabs(d);
   $("#cast-body").innerHTML = castSlides(d);
+  mountPodiumFx($("#cast-body"));
   $("#foot").innerHTML = footer();
   for (const id of ["#ep-body", "#cast-body"]) for (const s of $(id).children) sizes.observe(s);
   countdown();
