@@ -1,4 +1,5 @@
-// Presentation only: each series' cast group photo (Imgur original), with
+// Presentation only: each series' cast photos (Imgur originals): one group
+// photo for the series, or a hero photo per contestant (a face's own src), with
 // where every contestant's eyes are in it (fractions of the photo's width and
 // height) and the size of their head (fraction of the photo's width: the
 // geometric mean of eye-line-to-chin and cheek-to-cheek, measured on the
@@ -7,22 +8,23 @@
 // size. (Pupil distance was too noisy a yardstick: glasses and head turns
 // made some heads visibly bigger than others.) League data lives in the CSV.
 
-/** A contestant's face in their series' group photo, or null if there isn't one. */
+/** A contestant's face: in their own hero photo or the series' group photo; null if neither. */
 export function faceFor(series, key) {
   const g = GROUP[series], face = g?.faces[key];
-  return face ? { src: g.src, ratio: g.ratio, ex: face.eye[0], ey: face.eye[1], head: face.head } : null;
+  return face ? { src: face.src || g.src, ratio: face.ratio || g.ratio, ex: face.eye[0], ey: face.eye[1], head: face.head } : null;
 }
 
 export const GROUP = {
+  // Series 21: each contestant's own hero photo (1440 × 1872), not the group
+  // shot, so each face carries its own src.
   21: {
-    src: "https://i.imgur.com/RNwKpOh.jpeg", // 5975 × 4584
-    ratio: 5975 / 4584,
+    ratio: 1440 / 1872,
     faces: {
-      Joel: { eye: [0.2043, 0.4373], head: 0.0321 },
-      Amy: { eye: [0.3021, 0.4534], head: 0.0293 },
-      Kumail: { eye: [0.4025, 0.4421], head: 0.0329 },
-      Joanna: { eye: [0.6809, 0.4626], head: 0.0305 },
-      Armando: { eye: [0.8491, 0.4761], head: 0.034 },
+      Amy: { src: "https://i.imgur.com/OaUpvBC.jpeg", eye: [0.49, 0.249], head: 0.112 },
+      Armando: { src: "https://i.imgur.com/feObZdp.jpeg", eye: [0.501, 0.254], head: 0.125 },
+      Joanna: { src: "https://i.imgur.com/UzeaWt2.jpeg", eye: [0.516, 0.272], head: 0.126 },
+      Joel: { src: "https://i.imgur.com/sODmmBz.jpeg", eye: [0.4885, 0.2447], head: 0.126 },
+      Kumail: { src: "https://i.imgur.com/g6rBDD4.jpeg", eye: [0.4914, 0.2499], head: 0.125 },
     },
   },
   22: {
