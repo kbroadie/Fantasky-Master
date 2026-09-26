@@ -149,7 +149,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
    rank (centre) · player (left) · Show and League (right, numbers line up)
-   · chevron (centre). With hero shots (Series 22) the week's pick is the
+   · chevron (centre). With a group photo (Series 22) the week's pick is the
    row's backdrop (.pc-bg); without them (Series 21) it isn't shown. */
 .st-head, .pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
 .st-head > :nth-child(1), .pc-head > :nth-child(1) { justify-self: center; }
@@ -188,11 +188,11 @@ strong { color: var(--t1); font-weight: 700; }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
 
-/* The week's pick as the row's backdrop: the hero shot, behind the whole row
+/* The week's pick as the row's backdrop: their face from the group photo, behind the whole row
    card (head and expanded picks). It spans the row edge to edge and is
-   scaled up until the temple pillars are out of frame: the photo's width
-   (--W) is the smallest that keeps the view inside the clear band between
-   the pillars (--x0 to --x1) on both sides of the eyes. The eyes (--ex/--ey)
+   scaled up until only that face is in frame: the photo's width (--W) is
+   the smallest that keeps the view inside the face's clear band (--x0 to
+   --x1, before a pillar or another person) on both sides of the eyes. The eyes (--ex/--ey)
    sit on the head line's centre (--head / 2) and at --tx across, the gap
    between the name and Show. Anchored to the top, so opening the row only
    uncovers more of the photo below. */

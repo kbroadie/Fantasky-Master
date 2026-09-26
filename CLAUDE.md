@@ -15,7 +15,7 @@ app/js/main.js                  renders all pages at load, tabs, swipers, sortin
 app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
 app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
 app/js/podium-fx.js             canvas effects on episode podiums: winner's gold light, last place's stink gas
-app/js/heroes.js                presentation only: each series' hero shots (Imgur originals), the eyes and the clear band between the pillars in each
+app/js/heroes.js                presentation only: each series' cast group photo, and each contestant's eyes and clear band in it
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
 tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
@@ -36,12 +36,12 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - A last-week strip at the top: the winner's portrait and who called it, then "👑 Riley leads Show   🏆 Jamie leads League" (no scores, no separator). Tap it to open that episode.
   - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
   - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
-  - **Series with hero shots (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
-    - The contestant's hero shot spans the row edge to edge, scaled up until the temple pillars are out of frame: the view stays inside each photo's clear band (`clear` in `heroes.js`). The eyes get comically big, which is on purpose.
+  - **Series with a group photo (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
+    - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). It spans the row edge to edge, scaled up until only that face is in frame: the view stays inside the face's clear band (`clear`), before a pillar or another person. The eyes get comically big, which is on purpose.
     - The eyes sit on the centre line of the row's top line (`--head / 2`) and in the gap between the name and Show (`--tx`).
     - It's anchored to the top, so opening a row doesn't move it; it just uncovers more of the photo, lightly dimmed behind the picks.
     - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
-  - **Series without hero shots (21):** no pick is shown in the rows.
+  - **Series without a group photo (21):** no pick is shown in the rows.
   - 👑 marks the Show leader and 🏆 the League leader in the last-week strip only, not on the rows. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
   - The five columns (rank, player, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.

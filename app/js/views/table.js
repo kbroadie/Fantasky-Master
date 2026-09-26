@@ -1,7 +1,7 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
-import { HEROES, HERO_RATIO } from "../heroes.js";
+import { GROUP } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -45,8 +45,8 @@ function lastWeek(d) {
     <p class="lead-line">${lead}</p>`;
 }
 
-/** Series with hero shots show the week's pick as each row's backdrop. */
-const heroRows = () => !!HEROES[state.key];
+/** Series with a group photo show the week's pick as each row's backdrop. */
+const heroRows = () => !!GROUP[state.key]?.faces;
 
 export function standingsHead(d) {
   return `
@@ -84,16 +84,20 @@ export function standingsRows(d) {
 }
 
 /**
- * The row's backdrop: the hero shot of the contestant the player picked this
- * week. It spans the row edge to edge and is scaled up until the temple
- * pillars are out of frame (the eyes can get comically big), with the eyes
+ * The row's backdrop: the contestant the player picked this week, cropped
+ * from the series' group photo. It spans the row edge to edge and is scaled
+ * up until only their face is in frame, with no pillar or other cast member
+ * showing (the eyes can get comically big), with the eyes
  * on the centre line of the row's top line and in the gap between the name
  * and the Show column. It covers the whole row, so opening the row just
  * uncovers more of the photo below; nothing moves.
  */
 function pickBackdrop(c, won) {
-  const { src, eye: [ex, ey], clear: [x0, x1] } = HEROES[state.key][c.key];
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--x0:${x0};--x1:${x1};--ar:${HERO_RATIO}"></span>`;
+  const { src, ratio, faces } = GROUP[state.key];
+  const face = faces[c.key];
+  if (!face) return "";
+  const { eye: [ex, ey], clear: [x0, x1] } = face;
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--x0:${x0};--x1:${x1};--ar:${ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
