@@ -1,6 +1,7 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
+import { GROUP } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -44,13 +45,15 @@ function lastWeek(d) {
     <p class="lead-line">${lead}</p>`;
 }
 
+/** Series with a group photo show the week's pick as each row's backdrop. */
+const heroRows = () => !!GROUP[state.key]?.faces;
+
 export function standingsHead(d) {
   return `
     <div class="hero">${lastWeek(d)}</div>
     <div class="st-head">
       <span class="st-rank">Rank</span>
       <span class="st-name">Player</span>
-      <span class="st-pick">Wk ${pickWeek(d)}</span>
       <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
       <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
       <span></span>
@@ -64,13 +67,13 @@ export function standingsRows(d) {
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
-    const face = now?.pick ? `<span class="mini${now.won ? " won" : ""}">${framed(d.cast[now.pick])}</span>` : `<span class="mini none">–</span>`;
+    const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
+      ${bg}
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
-        <span class="pc-name"><span class="nm">${esc(p.name)}</span>${p.showRank === 1 ? `<span class="badge" role="img" aria-label="Show leader">👑</span>` : ""}${p.leagueRank === 1 ? `<span class="badge" role="img" aria-label="League leader">🏆</span>` : ""}</span>
-        ${face}
+        <span class="pc-name"><span class="nm">${esc(p.name)}</span></span>
         <span class="pc-num${tier(p.showRank)}">${p.show}</span>
         <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
         <span class="chev" aria-hidden="true"></span>
@@ -78,6 +81,23 @@ export function standingsRows(d) {
       <div class="pc-more"><div>${picks(d, p)}</div></div>
     </div>`;
   }).join("");
+}
+
+/**
+ * The row's backdrop: the contestant the player picked this week, cropped
+ * from the series' group photo, scaled so every face is the same size (set
+ * by the distance between the pupils) and the photo spans the row edge to
+ * edge, with the eyes
+ * on the centre line of the row's top line and in the gap between the name
+ * and the Show column. It covers the whole row, so opening the row just
+ * uncovers more of the photo below; nothing moves.
+ */
+function pickBackdrop(c, won) {
+  const { src, ratio, faces } = GROUP[state.key];
+  const face = faces[c.key];
+  if (!face) return "";
+  const { eye: [ex, ey], sep } = face;
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--sep:${sep};--ar:${ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

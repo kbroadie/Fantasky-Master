@@ -53,6 +53,7 @@ function loadSeries(key) {
 
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
+  queueParallax();
   for (const b of $$(".st-num")) {
     const on = b.dataset.sort === state.sort;
     b.classList.toggle("on", on);
@@ -68,6 +69,7 @@ function show(page) {
   $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
   $$(".page").forEach((p, j) => p.classList.toggle("active", j === i));
   scrollTo(0, 0);
+  if (page === "standings") queueParallax();
   if (page === "episodes") jump(EP, state.ep - 1);
   if (page === "cast") jump(CAST, state.cast);
   writeHash();
@@ -200,7 +202,13 @@ $("#p-standings").addEventListener("click", (e) => {
   const last = e.target.closest("[data-ep]");
   if (last) { state.ep = +last.dataset.ep; return show("episodes"); }
   const head = e.target.closest(".pc-head");
-  if (head) head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
+  if (head) {
+    head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
+    // Rows below slide as this one opens; keep their parallax in step.
+    const until = performance.now() + 400;
+    const follow = () => { parallax(); if (performance.now() < until) requestAnimationFrame(follow); };
+    requestAnimationFrame(follow);
+  }
 });
 
 // Standings has nothing to scroll sideways, so a left swipe goes to Episodes.
@@ -229,7 +237,25 @@ addEventListener("scroll", () => {
   });
 }, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); });
+// Standings backdrops: a slight vertical parallax. Each face drifts against
+// the scroll, centred when its row's top line is mid-screen. Keyed to the top
+// line, so opening a row doesn't move its own photo.
+const PARALLAX = 0.06;
+let praf = 0;
+function parallax() {
+  praf = 0;
+  if (reducedMotion || state.page !== "standings") return;
+  const mid = innerHeight / 2;
+  for (const img of $$("#rows .pc-bg img")) {
+    const r = img.closest(".pc").getBoundingClientRect();
+    if (r.bottom < -100 || r.top > innerHeight + 100) continue;
+    img.style.setProperty("--py", `${((mid - (r.top + 29)) * PARALLAX).toFixed(1)}px`);
+  }
+}
+const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };
+addEventListener("scroll", queueParallax, { passive: true });
+
+addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueParallax(); });
 
 addEventListener("hashchange", () => {
   const h = readHash();

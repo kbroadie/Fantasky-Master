@@ -15,6 +15,7 @@ app/js/main.js                  renders all pages at load, tabs, swipers, sortin
 app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
 app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
 app/js/podium-fx.js             canvas effects on episode podiums: winner's gold light, last place's stink gas
+app/js/heroes.js                presentation only: each series' cast group photo, and each contestant's eyes and pupil distance in it
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
 tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
@@ -34,16 +35,23 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Standings:**
   - A last-week strip at the top: the winner's portrait and who called it, then "👑 Riley leads Show   🏆 Jamie leads League" (no scores, no separator). Tap it to open that episode.
   - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
-  - Each row shows rank and movement, the player's pick that week as a framed face, Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
-  - 👑 marks the Show leader and 🏆 the League leader, whatever the sort. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
-  - The six columns (rank, player, pick, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
+  - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
+  - **Series with a group photo (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
+    - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). Every face is drawn the same size: the photo is scaled so the pupils are `--eyes` apart (50px on phones, 64px from 600px up; `sep` in `heroes.js` is each face's pupil distance), and never smaller than it takes to span the row edge to edge. Pillars and neighbours at the sides are fine; the reshade darkens them.
+    - The eyes sit on the centre line of the row's top line (`--head / 2`) and in the gap between the name and Show (`--tx`).
+    - It's anchored to the top, so opening a row doesn't move it; it just uncovers more of the photo, lightly dimmed behind the picks.
+    - A slight vertical scroll parallax (`parallax` in `main.js`, 6% of the row's distance from mid-screen, keyed to the top line so an opened row's own photo doesn't move). Off under reduced motion.
+    - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
+  - **Series without a group photo (21):** no pick is shown in the rows.
+  - 👑 marks the Show leader and 🏆 the League leader in the last-week strip only, not on the rows. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
+  - The five columns (rank, player, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.
   - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).
   - Episode tabs carry a dot in the winner's colour.
   - The episode portraits run lowest score to highest (winner on the right), and the task-table columns follow them so each sits under its portrait. The league's picks read winner first.
   - The winner gets gold light (no crown on the episode portraits); last place (ties included) gets stink gas and a score in the fog's muted olive (#a3a86e). Both are canvas effects (`podium-fx.js`), aiming for over-the-top realism:
     - **Gold:** a volumetric glow and slowly turning light rays behind the frame, a light pool on the shelf, warm bounce light screened onto the neighbouring portraits, neighbours casting shadows along the shelf away from the winner, a blooming rim light on the gilt frame, rising gold dust and glints.
-    - **Stink:** heavier-than-air gas, drawn as shaded puffs (lit from above, darker beneath), mostly on the back layer behind the portraits, with a faint veil in front for the low bank. It seeps from behind the portrait, sinks to the bottom of the podium card and spreads along it like dry ice on a countertop, flattening as it lands. It collides with all four sides and never leaves the card. There's no cartoon cloud.
+    - **Stink:** heavier-than-air gas, drawn as shaded puffs (lit from above, darker beneath), mostly on the back layer behind the portraits, with a faint veil in front for the low bank. It seeps from behind the portrait, sinks right onto the bottom edge of the podium card (its padding box) and spreads along it like dry ice on a countertop, flattening and thickening as it lands. It collides with all four sides and never leaves the card. There's no cartoon cloud.
     - **Scroll physics:** the gas and dust have inertia. Page scrolling sloshes the gas and stirs the dust, and scroll speed briefly surges the gold. Swiping between episodes doesn't push them, and an episode's gas is cleared when it goes off screen, so none trails into the next one.
     - **Cost:** only podiums on screen are simulated, nothing runs in a hidden tab, and reduced motion gets one settled still frame.
   - The league's picks list each contestant's backers as plain comma-separated names (no pills, not bold).
@@ -56,7 +64,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
-- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative animation is the episode podium effects (requested; see above), which stop under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
+- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative motion is the episode podium effects and the Standings backdrop parallax (both requested; see above), which stop under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
 

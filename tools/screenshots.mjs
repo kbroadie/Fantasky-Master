@@ -50,8 +50,8 @@ for (const [name, w, h, hash, action] of SHOTS) {
   if (process.env.FM_CURL_IMAGES) {
     await page.route(/i\.imgur\.com|fonts\.googleapis\.com|fonts\.gstatic\.com/, async (r) => {
       const u = r.request().url();
-      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", "-A", UA, u]));
-      const type = u.includes("googleapis") ? "text/css" : u.includes("gstatic") ? "font/woff2" : "image/webp";
+      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", "-A", UA, u], { maxBuffer: 1 << 26 }));
+      const type = u.includes("googleapis") ? "text/css" : u.includes("gstatic") ? "font/woff2" : /\.jpe?g$/.test(u) ? "image/jpeg" : "image/webp";
       await r.fulfill({ body: cache.get(u), headers: { "content-type": type, "access-control-allow-origin": "*" } });
     });
   }

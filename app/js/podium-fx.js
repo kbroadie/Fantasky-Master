@@ -109,9 +109,11 @@ class Scene {
   }
 
   layout() {
-    const box = this.pod.getBoundingClientRect();
-    this.w = box.width;
-    this.h = box.height;
+    // The canvases fill the card's padding box (inside its border).
+    const outer = this.pod.getBoundingClientRect();
+    const box = { left: outer.left + this.pod.clientLeft, top: outer.top + this.pod.clientTop };
+    this.w = this.pod.clientWidth;
+    this.h = this.pod.clientHeight;
     if (!this.w) return;
     for (const c of [this.back, this.light, this.gasC]) {
       c.width = Math.round(this.w * DPR);
@@ -126,7 +128,7 @@ class Scene {
     this.win = this.frames.find((f) => f.win) || null;
     this.losers = this.frames.filter((f) => f.last);
     this.floor = Math.max(...this.frames.map((f) => f.y + f.h)) + 2; // the shelf the portraits stand on
-    this.bed = this.h - 3; // the bottom of the card, where the gas settles
+    this.bed = this.h; // the bottom edge of the card, where the gas settles
     if (REDUCED) this.settle();
   }
 
@@ -178,7 +180,7 @@ class Scene {
     for (const p of this.gas) {
       p.age += dt;
       const r = p.s0 * (1 + (p.age / p.life) * 0.9) * 0.32; // collision radius grows as the puff expands
-      const low = clamp((p.y - (bed - 36)) / 36, 0, 1); // 1 when lying on the bottom
+      const low = clamp((p.y - (bed - 40)) / 36, 0, 1); // 1 when lying on the bottom
       // Turbulence: curling in the air, a slow rolling ripple along the bottom.
       p.vx += Math.sin(p.y * 0.045 + this.t * 0.7 + p.seed) * (14 - 8 * low) * dt;
       p.vy += (g * (1 - low * 0.7) + Math.cos(p.x * 0.05 + this.t * 0.5 + p.seed) * 8 * (1 - low)) * dt;
@@ -187,7 +189,10 @@ class Scene {
       p.vx *= drag; p.vy *= drag * (1 - low * 0.02);
       p.x += p.vx * dt; p.y += p.vy * dt;
       // Collide with all four sides of the card.
-      if (p.y > bed - r) { p.y = bed - r; p.vx += Math.sign(p.x - p.src || p.seed - 50) * Math.abs(p.vy) * 0.5; p.vy = -Math.abs(p.vy) * 0.1; }
+      // The bottom lets a puff's soft underside press against the edge, so the
+      // bank visibly lies on it; the other sides keep puffs just inside.
+      const rb = p.s0 * 0.06;
+      if (p.y > bed - rb) { p.y = bed - rb; p.vx += Math.sign(p.x - p.src || p.seed - 50) * Math.abs(p.vy) * 0.5; p.vy = -Math.abs(p.vy) * 0.1; }
       if (p.y < r) { p.y = r; p.vy = Math.abs(p.vy) * 0.3; }
       if (p.x < r) { p.x = r; p.vx = Math.abs(p.vx) * 0.25; }
       if (p.x > w - r) { p.x = w - r; p.vx = -Math.abs(p.vx) * 0.25; }
@@ -364,7 +369,8 @@ class Scene {
       if (a <= 0.005) continue;
       const s = p.s0 * (1 + life * 0.9), low = p.low || 0;
       const sw = s * (1 + 0.8 * low), sh = s * (1 - 0.45 * low);
-      back.globalAlpha = a;
+      // Gas lying on the bottom is denser: the bank reads as sitting on the edge.
+      back.globalAlpha = Math.min(0.5, a * (1 + 0.9 * low));
       back.drawImage(puffs[p.spr], p.x - sw / 2, p.y - sh / 2, sw, sh);
       if (low > 0.5) {
         gas.globalAlpha = a * 0.28 * low;
