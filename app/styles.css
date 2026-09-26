@@ -258,7 +258,7 @@ strong { color: var(--t1); font-weight: 700; }
 .ep-title { font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 5.6vw, 27px); line-height: 1.08; text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px; text-wrap: balance; }
 .ep-body { padding: 14px var(--px) 18px; }
 .pod {
-  display: flex; align-items: flex-end; gap: 6px; padding: 16px 8px 10px; margin-bottom: 12px;
+  display: flex; align-items: flex-end; gap: 6px; padding: 12px 8px 10px; margin-bottom: 12px;
   border: 1px solid var(--b-gold); border-radius: 12px;
   background: linear-gradient(180deg, var(--s3), var(--s1)); box-shadow: inset 0 0 24px rgba(0, 0, 0, .35);
 }
@@ -274,8 +274,7 @@ strong { color: var(--t1); font-weight: 700; }
 .fx-light { z-index: 3; mix-blend-mode: screen; }
 .fx-gas { z-index: 4; }
 .pod-col.last .fp { filter: saturate(.8) brightness(.93) drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
-.pod-col.last .pod-pts { color: #9bd65f; }
-.pod-col.win::before { content: "👑"; position: absolute; top: -11px; font-size: 16px; line-height: 1; z-index: 2; }
+.pod-col.last .pod-pts { color: #a3a86e; } /* the fog's own muted olive */
 .pod-name { font-family: var(--ff-name); font-size: 12px; font-weight: 700; margin-top: 3px; }
 .pod-pts { font-size: clamp(18px, 5vw, 22px); font-weight: 800; line-height: 1; }
 .pod-col.win .pod-pts { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }

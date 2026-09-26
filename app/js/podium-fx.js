@@ -5,14 +5,18 @@
 //                                 shelf, cast shadows, a murky green glow
 //   light (over them, screen)     bounce light spilling onto the neighbours,
 //                                 gold dust, glints on the winner's frame
-//   gas   (over them, normal)     the stink: heavy green gas that seeps from
-//                                 the portrait, sinks, pools on the shelf and
-//                                 creeps sideways
+//   gas   (over them, normal)     a faint veil of the stink's lowest layer,
+//                                 so the fog sits mostly behind the portraits
+//
+// The stink is drawn mostly on the back layer: heavy gas that seeps from
+// behind the last-place portrait, sinks to the bottom of the podium card and
+// spreads along it like dry ice on a countertop, colliding with all four
+// sides of the card. It never leaves the card, and it starts afresh each time
+// an episode comes on screen, so none trails along as you swipe.
 //
 // Physics: the gas and dust have inertia. Scrolling the page moves the podium
-// under them, so the gas sloshes against the shelf and the dust swirls;
-// swiping between episodes shoves them sideways. Scroll speed also gives the
-// gold a brief surge. Only podiums on screen are simulated, nothing runs in a
+// under them, so the gas sloshes and the dust swirls. Scroll speed also gives
+// the gold a brief surge. Only podiums on screen are simulated, nothing runs in a
 // hidden tab, and reduced-motion users get one settled, still frame.
 
 const DPR = Math.min(2, window.devicePixelRatio || 1);
@@ -78,7 +82,7 @@ const sprites = () => (SPR ||= {
 // ── Scenes ──────────────────────────────────────────────────────────────────
 
 const scenes = new Set(), visible = new Set();
-let raf = 0, then = 0, scrollDY = 0, swipeDX = 0, lastY = scrollY;
+let raf = 0, then = 0, scrollDY = 0, lastY = scrollY;
 
 class Scene {
   constructor(pod) {
@@ -121,23 +125,31 @@ class Scene {
     this.frames = cols.map((col) => ({ ...rect(col.querySelector(".fp")), win: col.classList.contains("win"), last: col.classList.contains("last") }));
     this.win = this.frames.find((f) => f.win) || null;
     this.losers = this.frames.filter((f) => f.last);
-    this.floor = Math.max(...this.frames.map((f) => f.y + f.h)) + 2;
+    this.floor = Math.max(...this.frames.map((f) => f.y + f.h)) + 2; // the shelf the portraits stand on
+    this.bed = this.h - 3; // the bottom of the card, where the gas settles
     if (REDUCED) this.settle();
   }
 
-  /** Scroll and swipe push the podium under the gas and dust. */
-  impulse(dx, dy) {
-    this.energy = Math.min(1.4, this.energy + Math.hypot(dx, dy) / 260);
+  /** Page scrolling moves the podium under the gas and dust. */
+  impulse(dy) {
+    this.energy = Math.min(1.4, this.energy + Math.abs(dy) / 260);
     for (const p of this.gas) {
-      p.x += dx * 0.45; p.y += dy * 0.45;
-      p.vx += dx * 1.4 + rand(-1, 1) * Math.abs(dy) * 1.2;
-      p.vy += dy * 1.6;
+      p.y += dy * 0.4;
+      p.vx += rand(-1, 1) * Math.abs(dy) * 1.2;
+      p.vy += dy * 1.4;
     }
     for (const p of this.dust) {
-      p.x += dx * 0.75; p.y += dy * 0.75;
-      p.vx += dx * 2 + rand(-1, 1) * Math.abs(dy) * 2.5;
+      p.y += dy * 0.75;
+      p.vx += rand(-1, 1) * Math.abs(dy) * 2.5;
       p.vy += dy * 1.2;
     }
+  }
+
+  /** Off screen: drop the gas and dust, so an episode starts afresh. */
+  reset() {
+    this.gas = []; this.dust = []; this.glints = [];
+    this.spawnGas = this.spawnDust = 0;
+    for (const c of this.ctx) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, c.canvas.width, c.canvas.height); }
   }
 
   step(dt) {
@@ -145,41 +157,41 @@ class Scene {
     this.energy *= Math.exp(-2.2 * dt);
     const { w, floor } = this;
 
-    // Gas: heavier than air. It seeps out of the frame with a little puff,
-    // then sinks, spreads along the shelf and slowly thins out.
+    // Gas: heavier than air. It seeps from behind the portrait, sinks to the
+    // bottom of the card and spreads along it like dry ice, hugging the
+    // surface, pushed outwards by the gas still falling behind it.
     if (this.losers.length) {
-      this.spawnGas += dt * 32;
-      while (this.spawnGas >= 1 && this.gas.length < 160) {
+      this.spawnGas += dt * 34;
+      while (this.spawnGas >= 1 && this.gas.length < 180) {
         this.spawnGas--;
         const f = this.losers[Math.floor(Math.random() * this.losers.length)];
         this.gas.push({
-          x: f.x + rand(0.08, 0.92) * f.w, y: f.y + rand(0.35, 1) * f.h,
-          vx: rand(-12, 12), vy: rand(-14, 2),
-          age: 0, life: rand(4.5, 7.5), s0: rand(24, 42), seed: rand(0, 100),
-          spr: Math.floor(Math.random() * 4), a: rand(0.12, 0.21),
+          x: f.x + rand(0.1, 0.9) * f.w, y: f.y + rand(0.45, 1) * f.h,
+          vx: rand(-10, 10), vy: rand(-6, 6), src: f.cx,
+          age: 0, life: rand(5.5, 9), s0: rand(26, 44), seed: rand(0, 100),
+          spr: Math.floor(Math.random() * 4), a: rand(0.14, 0.24),
         });
       }
       if (this.spawnGas > 1) this.spawnGas = 1;
     }
-    const g = 24, drag = Math.exp(-1.1 * dt);
+    const g = 30, drag = Math.exp(-1.2 * dt), { h, bed } = this;
     for (const p of this.gas) {
       p.age += dt;
-      // Curling turbulence: two slow sine fields, offset per puff.
-      p.vx += Math.sin(p.y * 0.045 + this.t * 0.8 + p.seed) * 16 * dt;
-      p.vy += (g + Math.cos(p.x * 0.05 + this.t * 0.6 + p.seed) * 9) * dt;
-      p.vx *= drag; p.vy *= drag;
+      const r = p.s0 * (1 + (p.age / p.life) * 0.9) * 0.32; // collision radius grows as the puff expands
+      const low = clamp((p.y - (bed - 36)) / 36, 0, 1); // 1 when lying on the bottom
+      // Turbulence: curling in the air, a slow rolling ripple along the bottom.
+      p.vx += Math.sin(p.y * 0.045 + this.t * 0.7 + p.seed) * (14 - 8 * low) * dt;
+      p.vy += (g * (1 - low * 0.7) + Math.cos(p.x * 0.05 + this.t * 0.5 + p.seed) * 8 * (1 - low)) * dt;
+      // Dry ice: on the bottom, the pile pushes gas outwards from its source.
+      if (low > 0) p.vx += Math.sign(p.x - p.src || p.seed - 50) * 22 * low * dt;
+      p.vx *= drag; p.vy *= drag * (1 - low * 0.02);
       p.x += p.vx * dt; p.y += p.vy * dt;
-      // The shelf: gas lands, loses its fall and spreads outwards.
-      const bottom = floor - p.s0 * 0.18;
-      if (p.y > bottom) {
-        p.y = bottom;
-        const side = Math.sign(p.x - (this.losers[0]?.cx ?? p.x)) || (Math.random() < 0.5 ? -1 : 1);
-        p.vx += side * Math.abs(p.vy) * 0.45;
-        p.vy *= -0.12;
-      }
-      if (p.y < 0) { p.y = 0; p.vy = Math.abs(p.vy) * 0.3; }
-      if (p.x < 0) { p.x = 0; p.vx = Math.abs(p.vx) * 0.3; }
-      if (p.x > w) { p.x = w; p.vx = -Math.abs(p.vx) * 0.3; }
+      // Collide with all four sides of the card.
+      if (p.y > bed - r) { p.y = bed - r; p.vx += Math.sign(p.x - p.src || p.seed - 50) * Math.abs(p.vy) * 0.5; p.vy = -Math.abs(p.vy) * 0.1; }
+      if (p.y < r) { p.y = r; p.vy = Math.abs(p.vy) * 0.3; }
+      if (p.x < r) { p.x = r; p.vx = Math.abs(p.vx) * 0.25; }
+      if (p.x > w - r) { p.x = w - r; p.vx = -Math.abs(p.vx) * 0.25; }
+      p.low = low;
     }
     this.gas = this.gas.filter((p) => p.age < p.life);
 
@@ -335,23 +347,31 @@ class Scene {
     back.globalCompositeOperation = "lighter";
     for (const l of this.losers) {
       const gr = back.createRadialGradient(l.cx, l.cy, l.w * 0.2, l.cx, l.cy, l.h);
-      gr.addColorStop(0, `rgba(110,170,40,${0.34 + 0.06 * Math.sin(t * 1.1)})`);
-      gr.addColorStop(1, "rgba(80,130,30,0)");
+      gr.addColorStop(0, `rgba(118,128,62,${0.3 + 0.05 * Math.sin(t * 1.1)})`);
+      gr.addColorStop(1, "rgba(90,100,45,0)");
       back.fillStyle = gr;
       back.fillRect(l.cx - l.h, l.cy - l.h, l.h * 2, l.h * 2);
     }
     back.globalCompositeOperation = "source-over";
 
-    // The gas itself: shaded puffs, growing as they age, thickest on the shelf.
+    // The gas: shaded puffs, mostly behind the portraits. Near the bottom
+    // they flatten and widen into a low bank; a faint veil of that bank is
+    // repeated in front, so the fog wraps round the foot of the portraits.
     const puffs = sprites().gas;
     for (const p of this.gas) {
       const life = p.age / p.life;
-      const a = p.a * Math.min(1, p.age / 0.8) * (life > 0.6 ? (1 - life) / 0.4 : 1);
+      const a = p.a * Math.min(1, p.age / 0.9) * (life > 0.65 ? (1 - life) / 0.35 : 1);
       if (a <= 0.005) continue;
-      const s = p.s0 * (1 + life * 1.1);
-      gas.globalAlpha = a;
-      gas.drawImage(puffs[p.spr], p.x - s / 2, p.y - s / 2, s, s);
+      const s = p.s0 * (1 + life * 0.9), low = p.low || 0;
+      const sw = s * (1 + 0.8 * low), sh = s * (1 - 0.45 * low);
+      back.globalAlpha = a;
+      back.drawImage(puffs[p.spr], p.x - sw / 2, p.y - sh / 2, sw, sh);
+      if (low > 0.5) {
+        gas.globalAlpha = a * 0.28 * low;
+        gas.drawImage(puffs[p.spr], p.x - sw / 2, p.y - sh / 2, sw, sh);
+      }
     }
+    back.globalAlpha = 1;
     gas.globalAlpha = 1;
   }
 }
@@ -362,7 +382,8 @@ const io = new IntersectionObserver((entries) => {
   for (const e of entries) {
     const s = e.target.__fx;
     if (!s) continue;
-    if (e.isIntersecting) visible.add(s); else visible.delete(s);
+    if (e.isIntersecting) visible.add(s);
+    else if (visible.delete(s) && !REDUCED) s.reset();
   }
   wake();
 }, { rootMargin: "80px" });
@@ -372,11 +393,11 @@ function frame(now) {
   if (document.hidden || !visible.size) return;
   const dt = Math.min(0.05, (now - (then || now)) / 1000);
   then = now;
-  const dy = clamp(scrollDY, -90, 90), dx = clamp(swipeDX, -90, 90);
-  scrollDY = swipeDX = 0;
+  const dy = clamp(scrollDY, -90, 90);
+  scrollDY = 0;
   for (const s of visible) {
     if (!s.pod.isConnected) { visible.delete(s); continue; }
-    if (dx || dy) s.impulse(dx, dy);
+    if (dy) s.impulse(dy);
     s.step(dt);
     s.draw();
   }
@@ -393,7 +414,6 @@ if (!REDUCED) {
   document.addEventListener("visibilitychange", wake);
 }
 
-let swiper = null, lastX = 0;
 /** Attach effects to every podium under `root` (the episode swiper). */
 export function mountPodiumFx(root) {
   for (const s of scenes) if (!s.pod.isConnected) { io.unobserve(s.pod); scenes.delete(s); visible.delete(s); }
@@ -402,10 +422,5 @@ export function mountPodiumFx(root) {
     const s = new Scene(pod);
     scenes.add(s);
     io.observe(pod);
-  }
-  if (!REDUCED && swiper !== root) {
-    swiper = root;
-    lastX = root.scrollLeft;
-    root.addEventListener("scroll", () => { swipeDX += root.scrollLeft - lastX; lastX = root.scrollLeft; }, { passive: true });
   }
 }

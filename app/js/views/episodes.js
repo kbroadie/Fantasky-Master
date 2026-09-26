@@ -46,8 +46,8 @@ function slide(d, e) {
   const order = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a) || a.localeCompare(b));
   const rise = [...order].reverse(); // lowest to highest, left to right
   const col = rise.map((n) => d.idx[n]);
-  // Last place (sharing it counts) gets the stink; the winner gets the crown and
-  // the gold light. Both effects are drawn by podium-fx.js.
+  // Last place (sharing it counts) gets the stink; the winner gets the gold
+  // light. Both effects are drawn by podium-fx.js.
   const bottom = Math.max(...d.names.map((n) => d.placing[e.ep][n]));
   const isLast = (n) => n !== w.winner && d.placing[e.ep][n] === bottom;
 
