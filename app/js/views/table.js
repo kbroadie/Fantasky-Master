@@ -1,48 +1,31 @@
-// Standings: last week's result, then one sortable table (Show or League).
+// Standings: a "Week 4 Standings" headline and the leaders, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
-import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
-/** 👑 marks the Show points leader and 🏆 the League points leader. */
-const CROWN = `<span role="img" aria-label="Show leader">👑</span>`;
-const TROPHY = `<span role="img" aria-label="League leader">🏆</span>`;
-
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
+/** Everyone on the top score of a board (ties share the lead). */
 function leaders(d, key) {
   const top = Math.max(...d.players.map((p) => p[key]));
-  return { names: listing(d.players.filter((p) => p[key] === top).map((p) => p.name)), top };
+  return d.players.filter((p) => p[key] === top).map((p) => p.name);
 }
 
-/** The last scored episode's winner, who called it, and who's leading. */
-function lastWeek(d) {
-  const e = d.weeksScored;
-  if (!e) {
-    const first = d.episodes[0];
-    return `<div class="last"><div class="last-txt"><span class="kicker">Series ${state.key}</span>
-      <b class="last-main">Starts ${esc(fmtWhen.format(first.air))}</b></div></div>`;
-  }
-  const w = d.winners[e], wk = d.weekly[e], c = d.cast[w.winner];
-  const called = wk.hits.length
-    ? `${wk.hits.length} of ${wk.voters} called it: <span class="callers">${esc(listing(wk.hits))}</span>`
-    : `Nobody called it`;
+/** "Riley leads Show   Jamie leads League" ("wins" once the series is over). */
+function leaderLine(d) {
   const show = leaders(d, "show"), league = leaders(d, "league");
-  const verb = (n) => d.complete ? (n.includes(" and ") ? "win" : "wins") : (n.includes(" and ") ? "lead" : "leads");
-  const lead = show.names === league.names
-    ? `<span>${CROWN}${TROPHY} <b>${esc(show.names)}</b> ${verb(show.names)} both boards</span>`
-    : `<span>${CROWN} <b>${esc(show.names)}</b> ${verb(show.names)} Show</span><span>${TROPHY} <b>${esc(league.names)}</b> ${verb(league.names)} League</span>`;
-  return `
-    <button class="last" data-ep="${e}" aria-label="Open episode ${e}">
-      <span class="last-face">${framed(c)}</span>
-      <span class="last-txt">
-        <span class="kicker">Series ${state.key} · Episode ${e}${d.complete ? " · Final" : ""}</span>
-        <span class="last-main">${named(c)} won with ${w.top}</span>
-        <span class="last-sub">${called}</span>
-      </span>
-      <span class="chev" aria-hidden="true"></span>
-    </button>
-    <p class="lead-line">${lead}</p>`;
+  const verb = (names) => (d.complete ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
+  const who = (names) => `<b>${esc(listing(names))}</b>`;
+  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} Show and League</span>`;
+  return `<span>${who(show)} ${verb(show)} Show</span><span>${who(league)} ${verb(league)} League</span>`;
+}
+
+/** The hero: "Week 4 Standings" and who leads each board, or when the series starts. */
+function standingsHero(d) {
+  const e = d.weeksScored;
+  if (!e) return `<h2 class="ep-title">Series ${state.key} starts</h2><div class="ep-sub">${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
+  return `<h2 class="ep-title">Week ${e} Standings</h2><p class="st-leaders">${leaderLine(d)}</p>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -50,13 +33,13 @@ const heroRows = () => !!GROUP[state.key]?.faces;
 
 export function standingsHead(d) {
   return `
-    <div class="hero">${lastWeek(d)}</div>
+    <div class="hero st-hero">${standingsHero(d)}</div>
     <div class="card board">
       <div class="st-head">
         <span class="st-rank">Rank</span>
         <span class="st-name">Player</span>
-        <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
-        <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
+        <button class="st-num" data-sort="show"><span><i class="arr"></i>Show</span></button>
+        <button class="st-num" data-sort="league"><span><i class="arr"></i>League</span></button>
         <span></span>
       </div>
       <div id="rows"></div>
@@ -97,7 +80,7 @@ export function standingsRows(d) {
 function pickBackdrop(c, won) {
   const f = faceFor(state.key, c.key);
   if (!f) return "";
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--sep:${f.sep};--ar:${f.ratio}"></span>`;
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

@@ -200,8 +200,6 @@ $("#p-standings").addEventListener("click", (e) => {
     state.sort = s.dataset.sort;
     return renderRows();
   }
-  const last = e.target.closest("[data-ep]");
-  if (last) { state.ep = +last.dataset.ep; return show("episodes"); }
   const head = e.target.closest(".pc-head");
   if (head) {
     head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
