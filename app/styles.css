@@ -232,8 +232,17 @@ strong { color: var(--t1); font-weight: 700; }
    separate layers, iOS Safari could draw the photo unshaded for a frame
    while the top bar resized, flashing the white pillars. */
 .pc-bg { isolation: isolate; }
+/* Frosted glass over the photo (--blur by rank, from table.js), clearing as
+   the row opens. The filter is on the whole backdrop, photo and shading
+   together; the photo overflows the row, so the blur has real pixels at the
+   edges and .pc's overflow clip keeps them in. */
+.pc-bg { filter: blur(var(--blur, 0px)); transition: filter .35s var(--ease); }
+.pc.open .pc-bg { filter: blur(0px); }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
+  /* The shade's own dark edges carried past the row's sides, so the frosted
+     blur doesn't fade them out into a bright rim */
+  box-shadow: -32px 0 0 rgba(16, 13, 16, .82), 32px 0 0 rgba(16, 13, 16, .84);
   background:
     linear-gradient(180deg, transparent var(--head), rgba(16, 13, 16, .5) calc(var(--head) + 24px)),
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
@@ -293,6 +302,7 @@ strong { color: var(--t1); font-weight: 700; }
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .16em; text-transform: uppercase;
 }
 .card.note { border-left: 2px solid var(--gold4); }
+.card.note.profile { border-left: 1px solid var(--b-gold); } /* no gold edge on the Profile */
 .card.note.gold { border-left-color: var(--gold2); }
 .card.note p { padding: 0 14px 12px; font-size: 15px; line-height: 1.6; color: var(--t2); text-wrap: pretty; }
 
@@ -370,8 +380,6 @@ strong { color: var(--t1); font-weight: 700; }
 .cd-sub { font-family: var(--fm); font-size: 11px; color: var(--t3); margin-top: 6px; letter-spacing: .04em; }
 .cd-pts { font-size: clamp(40px, 11vw, 54px); font-weight: 900; line-height: 1; margin-top: 8px; color: var(--gold2); letter-spacing: -.03em; text-shadow: 0 0 14px var(--gold-glow); }
 .cd-pts-l { font-family: var(--fm); font-size: 11px; color: var(--t3); letter-spacing: .08em; }
-.cd-league { padding: 10px var(--px); font-size: 14px; color: var(--t2); text-align: center; }
-.cd-league b { color: var(--gold3); font-size: 16px; }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
 

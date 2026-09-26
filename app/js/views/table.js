@@ -63,7 +63,7 @@ export function standingsRows(d) {
     const now = p.weeks[wk - 1];
     // No pick that week: Patatas stands in.
     const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
-    const bg = face ? pickBackdrop(face, standing(rank, d.players.length)) : "";
+    const bg = face ? pickBackdrop(face, frost(rank, d.players.length)) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       ${bg}
@@ -80,15 +80,13 @@ export function standingsRows(d) {
 }
 
 /**
- * How the backdrop is graded by rank on the active board: the leader's photo
- * is richer and brighter, and each place down fades it towards a dim grey
- * (full colour through the top quarter). A CSS filter on the whole backdrop,
- * photo and shading together, never on the image alone (see .pc-bg).
+ * The backdrop's frosted glass, by rank on the active board: the leader's
+ * photo is lightly frosted (3px blur) and each place down a little more, to
+ * 9px for last. Colour is untouched. Opening the row clears it (.pc.open).
  */
-function standing(rank, n) {
-  const t = n > 1 ? (rank - 1) / (n - 1) : 0, f = (v) => v.toFixed(2);
-  const grey = Math.min(1, Math.max(0, (t - 0.25) / 0.75)) * 0.9;
-  return `saturate(${f(1.25 - 0.25 * t)}) grayscale(${f(grey)}) brightness(${f(1.1 - 0.4 * t)}) contrast(${f(1.08 - 0.08 * t)})`;
+function frost(rank, n) {
+  const t = n > 1 ? (rank - 1) / (n - 1) : 0;
+  return `${(3 + 6 * t).toFixed(1)}px`;
 }
 
 /**
@@ -97,11 +95,11 @@ function standing(rank, n) {
  * the photo spans the row edge to edge, with the eyes on the centre line of
  * the row's top line and in the gap between the name and the Show column.
  * It covers the whole row, so opening the row just uncovers more of the
- * photo below; nothing moves. Graded by rank (standing).
+ * photo below; nothing moves. Frosted by rank (frost) until the row opens.
  */
-function pickBackdrop(f, grade) {
-  const vars = `--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
-  return `<span class="pc-bg" aria-hidden="true" style="filter:${grade};${vars}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
+function pickBackdrop(f, blur) {
+  const vars = `--blur:${blur};--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
+  return `<span class="pc-bg" aria-hidden="true" style="${vars}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
