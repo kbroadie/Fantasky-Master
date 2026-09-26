@@ -10,7 +10,7 @@ The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_dat
 
 - `js/csv.js` parses the CSV.
 - `js/league.js` derives the boards, ranks, movement, tiebreak placings, rank history, pick-rule status and contestant stats.
-- `js/meta.js` holds presentation only: each series' look (Series 22 Ancient Greek, Series 21 an American diner) and optional promo art from the Imgur albums: the Series 22 cast group photo and hero shots. A series without promo art falls back to the framed portraits.
+- `js/meta.js` holds presentation only: each series' look (Series 22 Ancient Greek, Series 21 an American diner) and optional promo art from the Imgur albums (the Series 22 hero shots). A series without promo art falls back to the framed portraits.
 
 ## Layout
 
@@ -21,7 +21,7 @@ Tabs sit at the top: **Table · You · Episodes · Cast**, with the series seal 
 | **Table** | The HD-2D scene of the house, with the next poll deadline in an RPG-style dialog box, and your own card (rank, points, movement, last result). The table below lists every player with a strip of all ten episodes: each cell is coloured by the contestant they picked and shows the points it scored, and a gold outline marks a pick that won the episode. |
 | **You** | Any player's season, as three swipeable panels: **Overview** (both ranks and the gap to the player above or below, a rank-history chart, winner hit rate, average pick against the league, points left on the table, the pick-everyone tracker), **Weeks**, and **Plan** (your remaining picks, saved on the device, with a copy button). |
 | **Episodes** | A numbered pager above swipeable episode cards. Each card has subtabs: **League** (who backed whom, in finishing order), **Scoreboard** (a task-by-task replay), **Tasks** and **Write-up**. The chosen subtab stays put as you swipe between episodes. |
-| **Cast** | A wall of gold-framed portraits above swipeable contestant cards: stats, league backing, a points-per-episode chart, and the bio and stat text from the CSV. For Series 22 the wall hangs over the cast group photo, and each card uses the contestant's full-length hero shot as its backdrop: the name sits above their head, the stats sit on the photo below the face, and the photo pans against your swipe. On desktop the hero stands to the right of the stats. |
+| **Cast** | Five gold-framed portraits in standings order (first place on the right), each with its score in large numbers, select between swipeable contestant cards: stats, league backing, a points-per-episode chart, and the bio and stat text from the CSV. For Series 22 each card uses the contestant's full-length hero shot as its backdrop, with the portrait row floating over the top of the photo, the name and stats below the face, and the photo panning against your swipe. On desktop the hero stands to the right of the stats. |
 
 Contestants appear as their full gold-framed portraits throughout.
 

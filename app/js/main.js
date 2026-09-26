@@ -527,18 +527,22 @@ function playRace(ep, instant = false) {
 
 // Cast -----------------------------------------------------------------------
 
+/** Contestants in standings order, last place on the left and first on the right. */
+const castOrder = (d) => [...d.contestants].sort((a, b) => b.rank - a.rank || b.key.localeCompare(a.key));
+
 function viewCast() {
   const d = state.d, m = metaFor(state.key);
-  const byRank = [...d.contestants].sort((a, b) => a.rank - b.rank);
-  const idx = Math.max(0, d.contestants.findIndex((c) => c.key === (state.arg || byRank[0].key)));
+  const order = castOrder(d);
+  const idx = Math.max(0, order.findIndex((c) => c.key === (state.arg || order.at(-1).key)));
   const worst = Math.max(...d.contestants.map((c) => c.rank));
-  const wall = d.contestants.map((c, i) => `
-    <button class="frame ${i === idx ? "on" : ""} ${c.rank === worst && d.weeksScored ? "crooked" : ""}" data-go="${i}" data-swiper="cast-swiper" style="--c:${c.color}" aria-label="${esc(c.full)}">
-      <span class="wire" aria-hidden="true"></span>${framed(c)}<span class="plaque">${esc(c.key)}<small>${d.weeksScored ? `${ord(c.rank)} · ${c.total}` : ""}</small></span>
+  const overlay = order.every((c) => m.heroes?.[c.key]);
+  const wall = order.map((c, i) => `
+    <button class="frame ${i === idx ? "on" : ""} ${c.rank === worst && d.weeksScored ? "crooked" : ""}" data-go="${i}" data-swiper="cast-swiper" style="--c:${c.color}" aria-label="${esc(c.full)}, ${ord(c.rank)} on ${c.total}">
+      ${framed(c)}<b class="frame-score">${c.total}</b>
     </button>`).join("");
 
   const maxEp = Math.max(...d.contestants.flatMap((c) => c.eps), 1);
-  const cards = d.contestants.map((c) => {
+  const cards = order.map((c) => {
     const bars = c.eps.map((v, i) => {
       const ep = i + 1, scored = ep <= d.weeksScored;
       return `<li class="${scored ? "" : "future"} ${d.winners[ep]?.winner === c.key ? "won" : ""}" style="--h:${scored ? (v / maxEp) * 100 : 0}%"><b>${scored ? v : ""}</b><span class="bar"></span><small>${ep}</small></li>`;
@@ -556,14 +560,15 @@ function viewCast() {
           <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>`;
     const rank = d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`;
     if (hero) {
-      // The hero shot is the card's backdrop. Faces sit between ~19% and ~45% of
-      // the photo's height, so the name goes in the strip above the head and the
-      // stats start below the chin (the .cc-face spacer keeps that zone clear).
+      // The hero shot is the card's backdrop. The portrait wall floats over the
+      // top of it, the photo is dropped just enough that heads start below the
+      // wall, and faces (~19–45% of the photo's height) are kept clear by the
+      // .cc-face spacer; the name and stats begin under the chin.
       return `
     <article class="card cast-card has-hero" style="--c:${c.color}">
       <div class="cc-bg" aria-hidden="true"><img src="${hero}" alt="" width="640" height="865" loading="lazy" decoding="async"></div>
-      <header class="cc-name"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></header>
       <div class="cc-face"></div>
+      <header class="cc-name"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></header>
       <div class="cc-body">
         ${kv}
         <figure class="ep-chart"><ol>${bars}</ol></figure>
@@ -584,8 +589,10 @@ function viewCast() {
     </article>`;
   });
   return `
-  <div class="wall ${m.group ? "has-group" : ""}" aria-label="Contestants" ${m.group ? `style="--group:url('${m.group}')"` : ""}>${wall}</div>
-  ${swiperHTML("cast-swiper", cards)}`;
+  <div class="cast-view ${overlay ? "overlay" : ""}">
+    <div class="wall" aria-label="Contestants by standing, first place on the right">${wall}</div>
+    ${swiperHTML("cast-swiper", cards)}
+  </div>`;
 }
 
 // ── After render ────────────────────────────────────────────────────────────
@@ -620,7 +627,7 @@ function afterRender() {
     const idx = $$(".wall .frame").findIndex((f) => f.classList.contains("on"));
     heroParallax($("#cast-swiper"));
     bindSwiper("cast-swiper", idx, (i) => {
-      state.arg = d.contestants[i].key;
+      state.arg = castOrder(d)[i].key;
       quietHash(link("cast", state.arg));
       $$(".wall .frame").forEach((f, j) => f.classList.toggle("on", j === i));
     });
@@ -675,7 +682,7 @@ function route() {
   }
   // Swipes rewrite the hash quietly; if the target is already on screen, just slide to it.
   if (!viewChanged && (r.view === "episodes" || r.view === "cast") && r.arg) {
-    const i = r.view === "episodes" ? +r.arg - 1 : state.d.contestants.findIndex((c) => c.key === r.arg);
+    const i = r.view === "episodes" ? +r.arg - 1 : castOrder(state.d).findIndex((c) => c.key === r.arg);
     if (i >= 0) { goSlide(r.view === "episodes" ? "ep-swiper" : "cast-swiper", i); return; }
   }
   renderView(viewChanged);
