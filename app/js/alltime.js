@@ -101,10 +101,16 @@ function birthday(dob) {
   return date.toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" });
 }
 
-/** "173 cm / 5′ 8″" */
+/** Is the device set to the US (e.g. en-US)? Its heights are in feet and inches. */
+const inUS = (() => {
+  try { return new Intl.Locale(navigator.language).maximize().region === "US"; } catch { return false; }
+})();
+
+/** "173 cm", or "5′ 8″" on US devices. */
 function height(cm) {
+  if (!inUS) return `${Math.round(+cm)} cm`;
   const inches = Math.round(+cm / 2.54);
-  return `${Math.round(+cm)} cm / ${Math.floor(inches / 12)}′ ${inches % 12}″`;
+  return `${Math.floor(inches / 12)}′ ${inches % 12}″`;
 }
 
 const DEGREE = { OXBRIDGE: "Oxbridge", RADA: "RADA", YALE: "Yale", Y: "Degree", N: "No degree" };
