@@ -85,8 +85,8 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// Every contestant's running total after each episode up to this one, from 0
-// at the start: a smooth line in their colour (a monotone cubic Bézier, so it
+// Every contestant's running total after each episode up to this one (the x
+// axis starts at episode 1): a smooth line in their colour (a monotone cubic Bézier, so it
 // never dips between episodes the way a looser curve could), labelled at the
 // end with their name and total. Tap a point to read it in the caption.
 
@@ -113,18 +113,18 @@ function niceStep(max) {
 }
 
 function raceChart(d, upTo) {
-  const names = d.names, eps = Array.from({ length: upTo + 1 }, (_, i) => i); // 0 = the start
+  const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
   const total = Object.fromEntries(names.map((n) => [n, [0]]));
-  for (const e of eps.slice(1)) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
   const sorted = (e) => [...names].sort((a, b) => total[b][e] - total[a][e]);
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
   const top = Math.max(1, ...names.map((n) => total[n][upTo])), step = niceStep(top), yMax = Math.ceil(top / step) * step;
   const W = 340, L = 34, R = 236, T = 12, B = 160, H = B + 24;
-  const x = (e) => L + (e / upTo) * (R - L), y = (v) => B - (v / yMax) * (B - T);
+  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L)), y = (v) => B - (v / yMax) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(yMax / step) + 1 }, (_, i) => i * step);
   const grid = ticks.map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-axis" x="${L - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${v}</text>`).join("");
-  const xAxis = eps.slice(1).map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart (pushed apart
   // evenly, inside the plot); a hairline joins a label to its line if moved.
   const ends = sorted(upTo), labelY = {};
@@ -135,12 +135,12 @@ function raceChart(d, upTo) {
   // Leader drawn last, so its line sits on top
   const lines = [...ends].reverse().map((name) => {
     const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(total[name][e])]);
-    const path = `<path d="${smooth(pts)}" style="stroke:${c}"/>`;
-    const dots = pts.slice(1).map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    const path = pts.length > 1 ? `<path d="${smooth(pts)}" style="stroke:${c}"/>` : "";
+    const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
     const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
     const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${total[name][upTo]}</tspan></text>`;
-    const hits = pts.slice(1).map(([a, b], i) => {
+    const hits = pts.map(([a, b], i) => {
       const e = i + 1, say = `Ep ${e} · ${name} · ${total[name][e]} points (${ord(rank(e, name))})`;
       return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
     }).join("");
