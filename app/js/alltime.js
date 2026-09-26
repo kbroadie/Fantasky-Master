@@ -40,7 +40,7 @@ export function allTimePerEpisode(rows) {
 }
 
 // ── Record badges ───────────────────────────────────────────────────────────
-// A badge when a contestant is in the all-time top 10 for a stat.
+// A badge when a contestant is in the all-time top 3 for a stat.
 
 const pct = (v) => `${Math.round(v)}%`;
 const BADGES = [
@@ -56,7 +56,7 @@ const BADGES = [
   { key: "dq_pct", label: "DQ magnet", say: (v) => `${pct(v)} of tasks ended in a DQ or zero` },
   { key: "solo_last_pct", label: "Wooden spoon", say: (v) => `Last in ${pct(v)} of solo tasks` },
 ];
-const TOP = 10;
+const TOP = 3;
 
 /** The series still airing, if the latest series has fewer than ten episodes. */
 const airing = (rows) => {

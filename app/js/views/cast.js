@@ -51,15 +51,14 @@ function slide(d, c, max, med) {
       <div class="bars" style="--c:${c.color}">${medLine}${bars}</div>
     </div>
     ${radar(d, c)}
-    ${profile(c)}
-    ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
+    ${profile(c)}`;
 }
 
 // ── All-time records and fact file (alltime.js) ──────────────────────────────
 
 const statsRow = (c) => statsFor(state.allTime, state.key, c.full);
 
-/** Badges for stats where this contestant is in Taskmaster's all-time top 10.
+/** Badges for stats where this contestant is in Taskmaster's all-time top 3.
  *  Finished series only: four episodes are too few to rank against a whole run. */
 function records(d, c) {
   if (d.weeksScored < d.episodes.length) return "";
