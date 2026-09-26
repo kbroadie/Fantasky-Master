@@ -15,11 +15,9 @@ function upcoming(d, e) {
   if (e.ep <= d.weeksAired) {
     return `<div class="card soon"><p class="soon-main">Results coming soon</p><p class="soon-sub">Aired ${esc(fmtWhen.format(e.air))}</p></div>`;
   }
-  if (d.nextEp?.ep !== e.ep) {
-    return `<div class="card soon"><p class="soon-sub">Airs</p><p class="soon-main">${esc(fmtWhen.format(e.air))}</p></div>`;
-  }
+  // Every future episode: when its poll closes, and the five contestants.
   return `
-    <div class="card soon next">
+    <div class="card soon${d.nextEp?.ep === e.ep ? " next" : ""}">
       <p class="soon-sub">Who wins Episode ${e.ep}? The poll closes</p>
       <p class="soon-main">${esc(fmtWhen.format(e.air))}</p>
       <p class="soon-left">in ${untilText(e.air - Date.now())}</p>
@@ -66,7 +64,7 @@ function slide(d, e) {
         const by = wk.by[n];
         return `<div class="lg-row${n === w.winner ? " win" : ""}" style="--c:${d.cast[n].color}">
           <div class="lg-who">${named(d.cast[n])} <small>${ord(d.placing[e.ep][n])}</small>
-            <div class="chips">${by.length ? by.map((p) => `<span class="chip">${esc(p)}</span>`).join("") : `<span class="none">no picks</span>`}</div></div>
+            <div class="backers">${by.length ? esc(by.join(", ")) : `<span class="none">no picks</span>`}</div></div>
           <span class="cols"><b>+${pts(n)}</b><b>+${d.rankPts[e.ep][n]}</b></span>
         </div>`;
       }).join("")}
