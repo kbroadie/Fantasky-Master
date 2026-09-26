@@ -211,6 +211,24 @@ function bindSwiper(id, index, onSettle) {
   }, { passive: true });
   new ResizeObserver(() => fitHeight(el)).observe(el.children[0]);
 }
+/** Hero shots drift against the swipe, like a camera pan across the set. */
+function heroParallax(el) {
+  if (!el || reducedMotion) return;
+  let raf = 0;
+  const apply = () => {
+    raf = 0;
+    const w = el.clientWidth;
+    for (const s of el.children) {
+      const img = s.querySelector(".cc-bg img");
+      if (!img) continue;
+      const off = (s.offsetLeft - el.scrollLeft) / w;
+      if (Math.abs(off) > 1.2) continue;
+      img.style.transform = `translateX(${(off * -22).toFixed(1)}%) scale(1.12)`;
+    }
+  };
+  el.addEventListener("scroll", () => { if (!raf) raf = requestAnimationFrame(apply); }, { passive: true });
+  apply();
+}
 function goSlide(id, i) {
   const el = $(`#${id}`);
   el?.scrollTo({ left: i * stepOf(el), behavior: reducedMotion ? "auto" : "smooth" });
@@ -246,7 +264,7 @@ function viewStandings() {
   const worst = Math.max(...P.map((p) => p[key + "Rank"]));
   const head = `
     <header class="v-head">
-      <div><p class="kicker">Series ${state.key} · after Ep ${d.weeksScored} of ${EPISODES}</p><h2>The Table</h2></div>
+      <div><p class="kicker">Series ${state.key} · Ep ${d.weeksScored}/${EPISODES}</p><h2>The Table</h2></div>
       <div class="seg" role="group" aria-label="Rank by">
         <button data-sort="show" aria-pressed="${key === "show"}">Show</button>
         <button data-sort="league" aria-pressed="${key === "league"}">League</button>
@@ -279,7 +297,7 @@ function viewStandings() {
   <section class="card table">
     ${head}
     ${d.weeksScored ? weekStrip(d.weeksScored) : ""}
-    <div class="legend"><span>Rank</span><span>Player</span><span class="lg-strip">Episodes 1–10 · ${key === "show" ? "Show pts" : "League pts"} · ★ winner</span><span>Total</span></div>
+    <div class="legend"><span>Rank</span><span>Player</span><span class="lg-strip">Ep 1–10 · ${key} pts</span><span>Total</span></div>
     <ol class="rows">${rows}</ol>
     ${d.inactive.length ? `<p class="foot">Yet to vote: ${d.inactive.map(esc).join(", ")}</p>` : ""}
   </section>
@@ -333,7 +351,7 @@ function viewPlayer() {
     ${d.weeksScored ? bumpChart(name) : ""}
     <dl class="kv">
       <div><dt>Winner hit</dt><dd>${p.hits}<small>/${p.played}</small></dd></div>
-      <div><dt>Avg · league</dt><dd>${(p.played ? p.show / p.played : 0).toFixed(1)}<small>·${leagueAvg.toFixed(1)}</small></dd></div>
+      <div><dt>Avg pick</dt><dd>${(p.played ? p.show / p.played : 0).toFixed(1)}<small class="under">league ${leagueAvg.toFixed(1)}</small></dd></div>
       <div><dt>Best week</dt><dd>${p.best ? `${p.best.show}<small> E${p.best.ep}</small>` : "–"}</dd></div>
       <div><dt>Left on table</dt><dd>${p.missed}</dd></div>
     </dl>
@@ -509,29 +527,28 @@ function playRace(ep, instant = false) {
 
 // Cast -----------------------------------------------------------------------
 
+/** Contestants in standings order, last place on the left and first on the right. */
+const castOrder = (d) => [...d.contestants].sort((a, b) => b.rank - a.rank || b.key.localeCompare(a.key));
+
 function viewCast() {
-  const d = state.d;
-  const byRank = [...d.contestants].sort((a, b) => a.rank - b.rank);
-  const idx = Math.max(0, d.contestants.findIndex((c) => c.key === (state.arg || byRank[0].key)));
+  const d = state.d, m = metaFor(state.key);
+  const order = castOrder(d);
+  const idx = Math.max(0, order.findIndex((c) => c.key === (state.arg || order.at(-1).key)));
   const worst = Math.max(...d.contestants.map((c) => c.rank));
-  const wall = d.contestants.map((c, i) => `
-    <button class="frame ${i === idx ? "on" : ""} ${c.rank === worst && d.weeksScored ? "crooked" : ""}" data-go="${i}" data-swiper="cast-swiper" style="--c:${c.color}" aria-label="${esc(c.full)}">
-      <span class="wire" aria-hidden="true"></span>${framed(c)}<span class="plaque">${esc(c.key)}<small>${d.weeksScored ? `${ord(c.rank)} · ${c.total}` : ""}</small></span>
+  const overlay = order.every((c) => m.heroes?.[c.key]);
+  const wall = order.map((c, i) => `
+    <button class="frame ${i === idx ? "on" : ""} ${c.rank === worst && d.weeksScored ? "crooked" : ""}" data-go="${i}" data-swiper="cast-swiper" style="--c:${c.color}" aria-label="${esc(c.full)}, ${ord(c.rank)} on ${c.total}">
+      ${framed(c)}<b class="frame-score">${c.total}</b>
     </button>`).join("");
 
   const maxEp = Math.max(...d.contestants.flatMap((c) => c.eps), 1);
-  const cards = d.contestants.map((c) => {
+  const cards = order.map((c) => {
     const bars = c.eps.map((v, i) => {
       const ep = i + 1, scored = ep <= d.weeksScored;
       return `<li class="${scored ? "" : "future"} ${d.winners[ep]?.winner === c.key ? "won" : ""}" style="--h:${scored ? (v / maxEp) * 100 : 0}%"><b>${scored ? v : ""}</b><span class="bar"></span><small>${ep}</small></li>`;
     }).join("");
-    return `
-    <article class="card cast-card" style="--c:${c.color}">
-      <div class="cc-top">
-        ${framed(c, "fp-l")}
-        <div class="cc-info">
-          <p class="kicker">${d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`}</p>
-          <h2>${esc(c.full)}</h2>
+    const hero = m.heroes?.[c.key];
+    const kv = `
           <dl class="kv tight">
             <div><dt>Total</dt><dd>${c.total}</dd></div>
             <div><dt>Per ep</dt><dd>${c.avg.toFixed(1)}</dd></div>
@@ -540,8 +557,31 @@ function viewCast() {
             <div><dt>Picked</dt><dd>${c.pickedBy}<small>×</small></dd></div>
             <div><dt>To backers</dt><dd>${c.deliveredTo}</dd></div>
           </dl>
-          <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>
-        </div>
+          <p class="cats">Prize <b>${ord(c.prizeRank)}</b> · Filmed <b>${ord(c.filmedRank)}</b> · Live <b>${ord(c.liveRank)}</b></p>`;
+    const rank = d.weeksScored ? `${ord(c.rank)} in Series ${state.key}` : `Series ${state.key}`;
+    if (hero) {
+      // The hero shot is the card's backdrop. The portrait wall floats over the
+      // top of it, the photo is dropped just enough that heads start below the
+      // wall, and faces (~19–45% of the photo's height) are kept clear by the
+      // .cc-face spacer; the name and stats begin under the chin.
+      return `
+    <article class="card cast-card has-hero" style="--c:${c.color}">
+      <div class="cc-bg" aria-hidden="true"><img src="${hero}" alt="" width="640" height="865" loading="lazy" decoding="async"></div>
+      <div class="cc-face"></div>
+      <header class="cc-name"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2></header>
+      <div class="cc-body">
+        ${kv}
+        <figure class="ep-chart"><ol>${bars}</ol></figure>
+        ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
+        ${c.bio ? `<p class="bio">${rich(c.bio)}</p>` : ""}
+      </div>
+    </article>`;
+    }
+    return `
+    <article class="card cast-card" style="--c:${c.color}">
+      <div class="cc-top">
+        ${framed(c, "fp-l")}
+        <div class="cc-info"><p class="kicker">${rank}</p><h2>${esc(c.full)}</h2>${kv}</div>
       </div>
       <figure class="ep-chart"><ol>${bars}</ol></figure>
       ${c.stat ? `<p class="stat-note">${rich(c.stat)}</p>` : ""}
@@ -549,8 +589,10 @@ function viewCast() {
     </article>`;
   });
   return `
-  <div class="wall" aria-label="Contestants">${wall}</div>
-  ${swiperHTML("cast-swiper", cards)}`;
+  <div class="cast-view ${overlay ? "overlay" : ""}">
+    <div class="wall" aria-label="Contestants by standing, first place on the right">${wall}</div>
+    ${swiperHTML("cast-swiper", cards)}
+  </div>`;
 }
 
 // ── After render ────────────────────────────────────────────────────────────
@@ -583,8 +625,9 @@ function afterRender() {
   }
   if (state.view === "cast") {
     const idx = $$(".wall .frame").findIndex((f) => f.classList.contains("on"));
+    heroParallax($("#cast-swiper"));
     bindSwiper("cast-swiper", idx, (i) => {
-      state.arg = d.contestants[i].key;
+      state.arg = castOrder(d)[i].key;
       quietHash(link("cast", state.arg));
       $$(".wall .frame").forEach((f, j) => f.classList.toggle("on", j === i));
     });
@@ -639,7 +682,7 @@ function route() {
   }
   // Swipes rewrite the hash quietly; if the target is already on screen, just slide to it.
   if (!viewChanged && (r.view === "episodes" || r.view === "cast") && r.arg) {
-    const i = r.view === "episodes" ? +r.arg - 1 : state.d.contestants.findIndex((c) => c.key === r.arg);
+    const i = r.view === "episodes" ? +r.arg - 1 : castOrder(state.d).findIndex((c) => c.key === r.arg);
     if (i >= 0) { goSlide(r.view === "episodes" ? "ep-swiper" : "cast-swiper", i); return; }
   }
   renderView(viewChanged);

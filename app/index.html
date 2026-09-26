@@ -9,10 +9,9 @@
   <meta name="color-scheme" content="dark">
   <meta name="referrer" content="no-referrer">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' shape-rendering='crispEdges'%3E%3Cpath d='M5 1h6v1h2v2h1v2h1v4h-1v2h-1v2h-2v1H5v-1H3v-2H2v-2H1V6h1V4h1V2h2Z' fill='%23a3161b'/%3E%3Cpath d='M5 5h6v1H9v5H7V6H5Z' fill='%23f4d67a'/%3E%3C/svg%3E">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://i.imgur.com">
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Caveat:wght@500..700&family=Tiny5&display=swap">
+  <link rel="preload" href="fonts/monaspace-argon.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/monaspace-neon.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <link rel="preload" href="../data/fantasky_master_data.csv" as="fetch" crossorigin>
   <link rel="modulepreload" href="js/csv.js">
@@ -29,13 +28,6 @@
 
   <header class="bar">
     <a class="logo" href="#/" aria-label="Fantasky Master home"><span>Fantasky</span><span>Master</span></a>
-    <nav class="tabs" aria-label="Sections">
-      <span class="tab-ink" aria-hidden="true"></span>
-      <a data-view="standings" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h8l2 2v10H3Z M5 6h6 M5 9h6 M5 12h4"/></svg><span>Table</span></a>
-      <a data-view="player" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2h6v6H5Z M2 15v-3l2-2h8l2 2v3"/></svg><span>You</span></a>
-      <a data-view="episodes" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 4h14v9H1Z M1 4l7 5 7-5"/></svg><span>Episodes</span></a>
-      <a data-view="cast" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h12v10H2Z M5 5l3-3 3 3 M5 8h6v4H5Z"/></svg><span>Cast</span></a>
-    </nav>
     <div class="series">
       <button id="series-btn" class="series-seal" popovertarget="series-menu" type="button"><span id="series-num">22</span></button>
       <div id="series-menu" class="series-menu" popover></div>
@@ -49,5 +41,14 @@
   </section>
 
   <main id="view" tabindex="-1"><p class="loading-msg">Opening the envelopes…</p></main>
+
+  <nav class="tabs dock" aria-label="Sections">
+    <span class="tab-ink" aria-hidden="true"></span>
+    <a data-view="standings" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h8l2 2v10H3Z M5 6h6 M5 9h6 M5 12h4"/></svg><span>Table</span></a>
+    <a data-view="player" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 2h6v6H5Z M2 15v-3l2-2h8l2 2v3"/></svg><span>You</span></a>
+    <a data-view="episodes" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M1 4h14v9H1Z M1 4l7 5 7-5"/></svg><span>Episodes</span></a>
+    <a data-view="cast" href="#/"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 5h12v10H2Z M5 5l3-3 3 3 M5 8h6v4H5Z"/></svg><span>Cast</span></a>
+  </nav>
+
 </body>
 </html>
