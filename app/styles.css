@@ -386,7 +386,6 @@ strong { color: var(--t1); font-weight: 700; }
 .cd-head { margin-bottom: 12px; } /* Cast header: the episode head's pattern (kicker, Bungee title, mono line) */
 .cd-head .ep-sub b { font-family: var(--ff); font-weight: 800; }
 .cd-img { width: 104px; margin: 0 auto 10px; }
-.cd-img .fp { filter: drop-shadow(0 3px 14px rgba(0, 0, 0, .85)); }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
 
