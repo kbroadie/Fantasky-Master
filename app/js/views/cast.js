@@ -1,5 +1,5 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
-import { esc, rich, framed, state, icon, ICON_PATHS, TASK_NAME } from "../ui.js";
+import { esc, rich, ord, framed, state, icon, ICON_PATHS, TASK_NAME } from "../ui.js";
 import { statsFor, badgesFor, factsFor } from "../alltime.js";
 import { faceFor } from "../heroes.js";
 
@@ -36,14 +36,11 @@ function slide(d, c, max, med) {
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
 
   return `
-    <div class="cd-hero">
+    <div class="ep-head cd-head">
       <div class="cd-img">${framed(c)}</div>
-      <div class="cd-info">
-        <h2 class="cd-name" style="color:${c.color}">${esc(c.full)}</h2>
-        <div class="cd-sub">Rank #${c.rank} · avg ${c.avg.toFixed(1)}/ep${c.wins ? ` · ${c.wins} win${c.wins > 1 ? "s" : ""}` : ""}</div>
-        <div class="cd-pts">${c.total}</div>
-        <div class="cd-pts-l">total points</div>
-      </div>
+      <div class="kicker">${ord(c.rank)} of ${d.contestants.length} · Series ${state.key}</div>
+      <h2 class="ep-title">${esc(c.full)}</h2>
+      <div class="ep-sub"><b style="color:${c.color}">${c.total}</b> points · ${c.avg.toFixed(1)} an episode${c.wins ? ` · ${c.wins} win${c.wins > 1 ? "s" : ""}` : ""}</div>
     </div>
     ${records(d, c)}
     <div class="card">

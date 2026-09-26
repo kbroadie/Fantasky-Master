@@ -384,14 +384,10 @@ strong { color: var(--t1); font-weight: 700; }
 .tt .tot .best { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
 
 /* ── Cast ──────────────────────────────────────────────────────────── */
-.cd-hero { display: flex; align-items: center; gap: 4px; padding: 10px var(--px); margin-bottom: 12px; border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, var(--red-t), transparent); }
-.cd-img { width: clamp(118px, 30vw, 160px); flex-shrink: 0; }
+.cd-head { margin-bottom: 12px; } /* Cast header: the episode head's pattern (kicker, Bungee title, mono line) */
+.cd-head .ep-sub b { font-family: var(--ff); font-weight: 800; }
+.cd-img { width: 104px; margin: 0 auto 10px; }
 .cd-img .fp { filter: drop-shadow(0 3px 14px rgba(0, 0, 0, .85)); }
-.cd-info { flex: 1; min-width: 0; padding-left: 12px; }
-.cd-name { font-family: var(--ff-name); font-size: clamp(21px, 5.6vw, 27px); font-weight: 700; line-height: 1.1; }
-.cd-sub { font-family: var(--fm); font-size: 11px; color: var(--t3); margin-top: 6px; letter-spacing: .04em; }
-.cd-pts { font-size: clamp(40px, 11vw, 54px); font-weight: 900; line-height: 1; margin-top: 8px; color: var(--gold2); letter-spacing: -.03em; text-shadow: 0 0 14px var(--gold-glow); }
-.cd-pts-l { font-family: var(--fm); font-size: 11px; color: var(--t3); letter-spacing: .08em; }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
 
@@ -508,7 +504,6 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 }
 @media (min-width: 760px) {
   body { max-width: 840px; }
-  .cd-img { width: 170px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
