@@ -147,37 +147,32 @@ strong { color: var(--t1); font-weight: 700; }
 .last .chev { flex-shrink: 0; transform: rotate(-45deg); }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
-/* Columns shared by the header and every row, each with one alignment:
+/* Five columns shared by the header and every row, each with one alignment:
    rank (centre) · player (left) · Show and League (right, numbers line up)
    · chevron (centre). With hero shots (Series 22) the week's pick is the
-   row's backdrop (.pc-bg); without them (.faces, Series 21) it keeps its
-   own column of framed faces after the name. */
+   row's backdrop (.pc-bg); without them (Series 21) it isn't shown. */
 .st-head, .pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
 .st-head > :nth-child(1), .pc-head > :nth-child(1) { justify-self: center; }
 .st-head > :nth-child(2), .pc-head > :nth-child(2) { justify-self: start; }
 .st-head > :nth-child(3), .pc-head > :nth-child(3),
 .st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: right; }
 .st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
-.faces .st-head, .faces .pc-head { grid-template-columns: 36px minmax(0, 1fr) 32px 56px 56px 14px; }
-.faces .st-head > :nth-child(3), .faces .pc-head > :nth-child(3) { justify-self: center; text-align: center; }
-.faces .st-head > :nth-child(5), .faces .pc-head > :nth-child(5) { justify-self: stretch; text-align: right; }
-.faces .st-head > :nth-child(6), .faces .pc-head > :nth-child(6) { justify-self: center; }
 .st-head {
   padding-block: 7px; border-bottom: 1px solid var(--b-gold);
   background: linear-gradient(180deg, var(--s3), var(--s2));
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
 }
-.st-rank, .st-pick { white-space: nowrap; }
+.st-rank { white-space: nowrap; }
 .st-num { display: flex; justify-content: flex-end; align-items: center; gap: 2px; padding: 0; min-height: 36px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
 .st-num .arr { font-style: normal; font-size: 11px; width: 1em; visibility: hidden; }
 .st-num.on { text-decoration: none; }
 .st-num.on .arr { visibility: visible; }
 .st-num.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
 
-.pc { position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
+.pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 .pc.lead::before { content: ""; position: absolute; z-index: 2; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, transparent 10%, var(--gold2) 50%, transparent 90%); box-shadow: 0 0 6px var(--gold-glow); }
-.pc-head { width: 100%; min-height: 58px; padding-block: 8px; text-align: left; }
+.pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
 .pc-head:active { background: rgba(255, 255, 255, .03); }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .pc-rank b { font-size: 18px; font-weight: 800; color: var(--t2); line-height: 1; }
@@ -193,35 +188,34 @@ strong { color: var(--t1); font-weight: 700; }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
 
-/* The week's pick as the row's backdrop: the hero shot, scaled so it spans
-   the row from edge to edge, with the eyes (--ex/--ey, fractions of the
-   photo) on the row's vertical centre and at --tx across, the gap between
-   the name and the Show column. The row is a size container, so the photo's
-   width (--W) is the smallest that still covers both sides of the eyes.
-   On wide screens that makes the eyes comically big, on purpose. */
-.pc-head { position: relative; overflow: hidden; }
-.pc-head > :not(.pc-bg) { position: relative; z-index: 1; }
-.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: size; --tx: calc(50cqw - 16px); }
+/* The week's pick as the row's backdrop: the hero shot, behind the whole row
+   card (head and expanded picks). It spans the row edge to edge and is
+   scaled up until the temple pillars are out of frame: the photo's width
+   (--W) is the smallest that keeps the view inside the clear band between
+   the pillars (--x0 to --x1) on both sides of the eyes. The eyes (--ex/--ey)
+   sit on the head line's centre (--head / 2) and at --tx across, the gap
+   between the name and Show. Anchored to the top, so opening the row only
+   uncovers more of the photo below. */
+.pc-head, .pc-more { position: relative; z-index: 1; }
+.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); }
 .pc-bg img {
-  --W: calc(max(var(--tx) / var(--ex), (100cqw - var(--tx)) / (1 - var(--ex))) + 2px);
+  --W: calc(max(var(--tx) / (var(--ex) - var(--x0)), (100cqw - var(--tx)) / (var(--x1) - var(--ex))) + 2px);
   position: absolute; max-width: none; width: var(--W); height: auto;
-  left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(50cqh - var(--ey) * var(--W) / var(--ar));
+  left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
   filter: saturate(.85) brightness(.8) contrast(1.05);
 }
-/* Reshade: darker behind the name and the numbers, clear over the eyes. */
+/* Reshade: darker behind the name and the numbers, clear over the eyes;
+   the uncovered part below the head is dimmed a little for the picks. */
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, rgba(16, 13, 16, .82) 0, rgba(16, 13, 16, .66) 22%, rgba(16, 13, 16, .22) 40%, rgba(16, 13, 16, .22) 54%, rgba(16, 13, 16, .66) 66%, rgba(16, 13, 16, .84) 80%);
+  background:
+    linear-gradient(180deg, transparent var(--head), rgba(16, 13, 16, .5) calc(var(--head) + 24px)),
+    linear-gradient(90deg, rgba(16, 13, 16, .82) 0, rgba(16, 13, 16, .66) 22%, rgba(16, 13, 16, .22) 40%, rgba(16, 13, 16, .22) 54%, rgba(16, 13, 16, .66) 66%, rgba(16, 13, 16, .84) 80%);
 }
 /* A pick that won: the face warms towards gold. */
 .pc-bg.won img { filter: sepia(.35) saturate(1.15) brightness(.87) contrast(1.05); }
-.pc-bg.won::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 22% 90% at var(--tx) 50%, rgba(236, 192, 64, .22), transparent 70%); }
-
-/* Series without hero shots: the week's pick as a tiny framed face; a winning pick glows */
-.mini { display: block; width: 30px; }
-.mini .fp { width: 100%; filter: saturate(.9); }
-.mini.won .fp { filter: drop-shadow(0 0 5px var(--gold3)); }
-.mini.none { text-align: center; color: var(--t4); }
+.pc-bg.won::before { content: ""; position: absolute; inset: 0; z-index: 1; background: radial-gradient(ellipse 22% 40px at calc(50% - 16px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%); }
+.pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 
 /* Tap to open: ten weekly picks */
@@ -394,9 +388,8 @@ strong { color: var(--t1); font-weight: 700; }
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
-  .faces .st-head, .faces .pc-head { grid-template-columns: 44px minmax(0, 1fr) 36px 80px 80px 16px; }
-  .mini { width: 34px; }
   .pc-bg { --tx: calc(50cqw - 42px); }
+  .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%); }
   .bars { height: 180px; }
 }
 @media (min-width: 760px) {

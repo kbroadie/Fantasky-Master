@@ -15,7 +15,7 @@ app/js/main.js                  renders all pages at load, tabs, swipers, sortin
 app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
 app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
 app/js/podium-fx.js             canvas effects on episode podiums: winner's gold light, last place's stink gas
-app/js/heroes.js                presentation only: each series' hero shots (Imgur) and where the eyes are in each
+app/js/heroes.js                presentation only: each series' hero shots (Imgur originals), the eyes and the clear band between the pillars in each
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
 tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
@@ -36,10 +36,14 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - A last-week strip at the top: the winner's portrait and who called it, then "👑 Riley leads Show   🏆 Jamie leads League" (no scores, no separator). Tap it to open that episode.
   - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
   - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
-  - **Series with hero shots (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`). The contestant's hero shot spans the row edge to edge, scaled as needed (the eyes can get comically big on wide screens, on purpose). The eyes sit on the row's vertical centre and in the gap between the name and Show (`--tx`); their positions come from `heroes.js`. The photo is reshaded darker behind the name and numbers, and warmed gold if the pick won.
-  - **Series without hero shots (21):** the pick keeps its own column of small framed faces after the name (`.faces`).
+  - **Series with hero shots (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
+    - The contestant's hero shot spans the row edge to edge, scaled up until the temple pillars are out of frame: the view stays inside each photo's clear band (`clear` in `heroes.js`). The eyes get comically big, which is on purpose.
+    - The eyes sit on the centre line of the row's top line (`--head / 2`) and in the gap between the name and Show (`--tx`).
+    - It's anchored to the top, so opening a row doesn't move it; it just uncovers more of the photo, lightly dimmed behind the picks.
+    - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
+  - **Series without hero shots (21):** no pick is shown in the rows.
   - 👑 marks the Show leader and 🏆 the League leader in the last-week strip only, not on the rows. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
-  - The columns (rank, player, [pick,] Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
+  - The five columns (rank, player, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.
   - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).
   - Episode tabs carry a dot in the winner's colour.

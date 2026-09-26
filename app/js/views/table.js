@@ -45,23 +45,20 @@ function lastWeek(d) {
     <p class="lead-line">${lead}</p>`;
 }
 
-/** Series with hero shots show the week's pick as each row's backdrop; the rest keep a pick column. */
+/** Series with hero shots show the week's pick as each row's backdrop. */
 const heroRows = () => !!HEROES[state.key];
 
 export function standingsHead(d) {
   return `
     <div class="hero">${lastWeek(d)}</div>
-    <div class="st-table${heroRows() ? "" : " faces"}">
     <div class="st-head">
       <span class="st-rank">Rank</span>
       <span class="st-name">Player</span>
-      ${heroRows() ? "" : `<span class="st-pick">Wk ${pickWeek(d)}</span>`}
       <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
       <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
       <span></span>
     </div>
-    <div id="rows"></div>
-    </div>`;
+    <div id="rows"></div>`;
 }
 
 export function standingsRows(d) {
@@ -71,17 +68,15 @@ export function standingsRows(d) {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
     const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
-    const face = heroRows() ? "" : now?.pick ? `<span class="mini${now.won ? " won" : ""}">${framed(d.cast[now.pick])}</span>` : `<span class="mini none">–</span>`;
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
+      ${bg}
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
         <span class="pc-name"><span class="nm">${esc(p.name)}</span></span>
-        ${face}
         <span class="pc-num${tier(p.showRank)}">${p.show}</span>
         <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
         <span class="chev" aria-hidden="true"></span>
-        ${bg}
       </button>
       <div class="pc-more"><div>${picks(d, p)}</div></div>
     </div>`;
@@ -90,14 +85,15 @@ export function standingsRows(d) {
 
 /**
  * The row's backdrop: the hero shot of the contestant the player picked this
- * week, stretched to span the row from edge to edge, with the eyes on the
- * row's vertical centre and in the gap between the name and the Show column
- * (the eyes can get comically big on wide screens). Last in the row, so it
- * doesn't shift the grid columns (it's absolutely positioned).
+ * week. It spans the row edge to edge and is scaled up until the temple
+ * pillars are out of frame (the eyes can get comically big), with the eyes
+ * on the centre line of the row's top line and in the gap between the name
+ * and the Show column. It covers the whole row, so opening the row just
+ * uncovers more of the photo below; nothing moves.
  */
 function pickBackdrop(c, won) {
-  const [ex, ey] = HEROES[state.key][c.key].eye;
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${HEROES[state.key][c.key].src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--ar:${HERO_RATIO}"></span>`;
+  const { src, eye: [ex, ey], clear: [x0, x1] } = HEROES[state.key][c.key];
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${src}" alt="" decoding="async" style="--ex:${ex};--ey:${ey};--x0:${x0};--x1:${x1};--ar:${HERO_RATIO}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
