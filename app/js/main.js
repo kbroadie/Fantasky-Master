@@ -7,6 +7,7 @@ import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats } fro
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
+import { mountPodiumFx } from "./podium-fx.js";
 
 const PAGES = ["standings", "episodes", "cast"];
 let SERIES = {}, CURRENT = null;
@@ -43,6 +44,7 @@ function loadSeries(key) {
   renderRows();
   $("#ep-tabs").innerHTML = epTabs(d);
   $("#ep-body").innerHTML = epSlides(d);
+  mountPodiumFx($("#ep-body"));
   $("#cast-tabs").innerHTML = castTabs(d);
   $("#cast-body").innerHTML = castSlides(d);
   for (const id of ["#ep-body", "#cast-body"]) for (const s of $(id).children) sizes.observe(s);

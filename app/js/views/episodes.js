@@ -4,12 +4,6 @@
 // column sits under its portrait; the league's picks read winner first.
 import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon } from "../ui.js";
 
-/** A green stink cloud with three wavy lines rising off it. */
-const STINK = `<svg class="stink" viewBox="0 0 40 30" role="img" aria-label="Last place">
-  <g class="stink-lines"><path d="M12 13c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/><path d="M20 12c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/><path d="M28 13c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/></g>
-  <path class="stink-cloud" d="M10 29a6 6 0 0 1-1.3-11.86A8 8 0 0 1 23 14.2a6.5 6.5 0 0 1 11.3 4.6A5.2 5.2 0 0 1 32.5 29z"/>
-</svg>`;
-
 export const epTabs = (d) => d.episodes.map((e) => {
   const w = d.winners[e.ep];
   const dot = w ? `<i class="dot" style="background:${d.cast[w.winner].color}" aria-hidden="true"></i>` : "";
@@ -52,15 +46,15 @@ function slide(d, e) {
   const order = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a) || a.localeCompare(b));
   const rise = [...order].reverse(); // lowest to highest, left to right
   const col = rise.map((n) => d.idx[n]);
-  // Last place (sharing it counts) gets a green stink cloud, as the winner gets a crown.
+  // Last place (sharing it counts) gets the stink; the winner gets the crown and
+  // the gold light. Both effects are drawn by podium-fx.js.
   const bottom = Math.max(...d.names.map((n) => d.placing[e.ep][n]));
   const isLast = (n) => n !== w.winner && d.placing[e.ep][n] === bottom;
 
   const pod = rise.map((n) => {
     const backers = wk.by[n].length, win = n === w.winner, last = isLast(n);
     return `
-    <div class="pod-col${win ? " win" : last ? " last" : ""}">
-      ${win || last ? `<span class="aura" aria-hidden="true"></span>` : ""}${last ? STINK : ""}
+    <div class="pod-col${win ? " win" : last ? " last" : ""}"${last ? ` aria-label="${esc(n)}, last place"` : ""}>
       ${framed(d.cast[n])}
       <span class="pod-name" style="color:${d.cast[n].color}">${esc(n)}</span>
       <b class="pod-pts">${pts(n)}</b>
