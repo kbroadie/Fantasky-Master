@@ -3,7 +3,7 @@
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
-import { $, $$, esc, reducedMotion, state, fmtSoon, until } from "./ui.js";
+import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats } from "./ui.js";
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
@@ -98,16 +98,28 @@ function jump(sw, i) {
   fit(body);
 }
 
-/** A gold tab that slides in from the edge while you pull past the last slide. */
-const peek = $("#peek");
-function pull(side, label, dist) {
-  if (!side) { peek.className = "peek"; return; }
-  peek.textContent = side === "left" ? `‹ ${label}` : `${label} ›`;
-  peek.className = `peek ${side}${dist >= 50 ? " ready" : ""}`;
-  peek.style.setProperty("--pull", `${Math.min(dist, 70)}px`);
+// ── Swiping on into the neighbouring tab ─────────────────────────────────────
+// A sideways swipe where a page can't scroll any further switches to the
+// neighbouring tab. There's no visual hint while you pull.
+
+function edgeNav(el, can, onEdge) {
+  let x0 = null, y0 = 0, prev = false, next = false;
+  el.addEventListener("touchstart", (e) => {
+    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
+    prev = can.prev(); next = can.next();
+  }, { passive: true });
+  el.addEventListener("touchcancel", () => { x0 = null; }, { passive: true });
+  el.addEventListener("touchend", (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
+    x0 = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    if (prev && dx > 0) onEdge(-1);
+    if (next && dx < 0) onEdge(1);
+  }, { passive: true });
 }
 
-function bindSwiper(sw, onEdge, labels) {
+function bindSwiper(sw, onEdge, ends) {
   const body = $(sw.body);
   let raf = 0, settle = 0;
   body.addEventListener("scroll", () => {
@@ -123,33 +135,13 @@ function bindSwiper(sw, onEdge, labels) {
     const b = e.target.closest("[data-slide]");
     if (b) body.scrollTo({ left: b.dataset.slide * body.clientWidth, behavior: reducedMotion ? "auto" : "smooth" });
   });
-  // Swiping past either end carries on into the neighbouring tab.
-  let x0 = null, y0 = 0, atStart = false, atEnd = false;
-  body.addEventListener("touchstart", (e) => {
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
-    atStart = body.scrollLeft <= 2;
-    atEnd = body.scrollLeft >= body.scrollWidth - body.clientWidth - 2;
-  }, { passive: true });
-  body.addEventListener("touchmove", (e) => {
-    if (x0 == null) return;
-    const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
-    const side = atStart && dx > 0 && labels.prev ? "left" : atEnd && dx < 0 && labels.next ? "right" : null;
-    if (side && Math.abs(dx) > Math.abs(dy) * 1.5) pull(side, side === "left" ? labels.prev : labels.next, Math.abs(dx));
-    else pull(null);
-  }, { passive: true });
-  body.addEventListener("touchcancel", () => { x0 = null; pull(null); }, { passive: true });
-  body.addEventListener("touchend", (e) => {
-    pull(null);
-    if (x0 == null) return;
-    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
-    x0 = null;
-    if (Math.abs(dx) < 50 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    if (atStart && dx > 0) onEdge(-1);
-    if (atEnd && dx < 0) onEdge(1);
-  }, { passive: true });
+  edgeNav(body, {
+    prev: () => ends.prev && body.scrollLeft <= 2,
+    next: () => ends.next && body.scrollLeft >= body.scrollWidth - body.clientWidth - 2,
+  }, onEdge);
 }
 
-// ── Countdown to the next poll deadline, in the device's time ────────────────
+// ── Countdown: one line, "Ep 5 airs in 5d 18h" ──────────────────────────────
 
 let timer = 0;
 
@@ -157,18 +149,20 @@ function countdown() {
   clearInterval(timer);
   const el = $("#cd"), e = state.d.nextEp;
   if (!e) {
-    el.innerHTML = `<span class="cd-label">Series ${state.key}</span><span class="cd-pill done">Complete</span>`;
+    el.innerHTML = `<span class="cd-pill"><span class="cd-what">Series ${state.key}</span> <b>complete</b></span>`;
+    el.removeAttribute("aria-label");
     return;
   }
-  el.innerHTML = `<span class="cd-label">Ep ${e.ep} · ${esc(fmtSoon.format(e.air))}</span><span class="cd-pill" id="cd-left"></span>`;
-  el.setAttribute("aria-label", `Poll for episode ${e.ep} closes ${e.air.toLocaleString()}`);
+  el.innerHTML = `<span class="cd-pill"><span class="cd-what" id="cd-what"></span> <span class="cd-left" id="cd-left"></span></span>`;
+  el.setAttribute("aria-label", `Episode ${e.ep} airs ${fmtWhen.format(e.air)}`);
   let last = "";
   const tick = () => {
     const ms = e.air - Date.now();
-    const html = ms > 0
-      ? until(ms).map(([n, u]) => `<b>${n}</b><small>${u}</small>`).join(" ")
-      : `<b>Poll closed</b>`;
-    if (html !== last) $("#cd-left").innerHTML = last = html;
+    const html = ms > 0 ? until(ms).map(([n, u]) => `<b>${n}</b><small>${u}</small>`).join(" ") : "";
+    if (html === last) return;
+    last = html;
+    $("#cd-what").textContent = ms > 0 ? `Ep ${e.ep} airs in` : `Ep ${e.ep} is on air`;
+    $("#cd-left").innerHTML = html;
     if (ms <= 0) clearInterval(timer);
   };
   tick();
@@ -201,13 +195,15 @@ $("#p-standings").addEventListener("click", (e) => {
   if (head) head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
 });
 
+// Standings has nothing to scroll sideways, so a left swipe goes to Episodes.
+edgeNav($("#p-standings"), { prev: () => false, next: () => true }, () => show("episodes"));
 bindSwiper(EP, (dir) => {
   if (dir < 0) show("standings");
   else { state.cast = 0; show("cast"); }
-}, { prev: "Standings", next: "Cast" });
+}, { prev: true, next: true });
 bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
-}, { prev: "Episodes" });
+}, { prev: true, next: false });
 
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
@@ -239,6 +235,7 @@ addEventListener("hashchange", () => {
 try {
   SERIES = await loadData();
   CURRENT = currentSeriesKey(SERIES, new Date());
+  state.stats = perEpisodeStats(SERIES);
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);

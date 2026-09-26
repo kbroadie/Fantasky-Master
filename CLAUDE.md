@@ -27,20 +27,26 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Top bar** (sticky, frosted glass):
   - The brand.
   - The series number, a gold chip with a swap icon: tap it to switch series.
-  - The poll deadline in local time over a gold pill of time left.
+  - A one-line gold chip counting down to the next episode: "Ep 5 airs in 5d 18h". The air date and time are on the episode page, not here.
   - Below them, three segmented tabs, with a gold panel that slides behind the active one.
   - On scroll it compacts to one thin line plus label-only tabs. The height it saves goes back as margin (`--hdr-h`, `--tabs-h`… in `:root`), so the layout height never changes. Keep that invariant, or scroll anchoring makes the bar flicker.
 - **Standings:**
   - A last-week strip at the top: the winner's portrait, who called it, and who leads each board. Tap it to open that episode.
   - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
-  - Each row shows rank and movement, a crown on #1, the player's pick that week as a framed face, Show, League and a chevron. Tap a row to open that player's ten picks.
+  - Each row shows rank and movement, the player's pick that week as a framed face, Show, League and a chevron. Tap a row to open that player's ten picks.
+  - 👑 marks the Show leader and 🏆 the League leader, whatever the sort. Task types use their own gold line icons (`icon()` in `ui.js`), never emoji, so 🏆 means only one thing.
+  - The six columns (rank, player, pick, Show, League, chevron) are shared by the header and rows, and each has one alignment; the sort arrow sits left of the header label so the numbers' right edges line up.
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.
-  - Swiping past the first or last slide carries on into the neighbouring tab, and a gold edge tab ("Cast ›") slides in while you pull.
+  - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).
   - Episode tabs carry a dot in the winner's colour.
   - Portraits, the league's picks and the task table all run in finishing order.
   - The next episode shows its poll deadline and the five contestants.
-  - The Cast tab shows points per episode as bars on one scale for all five contestants.
-- **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen`, `fmtSoon` in `ui.js`). Never hard-code London.
+  - The Cast tab shows points per episode as bars on one scale for all five contestants, and a Performance radar with three axes, Prize, Filmed and Live, each labelled with its line icon (team tasks aren't counted, not even in Filmed).
+    - Each axis is a z-score of points per episode against every contestant in every series (`perEpisodeStats` in `ui.js`, stored as `state.stats`). It's per episode so a series in progress compares fairly with a finished one.
+    - The scale runs from −3σ at the centre to +3σ at the edge of the circle. There's a hairline ring at every whole σ, with ticks where the rings cross the axes, and a dashed gold ring at 0σ (the all-series average).
+    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points and no outline. Each axis has one centred group set clear of the circle: the z-score to two decimals as the headline ("+2.48σ"), with the icon and name as a muted caption below. The card head says "z-score vs all series". The look is precise and minimal: hairlines, no decoration.
+- **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
+- **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
 - **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
 

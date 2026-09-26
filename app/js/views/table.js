@@ -3,6 +3,10 @@
 import { esc, listing, ord, tier, framed, named, fmtWhen, state } from "../ui.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
+/** 👑 marks the Show points leader and 🏆 the League points leader. */
+const CROWN = `<span role="img" aria-label="Show leader">👑</span>`;
+const TROPHY = `<span role="img" aria-label="League leader">🏆</span>`;
+
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
 function leaders(d, key) {
@@ -25,8 +29,8 @@ function lastWeek(d) {
   const show = leaders(d, "show"), league = leaders(d, "league");
   const verb = (n) => d.complete ? (n.includes(" and ") ? "win" : "wins") : (n.includes(" and ") ? "lead" : "leads");
   const lead = show.names === league.names
-    ? `<b>${esc(show.names)}</b> ${verb(show.names)} both boards: ${show.top} Show, ${league.top} League`
-    : `<b>${esc(show.names)}</b> ${verb(show.names)} Show (${show.top}) · <b>${esc(league.names)}</b> ${verb(league.names)} League (${league.top})`;
+    ? `${CROWN}${TROPHY} <b>${esc(show.names)}</b> ${verb(show.names)} both boards: ${show.top} Show, ${league.top} League`
+    : `${CROWN} <b>${esc(show.names)}</b> ${verb(show.names)} Show (${show.top}) · ${TROPHY} <b>${esc(league.names)}</b> ${verb(league.names)} League (${league.top})`;
   return `
     <button class="last" data-ep="${e}" aria-label="Open episode ${e}">
       <span class="last-face">${framed(c)}</span>
@@ -37,7 +41,7 @@ function lastWeek(d) {
       </span>
       <span class="chev" aria-hidden="true"></span>
     </button>
-    <p class="lead-line">👑 ${lead}</p>`;
+    <p class="lead-line">${lead}</p>`;
 }
 
 export function standingsHead(d) {
@@ -47,8 +51,8 @@ export function standingsHead(d) {
       <span class="st-rank">Rank</span>
       <span class="st-name">Player</span>
       <span class="st-pick">Wk ${pickWeek(d)}</span>
-      <button class="st-num" data-sort="show">Show<i class="arr"></i></button>
-      <button class="st-num" data-sort="league">League<i class="arr"></i></button>
+      <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
+      <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
       <span></span>
     </div>
     <div id="rows"></div>`;
@@ -65,7 +69,7 @@ export function standingsRows(d) {
     <div class="pc${rank === 1 ? " lead" : ""}">
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
-        <span class="pc-name">${esc(p.name)}${rank === 1 ? `<span class="crown" role="img" aria-label="leader">👑</span>` : ""}</span>
+        <span class="pc-name"><span class="nm">${esc(p.name)}</span>${p.showRank === 1 ? `<span class="badge" role="img" aria-label="Show leader">👑</span>` : ""}${p.leagueRank === 1 ? `<span class="badge" role="img" aria-label="League leader">🏆</span>` : ""}</span>
         ${face}
         <span class="pc-num${tier(p.showRank)}">${p.show}</span>
         <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
