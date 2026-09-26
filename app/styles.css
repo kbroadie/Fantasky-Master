@@ -324,9 +324,13 @@ strong { color: var(--t1); font-weight: 700; }
 .ballot span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .ballot b { font-family: var(--ff-name); font-size: 12px; font-weight: 700; }
 
-.cols { display: grid; grid-template-columns: 46px 56px; text-align: right; gap: 6px; }
+/* The league's picks: Show and League centred in two equal columns, as on
+   Standings; the head and rows share the same right padding so each number
+   sits under its label, and the insets balance the card's 12px left side. */
+.cols { display: grid; grid-template-columns: 54px 54px; column-gap: 8px; text-align: center; flex-shrink: 0; }
 .card-head .cols { letter-spacing: .06em; }
-.lg-row { display: flex; align-items: center; gap: 10px; padding: 9px 12px 9px 10px; border-top: 1px solid var(--b-dim); border-left: 3px solid var(--c); }
+.lg-head { padding-right: 6px; }
+.lg-row { display: flex; align-items: center; gap: 10px; padding: 9px 6px 9px 10px; border-top: 1px solid var(--b-dim); border-left: 3px solid var(--c); }
 .lg-row.win { background: linear-gradient(90deg, rgba(212, 160, 40, .14), transparent 70%); }
 .lg-who { flex: 1; min-width: 0; font-size: 16px; }
 .lg-who small { font-family: var(--fm); font-size: 11px; color: var(--t3); margin-left: 2px; }
@@ -337,11 +341,17 @@ strong { color: var(--t1); font-weight: 700; }
 .lg-row.win .cols b { color: var(--gold3); }
 
 .tt-wrap { overflow-x: auto; }
-.tt { width: 100%; border-collapse: collapse; }
+/* Task table: the task column takes the rest; five equal score columns, the
+   last with extra right padding so the numbers sit as far from the card's
+   right edge as the task names do from its left (12px, like a card head). */
+.tt { width: 100%; border-collapse: collapse; table-layout: fixed; }
+.tt th:not(:first-child) { width: 40px; }
+.tt th:last-child { width: 44px; }
+.tt th:last-child, .tt td:last-child { padding-right: 9px; }
 .tt th { font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .08em; text-transform: uppercase; padding: 8px 5px; text-align: center; background: linear-gradient(180deg, var(--s3), var(--s2)); border-bottom: 1px solid var(--b-gold); }
-.tt th:first-child { text-align: left; padding-left: 10px; }
+.tt th:first-child { text-align: left; padding-left: 12px; }
 .tt td { padding: 8px 5px; text-align: center; border-bottom: 1px solid var(--b-dim); font-size: 17px; font-weight: 700; }
-.tt td:first-child { text-align: left; padding-left: 10px; font-size: 14px; font-weight: 400; color: var(--t2); }
+.tt td:first-child { text-align: left; padding-left: 12px; font-size: 14px; font-weight: 400; color: var(--t2); }
 .tn { display: flex; align-items: center; gap: 7px; }
 /* Task-type icons: one monoline set, gold, same size everywhere */
 .ico { flex-shrink: 0; width: 15px; height: 15px; fill: none; stroke: var(--gold2); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
@@ -349,7 +359,7 @@ strong { color: var(--t1); font-weight: 700; }
 .tname.full { display: block; }
 .best { color: var(--gold2); }
 .worst { color: var(--t4); }
-.tt .tot td { border-bottom: 0; background: var(--s3); font-size: 22px; font-weight: 800; }
+.tt .tot td { border-bottom: 0; background: var(--s3); font-size: 20px; font-weight: 800; letter-spacing: -.02em; }
 .tt .tot td:first-child { font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .1em; text-transform: uppercase; }
 .tt .tot .best { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
 
@@ -439,6 +449,9 @@ strong { color: var(--t1); font-weight: 700; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
   .board .st-head, .board .pc-head { grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 16px 22px; }
   .board .pk-grid { padding-inline: 20px; }
+  .cols { grid-template-columns: 72px 72px; column-gap: 12px; }
+  .tt th:not(:first-child) { width: 64px; }
+  .tt th:last-child { width: 70px; }
   .pc-bg { --tx: calc(50cqw - 42px); --face: 106px; }
   .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
   .bars { --plot: 126px; }

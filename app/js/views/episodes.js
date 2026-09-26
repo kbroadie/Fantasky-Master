@@ -65,7 +65,7 @@ function slide(d, e) {
   const noVote = d.players.filter((p) => !p.weeks[e.ep - 1].pick).map((p) => p.name);
   const league = `
     <div class="card">
-      <div class="card-head"><span>The league's picks</span><span class="cols"><span>Show</span><span>League</span></span></div>
+      <div class="card-head lg-head"><span>The league's picks</span><span class="cols"><span>Show</span><span>League</span></span></div>
       ${order.map((n) => {
         const by = wk.by[n];
         return `<div class="lg-row${n === w.winner ? " win" : ""}" style="--c:${d.cast[n].color}">
