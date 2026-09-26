@@ -9,7 +9,7 @@ export const ord = (n) => { const s = ["th", "st", "nd", "rd"], v = n % 100; ret
 export const listing = (a) => a.length < 2 ? a.join("") : `${a.slice(0, -1).join(", ")} and ${a.at(-1)}`;
 export const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-export const ICON = { P: "🏆", F: "🎬", T: "👥", L: "⚡" };
+export const ICON = { P: "🎁", F: "🎬", T: "👥", L: "⚡" }; // 🏆 is kept for the League leader
 /** Gold, silver and bronze for the top three; nothing for the rest. */
 export const tier = (rank) => rank <= 3 ? ` t${rank}` : "";
 // Dates and deadlines are shown in the device's own time zone and locale.

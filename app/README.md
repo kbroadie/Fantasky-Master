@@ -24,11 +24,11 @@ On scroll the bar shrinks to one thin line. All three pages are drawn when the a
 
 | Tab | What's on it |
 |---|---|
-| **Standings** | Last week at a glance: the winner's portrait, who called it and who leads each board (tap it to open that episode). Then one table with every player's rank and movement, a crown on the leader, the face of the contestant they picked this week (glowing gold if the pick won), and their Show and League points. Tap **Show** or **League** to sort (▼/▲ shows the direction). Tap a player (the chevron) to open their ten weekly picks. |
+| **Standings** | Last week at a glance: the winner's portrait, who called it and who leads each board (tap it to open that episode). Then one table with every player's rank and movement, a 👑 on the Show leader and a 🏆 on the League leader, the face of the contestant they picked this week (glowing gold if the pick won), and their Show and League points. Tap **Show** or **League** to sort (▼/▲ shows the direction). Tap a player (the chevron) to open their ten weekly picks. |
 | **Episodes** | A strip of Ep 1–10, each with a dot in the winner's colour, above swipeable episodes. Each has the five framed portraits in finishing order, with scores, how many players picked each, and a crown on the winner. Then come the league's picks (who backed whom and what they earned), the task-by-task table (long names show two lines; tap for the rest) and the write-up. The next episode shows when its poll closes, in your time. |
-| **Cast** | A strip of names in standings order above swipeable contestant pages: portrait and total, how often the league picked them, points per episode as bars in their colour (a crown for a win) with the Prize/Filmed/Live split underneath, then the bio and a stat. |
+| **Cast** | A strip of names in standings order above swipeable contestant pages: portrait and total, how often the league picked them, points per episode as bars in their colour (a crown for a win), a strengths radar of their Prize, Filmed, Team and Live points against the rest of the cast (the edge is the best in the cast), then the bio and a stat. |
 
-Swiping past the last episode carries on into the Cast tab (a gold "Cast ›" tab slides in as you pull), and swiping back from the first episode returns to Standings.
+Swiping left on Standings opens Episodes, swiping past the last episode carries on into the Cast tab, and swiping back from the first episode returns to Standings. While you pull, a pill names where you'll land and turns gold once letting go will switch.
 
 ## Look
 
