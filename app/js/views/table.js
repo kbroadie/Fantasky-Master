@@ -1,48 +1,44 @@
-// Standings: last week's result, then one sortable table (Show or League).
+// Standings: the Show and League leaders, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
-import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
-/** 👑 marks the Show points leader and 🏆 the League points leader. */
-const CROWN = `<span role="img" aria-label="Show leader">👑</span>`;
-const TROPHY = `<span role="img" aria-label="League leader">🏆</span>`;
-
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
-function leaders(d, key) {
-  const top = Math.max(...d.players.map((p) => p[key]));
-  return { names: listing(d.players.filter((p) => p[key] === top).map((p) => p.name)), top };
+/** 👑 marks the Show points leader and 🏆 the League points leader. */
+const CROWN = `<span role="img" aria-label="Show">👑</span>`;
+const TROPHY = `<span role="img" aria-label="League">🏆</span>`;
+
+/** Who leads a board (ties share it), their points, and the gap to the next player. */
+function leader(d, key) {
+  const pts = d.players.map((p) => p[key]), top = Math.max(...pts);
+  const names = d.players.filter((p) => p[key] === top).map((p) => p.name);
+  const next = Math.max(...pts.filter((v) => v < top));
+  return { names, top, gap: names.length > 1 ? 0 : Number.isFinite(next) ? top - next : 0 };
 }
 
-/** The last scored episode's winner, who called it, and who's leading. */
-function lastWeek(d) {
+/** The hero: the Show and League leaders side by side (👑 and 🏆). */
+function leadersHero(d) {
   const e = d.weeksScored;
   if (!e) {
     const first = d.episodes[0];
     return `<div class="last"><div class="last-txt"><span class="kicker">Series ${state.key}</span>
       <b class="last-main">Starts ${esc(fmtWhen.format(first.air))}</b></div></div>`;
   }
-  const w = d.winners[e], wk = d.weekly[e], c = d.cast[w.winner];
-  const called = wk.hits.length
-    ? `${wk.hits.length} of ${wk.voters} called it: <span class="callers">${esc(listing(wk.hits))}</span>`
-    : `Nobody called it`;
-  const show = leaders(d, "show"), league = leaders(d, "league");
-  const verb = (n) => d.complete ? (n.includes(" and ") ? "win" : "wins") : (n.includes(" and ") ? "lead" : "leads");
-  const lead = show.names === league.names
-    ? `<span>${CROWN}${TROPHY} <b>${esc(show.names)}</b> ${verb(show.names)} both boards</span>`
-    : `<span>${CROWN} <b>${esc(show.names)}</b> ${verb(show.names)} Show</span><span>${TROPHY} <b>${esc(league.names)}</b> ${verb(league.names)} League</span>`;
+  const tile = (key, badge, label) => {
+    const l = leader(d, key);
+    const sub = l.names.length > 1 ? "tied" : l.gap ? `${l.gap} clear` : "";
+    return `
+      <div class="ld">
+        <span class="ld-label">${badge} ${d.complete ? `${label} champion` : `${label} leader`}</span>
+        <b class="ld-name">${esc(listing(l.names))}</b>
+        <span class="ld-pts"><b>${l.top}</b> pts${sub ? `<i>${sub}</i>` : ""}</span>
+      </div>`;
+  };
   return `
-    <button class="last" data-ep="${e}" aria-label="Open episode ${e}">
-      <span class="last-face">${framed(c)}</span>
-      <span class="last-txt">
-        <span class="kicker">Series ${state.key} · Episode ${e}${d.complete ? " · Final" : ""}</span>
-        <span class="last-main">${named(c)} won with ${w.top}</span>
-        <span class="last-sub">${called}</span>
-      </span>
-      <span class="chev" aria-hidden="true"></span>
-    </button>
-    <p class="lead-line">${lead}</p>`;
+    <p class="kicker ld-kicker">Series ${state.key} · ${d.complete ? "Final" : `After episode ${e}`}</p>
+    <div class="leaders">${tile("show", CROWN, "Show")}${tile("league", TROPHY, "League")}</div>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -50,7 +46,7 @@ const heroRows = () => !!GROUP[state.key]?.faces;
 
 export function standingsHead(d) {
   return `
-    <div class="hero">${lastWeek(d)}</div>
+    <div class="hero">${leadersHero(d)}</div>
     <div class="card board">
       <div class="st-head">
         <span class="st-rank">Rank</span>
@@ -97,7 +93,7 @@ export function standingsRows(d) {
 function pickBackdrop(c, won) {
   const f = faceFor(state.key, c.key);
   if (!f) return "";
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--sep:${f.sep};--ar:${f.ratio}"></span>`;
+  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;

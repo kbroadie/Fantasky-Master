@@ -79,7 +79,7 @@ function profile(c) {
   const facts = factsFor(statsRow(c));
   if (!c.bio && !facts.length) return "";
   const f = faceFor(state.key, c.key);
-  const bg = f ? `<span class="pf-bg" aria-hidden="true"><img src="${f.src}" alt="" loading="lazy" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--sep:${f.sep};--ar:${f.ratio}"></span>` : "";
+  const bg = f ? `<span class="pf-bg" aria-hidden="true"><img src="${f.src}" alt="" loading="lazy" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>` : "";
   return `
     <div class="card note profile${f ? " has-face" : ""}">
       ${bg}
