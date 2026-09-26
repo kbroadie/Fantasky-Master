@@ -77,10 +77,16 @@ const EP = { body: "#ep-body", tabs: "#ep-tabs", get: () => state.ep - 1, set: (
 const CAST = { body: "#cast-body", tabs: "#cast-tabs", get: () => state.cast, set: (i) => { state.cast = i; } };
 
 const idxOf = (body) => Math.round(body.scrollLeft / body.clientWidth);
-/** The row is only as tall as the slide on screen. */
+/**
+ * The row is as tall as the slide on screen, but never stops short of the
+ * bottom of the screen, so you can swipe anywhere below a short slide.
+ */
 function fit(body) {
   const s = body.children[idxOf(body)];
-  if (s) body.style.height = `${s.offsetHeight}px`;
+  if (!s) return;
+  const pad = parseFloat(getComputedStyle(document.body).paddingBottom) || 0;
+  const toBottom = innerHeight - (body.getBoundingClientRect().top + scrollY) - pad;
+  body.style.height = `${Math.max(s.offsetHeight, toBottom)}px`;
 }
 const sizes = new ResizeObserver((entries) => {
   for (const b of new Set(entries.map((e) => e.target.parentElement))) if (b?.isConnected) fit(b);

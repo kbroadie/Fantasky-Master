@@ -1,6 +1,6 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
-import { esc, listing, ord, tier, framed, named, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -29,8 +29,8 @@ function lastWeek(d) {
   const show = leaders(d, "show"), league = leaders(d, "league");
   const verb = (n) => d.complete ? (n.includes(" and ") ? "win" : "wins") : (n.includes(" and ") ? "lead" : "leads");
   const lead = show.names === league.names
-    ? `${CROWN}${TROPHY} <b>${esc(show.names)}</b> ${verb(show.names)} both boards: ${show.top} Show, ${league.top} League`
-    : `${CROWN} <b>${esc(show.names)}</b> ${verb(show.names)} Show (${show.top}) · ${TROPHY} <b>${esc(league.names)}</b> ${verb(league.names)} League (${league.top})`;
+    ? `<span>${CROWN}${TROPHY} <b>${esc(show.names)}</b> ${verb(show.names)} both boards</span>`
+    : `<span>${CROWN} <b>${esc(show.names)}</b> ${verb(show.names)} Show</span><span>${TROPHY} <b>${esc(league.names)}</b> ${verb(league.names)} League</span>`;
   return `
     <button class="last" data-ep="${e}" aria-label="Open episode ${e}">
       <span class="last-face">${framed(c)}</span>
@@ -89,7 +89,5 @@ function picks(d, p) {
     const pts = w.show == null ? "…" : league ? w.league : w.show;
     return `<div class="pk${w.won ? " won" : ""}"><small>${w.ep}</small>${framed(d.cast[w.pick])}<b>${pts}</b></div>`;
   }).join("");
-  const best = p.best ? `best ${p.best.show} with ${esc(p.best.pick)} in ep ${p.best.ep}` : "";
-  const hits = p.hits ? `called ${p.hits} winner${p.hits > 1 ? "s" : ""} ★` : "no winners called yet";
-  return `<div class="pk-grid">${cells}</div><p class="pk-note">${[hits, best, `${ord(p.showRank)} on Show, ${ord(p.leagueRank)} on League`].filter(Boolean).join(" · ")}</p>`;
+  return `<div class="pk-grid">${cells}</div>`;
 }
