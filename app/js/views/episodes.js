@@ -85,55 +85,72 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// A bump chart: each contestant's rank by running total after every episode
-// up to this one (1st at the top), a line in their colour, labelled at the end
-// with their name and total. Ties share a rank and are nudged apart so both
-// lines show. Tap a point to read it in the caption.
+// Every contestant's running total after each episode up to this one, from 0
+// at the start: a smooth line in their colour (a monotone cubic Bézier, so it
+// never dips between episodes the way a looser curve could), labelled at the
+// end with their name and total. Tap a point to read it in the caption.
+
+/** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
+function smooth(pts) {
+  const n = pts.length, f1 = (v) => v.toFixed(1);
+  if (n < 3) return `M${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join("L")}`;
+  const dx = [], m = [], t = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
+  t[0] = m[0]; t[n - 1] = m[n - 2];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (3 * (dx[i - 1] + dx[i])) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]);
+  let d = `M${f1(pts[0][0])},${f1(pts[0][1])}`;
+  for (let i = 0; i < n - 1; i++) {
+    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], h = dx[i] / 3;
+    d += `C${f1(x0 + h)},${f1(y0 + t[i] * h)} ${f1(x1 - h)},${f1(y1 - t[i + 1] * h)} ${f1(x1)},${f1(y1)}`;
+  }
+  return d;
+}
+
+/** A tidy axis step (1, 2, 2.5 or 5 × 10ⁿ) giving at most five gridlines. */
+function niceStep(max) {
+  const raw = max / 4, p = 10 ** Math.floor(Math.log10(raw || 1));
+  return [1, 2, 2.5, 5, 10].map((k) => k * p).find((s) => s >= raw);
+}
 
 function raceChart(d, upTo) {
-  const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const names = d.names, eps = Array.from({ length: upTo + 1 }, (_, i) => i); // 0 = the start
   const total = Object.fromEntries(names.map((n) => [n, [0]]));
-  for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
-  // rank[e][n], competition ranking ("1-2-2-4") on the running total
-  const rank = {};
-  for (const e of eps) {
-    const sorted = [...names].sort((a, b) => total[b][e] - total[a][e]);
-    rank[e] = Object.fromEntries([...rankWithTies(sorted, (n) => total[n][e])]);
-  }
-  const W = 340, L = 34, R = 236, T = 16, row = 28, n = names.length, H = T + (n - 1) * row + 34;
-  const x = (e) => (upTo === 1 ? R : L + ((e - 1) / (upTo - 1)) * (R - L));
-  const y = (e, name) => {
-    const r = rank[e][name], tied = names.filter((m) => rank[e][m] === r).sort((a, b) => d.idx[a] - d.idx[b]);
-    return T + (r - 1) * row + (tied.indexOf(name) - (tied.length - 1) / 2) * 6;
-  };
+  for (const e of eps.slice(1)) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  const sorted = (e) => [...names].sort((a, b) => total[b][e] - total[a][e]);
+  const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
+  const top = Math.max(1, ...names.map((n) => total[n][upTo])), step = niceStep(top), yMax = Math.ceil(top / step) * step;
+  const W = 340, L = 34, R = 236, T = 12, B = 160, H = B + 24;
+  const x = (e) => L + (e / upTo) * (R - L), y = (v) => B - (v / yMax) * (B - T);
   const f1 = (v) => v.toFixed(1);
-  const grid = names.map((_, i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${T + i * row}" y2="${T + i * row}"/><text class="rc-axis" x="${L - 10}" y="${T + i * row + 4}" text-anchor="end">${ord(i + 1)}</text>`).join("");
-  const xAxis = eps.map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
-  // End labels: at each line's last point, but at least 15 apart, so tied
-  // contestants' names don't sit on top of each other (pushed apart evenly).
-  const labelY = {}, ends = [...names].sort((a, b) => y(upTo, a) - y(upTo, b));
-  ends.forEach((m, i) => { labelY[m] = Math.max(y(upTo, m), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
-  const over = Math.max(0, labelY[ends.at(-1)] - (T + (n - 1) * row + 3));
-  for (const m of ends) labelY[m] -= over / 2;
+  const ticks = Array.from({ length: Math.round(yMax / step) + 1 }, (_, i) => i * step);
+  const grid = ticks.map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-axis" x="${L - 8}" y="${f1(y(v) + 4)}" text-anchor="end">${v}</text>`).join("");
+  const xAxis = eps.slice(1).map((e) => `<text class="rc-axis${e === upTo ? " now" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  // End labels at each line's end, kept at least 15 apart (pushed apart
+  // evenly, inside the plot); a hairline joins a label to its line if moved.
+  const ends = sorted(upTo), labelY = {};
+  ends.forEach((m, i) => { labelY[m] = Math.max(y(total[m][upTo]), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
+  const over = Math.max(0, labelY[ends.at(-1)] - B);
+  for (const m of ends) labelY[m] -= over;
+  for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
   // Leader drawn last, so its line sits on top
-  const byFinal = [...names].sort((a, b) => rank[upTo][b] - rank[upTo][a]);
-  const lines = byFinal.map((name) => {
-    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(e, name)]);
-    const line = upTo > 1 ? `<polyline points="${pts.map(([a, b]) => `${f1(a)},${f1(b)}`).join(" ")}" style="stroke:${c}"/>` : "";
-    const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
-    const [lx] = pts.at(-1), ly = labelY[name];
-    const label = `<text class="rc-name" x="${f1(lx + 12)}" y="${f1(ly + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${total[name][upTo]}</tspan></text>`;
-    const hits = pts.map(([a, b], i) => {
-      const e = i + 1, say = `Ep ${e} · ${name} · ${ord(rank[e][name])} on ${total[name][e]} points`;
+  const lines = [...ends].reverse().map((name) => {
+    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(total[name][e])]);
+    const path = `<path d="${smooth(pts)}" style="stroke:${c}"/>`;
+    const dots = pts.slice(1).map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    const [lx, ly] = pts.at(-1), ty = labelY[name];
+    const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
+    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name)}<tspan class="rc-total" dx="6">${total[name][upTo]}</tspan></text>`;
+    const hits = pts.slice(1).map(([a, b], i) => {
+      const e = i + 1, say = `Ep ${e} · ${name} · ${total[name][e]} points (${ord(rank(e, name))})`;
       return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
     }).join("");
-    return `<g>${line}${dots}${label}${hits}</g>`;
+    return `<g>${path}${dots}${lead}${label}${hits}</g>`;
   }).join("");
-  const summary = [...names].sort((a, b) => rank[upTo][a] - rank[upTo][b]).map((m) => `${ord(rank[upTo][m])} ${m} ${total[m][upTo]}`).join(", ");
+  const summary = ends.map((m) => `${m} ${total[m][upTo]}`).join(", ");
   return `
     <div class="card race">
-      <div class="card-head"><span>The race so far</span><span class="legend">rank by total points</span></div>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Standings by total points after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
-      <p class="rc-cap">Tap a point for the standings that week</p>
+      <div class="card-head"><span>The race so far</span><span class="legend">total points</span></div>
+      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Total points after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
+      <p class="rc-cap">Tap a point for that week's total</p>
     </div>`;
 }
