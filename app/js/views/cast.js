@@ -8,17 +8,31 @@ export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.ran
 export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}">${esc(c.key)}</button>`).join("");
 
 export function castSlides(d) {
-  // One scale for every contestant, so bars compare across slides.
-  const max = Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored)));
-  return castOrder(d).map((c) => `<section class="slide">${slide(d, c, max)}</section>`).join("");
+  // One scale for every contestant, so bars compare across slides, with the
+  // series median of every contestant's episode scores as a reference line.
+  const scores = d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored));
+  const max = Math.max(1, ...scores);
+  return castOrder(d).map((c) => `<section class="slide">${slide(d, c, max, median(scores))}</section>`).join("");
 }
 
-function slide(d, c, max) {
+function median(xs) {
+  if (!xs.length) return null;
+  const s = [...xs].sort((a, b) => a - b), m = s.length >> 1;
+  return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
+}
+
+function slide(d, c, max, med) {
+  // Each bar's height is exactly its score over the shared max (--f); the
+  // number and crown sit above it and the episode number below, outside the
+  // plot, so they never squeeze the bar.
+  const f = (v) => (v / max).toFixed(4);
   const bars = d.episodes.map((e) => {
-    if (e.ep > d.weeksScored) return `<div class="bar tbd"><b></b><i></i><small>${e.ep}</small></div>`;
+    if (e.ep > d.weeksScored) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
     const v = c.eps[e.ep - 1], won = d.winners[e.ep]?.winner === c.key;
-    return `<div class="bar${won ? " won" : ""}"><b>${v}</b><i style="height:${Math.max(3, v / max * 100).toFixed(1)}%"></i><small>${e.ep}</small></div>`;
+    return `<div class="bar${won ? " won" : ""}" style="--f:${f(v)}"><i></i><b>${v}</b><small>${e.ep}</small></div>`;
   }).join("");
+  const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);
+  const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
 
   return `
     <div class="cd-hero">
@@ -33,12 +47,11 @@ function slide(d, c, max) {
     <div class="cd-league">Picked <b>${c.pickedBy}</b> time${c.pickedBy === 1 ? "" : "s"} by the league · earned them <b>${c.deliveredTo}</b> points</div>
     ${records(d, c)}
     <div class="card">
-      <div class="card-head"><span>Points per episode</span>${c.wins ? `<span class="legend">👑 = won</span>` : ""}</div>
-      <div class="bars" style="--c:${c.color}">${bars}</div>
+      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${c.wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
+      <div class="bars" style="--c:${c.color}">${medLine}${bars}</div>
     </div>
     ${radar(d, c)}
-    ${factFile(c)}
-    ${c.bio ? `<div class="card note"><div class="card-head"><span>Profile</span></div><p>${rich(c.bio)}</p></div>` : ""}
+    ${profile(c)}
     ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
 }
 
@@ -46,8 +59,10 @@ function slide(d, c, max) {
 
 const statsRow = (c) => statsFor(state.allTime, state.key, c.full);
 
-/** Badges for stats where this contestant is in Taskmaster's all-time top 10. */
+/** Badges for stats where this contestant is in Taskmaster's all-time top 10.
+ *  Finished series only: four episodes are too few to rank against a whole run. */
 function records(d, c) {
+  if (d.weeksScored < d.episodes.length) return "";
   const badges = badgesFor(state.allTime, statsRow(c));
   if (!badges.length) return "";
   return `
@@ -57,13 +72,15 @@ function records(d, c) {
     </div>`;
 }
 
-function factFile(c) {
+/** Who they are: a short bio and personal facts. Performance lives elsewhere. */
+function profile(c) {
   const facts = factsFor(statsRow(c));
-  if (!facts.length) return "";
+  if (!c.bio && !facts.length) return "";
   return `
-    <div class="card facts">
-      <div class="card-head"><span>Fact file</span></div>
-      <dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+    <div class="card note profile">
+      <div class="card-head"><span>Profile</span></div>
+      ${c.bio ? `<p>${rich(c.bio)}</p>` : ""}
+      ${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
     </div>`;
 }
 

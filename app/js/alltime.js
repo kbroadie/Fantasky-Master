@@ -1,7 +1,7 @@
 // All-time Taskmaster stats (data/taskmaster_stats.csv, imported from the
 // league's stats sheet by tools/import-stats.mjs): every contestant in every
 // series. Used for the Performance radar's baseline, the all-time record
-// badges and the fact file on each Cast page.
+// badges and the profile facts on each Cast page.
 
 import { parseCSV } from "./csv.js";
 
@@ -58,29 +58,41 @@ const BADGES = [
 ];
 const TOP = 10;
 
-/** The all-time record badges a contestant holds, best rank first. */
-export function badgesFor(rows, row) {
-  if (!row) return [];
+/** The series still airing, if the latest series has fewer than ten episodes. */
+const airing = (rows) => {
   const latest = Math.max(...rows.map((r) => +r.series));
-  const soFar = +row.series === latest && num(row.episodes) < 10 ? " so far" : "";
+  return rows.some((r) => +r.series === latest && num(r.episodes) < 10) ? latest : null;
+};
+
+/**
+ * The all-time record badges a contestant holds, best rank first. Only
+ * finished series count, on both sides: a few episodes are too few to rank
+ * (in Series 21, only one of the eight top-10 places held after four
+ * episodes lasted to the final), so the series still airing gets no badges
+ * and doesn't push anyone else down.
+ */
+export function badgesFor(rows, row) {
+  const live = airing(rows);
+  if (!row || +row.series === live) return [];
+  const pool = rows.filter((r) => +r.series !== live);
   const out = [];
   for (const b of BADGES) {
     const v = num(row[b.key]);
     if (v == null) continue;
     const sign = b.low ? -1 : 1;
-    const better = rows.filter((r) => num(r[b.key]) != null && sign * num(r[b.key]) > sign * v).length;
-    const tied = rows.filter((r) => num(r[b.key]) === v).length > 1;
-    if (better < TOP) out.push({ label: b.label, rank: better + 1, tied, of: rows.length, text: b.say(v) + soFar });
+    const better = pool.filter((r) => num(r[b.key]) != null && sign * num(r[b.key]) > sign * v).length;
+    const tied = pool.filter((r) => num(r[b.key]) === v).length > 1;
+    if (better < TOP) out.push({ label: b.label, rank: better + 1, tied, of: pool.length, text: b.say(v) });
   }
   return out.sort((a, b) => a.rank - b.rank);
 }
 
-// ── Fact file ───────────────────────────────────────────────────────────────
+// ── Profile facts ───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 
 const yes = (v) => /^y/i.test(v || "");
 const DEGREE = { OXBRIDGE: "Oxbridge", RADA: "RADA", YALE: "Yale", Y: "Degree", N: "No degree" };
 
-/** Label/value pairs for the fact file; blanks are left out. */
+/** Label/value pairs for the profile; blanks are left out. */
 export function factsFor(row) {
   if (!row) return [];
   const f = [];
