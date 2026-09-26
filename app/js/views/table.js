@@ -1,6 +1,7 @@
 // Standings: last week's result, then one sortable table (Show or League).
 // Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, named, fmtWhen, state } from "../ui.js";
+import { HEROES, HERO_RATIO, PORTRAIT_EYE, PORTRAIT_RATIO } from "../heroes.js";
 
 /** The latest episode anyone has a pick for: the "this week" column. */
 /** 👑 marks the Show points leader and 🏆 the League points leader. */
@@ -50,7 +51,6 @@ export function standingsHead(d) {
     <div class="st-head">
       <span class="st-rank">Rank</span>
       <span class="st-name">Player</span>
-      <span class="st-pick">Wk ${pickWeek(d)}</span>
       <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
       <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
       <span></span>
@@ -64,20 +64,34 @@ export function standingsRows(d) {
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
-    const face = now?.pick ? `<span class="mini${now.won ? " won" : ""}">${framed(d.cast[now.pick])}</span>` : `<span class="mini none">–</span>`;
+    const bg = now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
         <span class="pc-name"><span class="nm">${esc(p.name)}</span>${p.showRank === 1 ? `<span class="badge" role="img" aria-label="Show leader">👑</span>` : ""}${p.leagueRank === 1 ? `<span class="badge" role="img" aria-label="League leader">🏆</span>` : ""}</span>
-        ${face}
         <span class="pc-num${tier(p.showRank)}">${p.show}</span>
         <span class="pc-num${tier(p.leagueRank)}">${p.league}</span>
         <span class="chev" aria-hidden="true"></span>
+        ${bg}
       </button>
       <div class="pc-more"><div>${picks(d, p)}</div></div>
     </div>`;
   }).join("");
+}
+
+/**
+ * The row's backdrop: the hero shot of the contestant the player picked this
+ * week, placed so the eyes sit in the middle of the row, in the gap between
+ * the name and the Show column. Series without hero shots use the framed
+ * portrait, zoomed past its frame. Last in the row, so it doesn't shift the
+ * grid columns (it's absolutely positioned).
+ */
+function pickBackdrop(c, won) {
+  const hero = HEROES[state.key]?.[c.key];
+  const [ex, ey] = hero ? hero.eye : PORTRAIT_EYE;
+  const style = `--ex:${ex};--ey:${ey};--ar:${hero ? HERO_RATIO : PORTRAIT_RATIO}`;
+  return `<span class="pc-bg${hero ? "" : " portrait"}${won ? " won" : ""}" aria-hidden="true"><img src="${hero ? hero.src : c.img.replace(/m\.webp$/, "l.webp")}" alt="" decoding="async" style="${style}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
