@@ -387,6 +387,26 @@ strong { color: var(--t1); font-weight: 700; }
 /* Fact file: label over value, two columns */
 /* Profile: the bio, then personal facts in two columns under a hairline */
 .profile dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0 14px; padding: 12px 0 14px; border-top: 1px solid var(--b-dim); }
+/* With a group photo, their face sits behind the Profile, offset right:
+   eyes --eyes apart at (--fx, --fy). The bio narrows to the left of the
+   face; the facts sit below on the darker lower part. One layer, like the
+   Standings backdrops (no filter or will-change on the image). */
+.profile.has-face { position: relative; isolation: isolate; }
+.pf-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; container-type: inline-size; --eyes: clamp(52px, 17cqw, 76px); --fx: 76cqw; --fy: 104px; }
+.pf-bg img {
+  --W: calc(var(--eyes) / var(--sep));
+  position: absolute; max-width: none; width: var(--W); height: auto;
+  left: calc(var(--fx) - var(--ex) * var(--W)); top: calc(var(--fy) - var(--ey) * var(--W) / var(--ar));
+}
+.pf-bg::after {
+  content: ""; position: absolute; inset: 0;
+  background:
+    linear-gradient(180deg, rgba(24, 20, 24, .35) 0, transparent 40px, transparent 170px, rgba(24, 20, 24, .9) 270px, rgba(24, 20, 24, .94) 100%),
+    linear-gradient(90deg, rgba(24, 20, 24, .96) 0, rgba(24, 20, 24, .9) 42%, rgba(24, 20, 24, .3) 62%, rgba(24, 20, 24, .12) 80%, rgba(24, 20, 24, .5) 100%),
+    linear-gradient(rgba(0, 0, 0, .15), rgba(0, 0, 0, .15));
+}
+.has-face > p { max-width: 58%; min-height: 196px; color: var(--t1); text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
+.has-face dl { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .profile dt { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }
 .profile dd { font-size: 15px; color: var(--t1); margin-top: 2px; }
 
