@@ -237,8 +237,13 @@ strong { color: var(--t1); font-weight: 700; }
    while the top bar resized, flashing the white pillars. */
 .pc-bg { isolation: isolate; }
 /* Frosted glass over the photo, the same for every row, clearing as the row
-   opens. The filter is on the whole backdrop, photo and shading together. */
-.pc-bg { filter: blur(6px); transition: filter .35s var(--ease); }
+   opens. The filter is on the whole backdrop, photo and shading together.
+   The backdrop is its own compositing layer for good (will-change), so
+   nothing is promoted when the blur starts or dropped when it ends: that
+   switch between drawing paths is what made the colours jump on iOS. It
+   clips to its bled box (overflow), so the layer is only the row plus the
+   bleed, never the whole oversized photo. */
+.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: filter .35s var(--ease); }
 .pc.open .pc-bg { filter: blur(0px); }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;

@@ -75,6 +75,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
 - **Standings backdrop layers:** the photo and its reshade must rasterise as one layer (`.pc-bg` is isolated; the `img` has no `filter`, `will-change` or 3D transform; a filter goes on `.pc-bg` as a whole, as the frosted blur does). Each row's photo is thousands of pixels wide; promoted to its own compositing layer, iOS Safari had to re-rasterise every one while the top bar resized, and the rows flashed white.
+  - `.pc-bg` itself is a permanent compositing layer (`will-change: filter`) so the blur ↔ sharp transition never promotes or demotes a layer (that switch made the colours jump on iOS), and `overflow: hidden` keeps that layer to the row plus its bleed rather than the whole photo.
 - **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative motion is the episode podium effects and the Standings backdrop parallax (both requested; see above), which stop under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
