@@ -14,6 +14,17 @@ export function faceFor(series, key) {
 }
 
 export const GROUP = {
+  21: {
+    src: "https://i.imgur.com/RNwKpOh.jpeg", // 5975 × 4584
+    ratio: 5975 / 4584,
+    faces: {
+      Joel: { eye: [0.2043, 0.4373], head: 0.0321 },
+      Amy: { eye: [0.3021, 0.4534], head: 0.0293 },
+      Kumail: { eye: [0.4025, 0.4421], head: 0.0329 },
+      Joanna: { eye: [0.6809, 0.4626], head: 0.0305 },
+      Armando: { eye: [0.8491, 0.4761], head: 0.034 },
+    },
+  },
   22: {
     src: "https://i.imgur.com/aTYNG68.jpeg", // 5246 × 3936
     ratio: 5246 / 3936,
