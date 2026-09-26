@@ -258,13 +258,30 @@ strong { color: var(--t1); font-weight: 700; }
 .ep-title { font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 5.6vw, 27px); line-height: 1.08; text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px; text-wrap: balance; }
 .ep-body { padding: 14px var(--px) 18px; }
 .pod {
-  display: flex; align-items: flex-end; gap: 6px; padding: 12px 8px 10px; margin-bottom: 12px;
+  display: flex; align-items: flex-end; gap: 6px; padding: 24px 8px 10px; margin-bottom: 12px;
   border: 1px solid var(--b-gold); border-radius: 12px;
   background: linear-gradient(180deg, var(--s3), var(--s1)); box-shadow: inset 0 0 24px rgba(0, 0, 0, .35);
 }
 .pod-col { position: relative; flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.pod-col.win .fp { filter: drop-shadow(0 0 8px var(--gold-glow)) drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
-.pod-col.win::before { content: "👑"; position: absolute; top: -11px; font-size: 16px; line-height: 1; z-index: 1; }
+.pod-col .fp { position: relative; z-index: 1; }
+/* Winner: a gold aura behind the portrait. Last place: a green one, and a
+   stink cloud where the winner has a crown. Both breathe slowly. */
+.aura {
+  position: absolute; z-index: 0; top: -16%; left: -24%; width: 148%; aspect-ratio: 225 / 266;
+  background: radial-gradient(closest-side, rgba(236, 192, 64, .75) 62%, rgba(236, 192, 64, .28) 80%, transparent);
+  animation: aura 3.2s ease-in-out infinite alternate; pointer-events: none;
+}
+.last .aura { background: radial-gradient(closest-side, rgba(126, 200, 60, .6) 62%, rgba(126, 200, 60, .2) 80%, transparent); animation-duration: 3.8s; }
+@keyframes aura { from { opacity: .45; transform: scale(.96); } to { opacity: 1; transform: scale(1.03); } }
+.stink { position: absolute; z-index: 2; top: -21px; width: 30px; overflow: visible; }
+.stink-cloud { fill: #7fbf45; opacity: .92; transform-box: fill-box; transform-origin: center; animation: bob 3s ease-in-out infinite alternate; }
+.stink-lines path { fill: none; stroke: #9bd65f; stroke-width: 1.6; stroke-linecap: round; opacity: 0; transform-box: fill-box; animation: waft 2.7s ease-in-out infinite; }
+.stink-lines path:nth-child(2) { animation-delay: .9s; }
+.stink-lines path:nth-child(3) { animation-delay: 1.8s; }
+@keyframes bob { from { transform: translateY(0); } to { transform: translateY(-1.5px); } }
+@keyframes waft { 0% { opacity: 0; transform: translateY(3px); } 35% { opacity: .9; } 100% { opacity: 0; transform: translateY(-4px); } }
+.pod-col.last .pod-pts { color: #9bd65f; }
+.pod-col.win::before { content: "👑"; position: absolute; top: -11px; font-size: 16px; line-height: 1; z-index: 2; }
 .pod-name { font-family: var(--ff-name); font-size: 12px; font-weight: 700; margin-top: 3px; }
 .pod-pts { font-size: clamp(18px, 5vw, 22px); font-weight: 800; line-height: 1; }
 .pod-col.win .pod-pts { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
@@ -365,4 +382,6 @@ strong { color: var(--t1); font-weight: 700; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
+  .aura, .stink-cloud, .stink-lines path { animation: none !important; }
+  .stink-lines path { opacity: .7; }
 }

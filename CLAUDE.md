@@ -39,7 +39,8 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Episodes / Cast:** a tab strip over scroll-snapped slides.
   - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).
   - Episode tabs carry a dot in the winner's colour.
-  - Portraits, the league's picks and the task table all run in finishing order.
+  - The episode portraits run lowest score to highest (winner on the right), and the task-table columns follow them so each sits under its portrait. The league's picks read winner first.
+  - The winner gets a crown and a gold aura; last place (ties included) gets a green stink cloud and a green aura, with a green score.
   - The league's picks list each contestant's backers as plain comma-separated names (no pills, not bold).
   - Every future episode shows its poll deadline, the time left and the five contestants.
   - The swiper always reaches the bottom of the screen (`fit` in `main.js`), so you can swipe below a short slide.
@@ -50,7 +51,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
-- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
+- **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. The only decorative animation is on the episode portraits (requested): the winner's gold aura and last place's green aura breathe slowly, and the stink lines waft up. All of it stops under `prefers-reduced-motion`. Otherwise transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
 

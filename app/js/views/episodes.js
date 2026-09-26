@@ -1,7 +1,14 @@
 // Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
 // swipeable episode slides. Portraits, the league's picks and the task table
-// all run in finishing order, so each column sits under its portrait.
+// run lowest score to highest (winner on the right), and each task-table
+// column sits under its portrait; the league's picks read winner first.
 import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon } from "../ui.js";
+
+/** A green stink cloud with three wavy lines rising off it. */
+const STINK = `<svg class="stink" viewBox="0 0 40 30" role="img" aria-label="Last place">
+  <g class="stink-lines"><path d="M12 13c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/><path d="M20 12c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/><path d="M28 13c-2.2-2 2.2-3.5 0-5.5s2.2-3.5 0-5.5"/></g>
+  <path class="stink-cloud" d="M10 29a6 6 0 0 1-1.3-11.86A8 8 0 0 1 23 14.2a6.5 6.5 0 0 1 11.3 4.6A5.2 5.2 0 0 1 32.5 29z"/>
+</svg>`;
 
 export const epTabs = (d) => d.episodes.map((e) => {
   const w = d.winners[e.ep];
@@ -43,12 +50,17 @@ function slide(d, e) {
     + ` · ${called ? `${called} of ${wk.voters} called it` : "nobody called it"}`;
 
   const order = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a) || a.localeCompare(b));
-  const col = order.map((n) => d.idx[n]);
+  const rise = [...order].reverse(); // lowest to highest, left to right
+  const col = rise.map((n) => d.idx[n]);
+  // Last place (sharing it counts) gets a green stink cloud, as the winner gets a crown.
+  const bottom = Math.max(...d.names.map((n) => d.placing[e.ep][n]));
+  const isLast = (n) => n !== w.winner && d.placing[e.ep][n] === bottom;
 
-  const pod = order.map((n) => {
-    const backers = wk.by[n].length;
+  const pod = rise.map((n) => {
+    const backers = wk.by[n].length, win = n === w.winner, last = isLast(n);
     return `
-    <div class="pod-col${n === w.winner ? " win" : ""}">
+    <div class="pod-col${win ? " win" : last ? " last" : ""}">
+      ${win || last ? `<span class="aura" aria-hidden="true"></span>` : ""}${last ? STINK : ""}
       ${framed(d.cast[n])}
       <span class="pod-name" style="color:${d.cast[n].color}">${esc(n)}</span>
       <b class="pod-pts">${pts(n)}</b>
@@ -74,13 +86,13 @@ function slide(d, e) {
   const tasks = d.epTasks(e.ep);
   const table = `
     <div class="card tt-wrap"><table class="tt">
-      <thead><tr><th>Task</th>${order.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
+      <thead><tr><th>Task</th>${rise.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
       <tbody>${tasks.map((t) => {
         const s = col.map((i) => t.s[i]), hi = Math.max(...s), lo = Math.min(...s);
         return `<tr><td><span class="tn">${icon(t.t)}<span class="tname" title="${esc(t.n)}">${esc(t.n)}</span></span></td>${s.map((v) =>
           `<td class="sc${hi > lo && v === hi ? " best" : hi > lo && v === lo ? " worst" : ""}">${v}</td>`).join("")}</tr>`;
       }).join("")}
-      <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
+      <tr class="tot"><td>Total</td>${rise.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
     </table></div>`;
 
   const notes = e.analysis ? `<div class="card note"><div class="card-head"><span>Episode analysis</span></div><p>${rich(e.analysis)}</p></div>` : "";
