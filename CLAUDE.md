@@ -37,7 +37,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - On scroll it compacts to one thin line plus label-only tabs. The height it saves goes back as margin (`--hdr-h`, `--tabs-h`… in `:root`), so the layout height never changes. Keep that invariant, or scroll anchoring makes the bar flicker.
 - **Standings:**
   - A last-week strip at the top: the winner's portrait and who called it, then "👑 Riley leads Show   🏆 Jamie leads League" (no scores, no separator). Tap it to open that episode.
-  - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
+  - Then one table sorted by Show or League, in a rounded card (`.card.board`) inset like the cards on the other tabs. The active header shows ▼/▲; tap again to reverse.
   - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
   - **Series with a group photo (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
     - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). Every face is drawn the same size: the photo is scaled so the pupils are `--eyes` apart (50px on phones, 64px from 600px up; `sep` in `heroes.js` is each face's pupil distance), and never smaller than it takes to span the row edge to edge. Pillars and neighbours at the sides are fine; the reshade darkens them.

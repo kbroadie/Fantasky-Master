@@ -51,14 +51,16 @@ const heroRows = () => !!GROUP[state.key]?.faces;
 export function standingsHead(d) {
   return `
     <div class="hero">${lastWeek(d)}</div>
-    <div class="st-head">
-      <span class="st-rank">Rank</span>
-      <span class="st-name">Player</span>
-      <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
-      <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
-      <span></span>
-    </div>
-    <div id="rows"></div>`;
+    <div class="card board">
+      <div class="st-head">
+        <span class="st-rank">Rank</span>
+        <span class="st-name">Player</span>
+        <button class="st-num" data-sort="show"><i class="arr"></i>Show</button>
+        <button class="st-num" data-sort="league"><i class="arr"></i>League</button>
+        <span></span>
+      </div>
+      <div id="rows"></div>
+    </div>`;
 }
 
 export function standingsRows(d) {

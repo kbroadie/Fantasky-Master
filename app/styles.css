@@ -157,6 +157,11 @@ strong { color: var(--t1); font-weight: 700; }
 .st-head > :nth-child(3), .pc-head > :nth-child(3),
 .st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: right; }
 .st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
+/* The table sits in a rounded card, like the cards on the other tabs */
+.card.board { margin: 12px var(--px); }
+.board .st-head, .board .pc-head { padding-inline: 12px; }
+.board .pk-grid { padding-inline: 12px; }
+.board .pc:last-child { border-bottom: 0; }
 .st-head {
   padding-block: 7px; border-bottom: 1px solid var(--b-gold);
   background: linear-gradient(180deg, var(--s3), var(--s2));
