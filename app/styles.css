@@ -51,13 +51,19 @@ strong { color: var(--t1); font-weight: 700; }
   background: rgba(70, 8, 8, .5); border-bottom: 1px solid var(--b-gold);
   transition: padding .3s var(--ease), box-shadow .3s var(--ease);
 }
-.hdr.compact { padding-top: calc(6px + env(safe-area-inset-top)); padding-bottom: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
+/* Compacting takes 26px off the bar (12 of padding, 10 of tab height, 4 of
+   tab margin). The same 26px goes back as margin, animated in step, so
+   nothing below moves. Otherwise the browser's scroll anchoring pulls the
+   page back above the threshold and the bar flips open and shut in a loop. */
+.topbar { display: flow-root; transition: margin-bottom .3s var(--ease); } /* flow-root: the tabs' margin mustn't collapse into this one */
+.topbar.compact { margin-bottom: 26px; }
+.compact .hdr { padding-top: calc(6px + env(safe-area-inset-top)); padding-bottom: 6px; box-shadow: 0 4px 14px rgba(0, 0, 0, .45); }
 .brand {
   font-family: var(--ff-head); font-weight: 400; font-size: clamp(16px, 4.6vw, 21px); letter-spacing: 0; white-space: nowrap;
   text-shadow: 0 0 18px var(--red-glow), 0 1px 0 rgba(0, 0, 0, .7);
   transform-origin: left center; transition: transform .3s var(--ease);
 }
-.hdr.compact .brand { transform: scale(.8); }
+.compact .brand { transform: scale(.8); }
 .brand .g, .series { color: var(--gold3); text-shadow: 0 0 14px var(--gold-glow); }
 .series { font: inherit; padding: 2px 4px; margin-left: 1px; border-radius: 6px; border: 1px solid var(--b-gold); background: var(--gold-t); }
 .series:active { opacity: .6; }
@@ -65,7 +71,7 @@ strong { color: var(--t1); font-weight: 700; }
 
 /* Seven-segment countdown */
 .cd { margin-left: auto; display: flex; flex-direction: column; align-items: flex-end; gap: 3px; transform-origin: right center; transition: transform .3s var(--ease); }
-.hdr.compact .cd { transform: scale(.85); }
+.compact .cd { transform: scale(.85); }
 .cd-label { font-family: var(--fm); font-size: 9px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--t3); }
 .cd-digits { display: flex; align-items: flex-start; gap: 3px; }
 .cd-unit { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -98,8 +104,8 @@ strong { color: var(--t1); font-weight: 700; }
   color: var(--t3); transition: color .2s, transform .12s var(--ease);
 }
 .tab[aria-selected="true"] { color: #2a0404; }
-.compact + .tabs { height: 48px; margin-block: 6px; }
-.compact + .tabs svg { height: 17px; }
+.compact .tabs { height: 48px; margin-block: 6px; }
+.compact .tabs svg { height: 17px; }
 .tab:active { transform: scale(.93); }
 .tab svg { width: 24px; height: 22px; fill: currentColor; transition: height .3s var(--ease); }
 .tab span { font-family: var(--fm); font-size: 9px; font-weight: 500; letter-spacing: .14em; text-transform: uppercase; }

@@ -186,10 +186,17 @@ bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
 });
 
-const hdr = $(".hdr");
+// The top bar compacts once you scroll. Its layout height stays the same
+// (see .topbar.compact in the CSS), and the two thresholds differ so it
+// can't flicker at the boundary.
+const bar = $(".topbar");
 let hraf = 0;
 addEventListener("scroll", () => {
-  if (!hraf) hraf = requestAnimationFrame(() => { hraf = 0; hdr.classList.toggle("compact", scrollY > 8); });
+  if (!hraf) hraf = requestAnimationFrame(() => {
+    hraf = 0;
+    const on = bar.classList.contains("compact");
+    bar.classList.toggle("compact", on ? scrollY > 4 : scrollY > 16);
+  });
 }, { passive: true });
 
 addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); });
