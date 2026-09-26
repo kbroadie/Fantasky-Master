@@ -245,10 +245,7 @@ strong { color: var(--t1); font-weight: 700; }
    switch between drawing paths is what made the colours jump on iOS. It
    clips to its bled box (overflow), so the layer is only the row plus the
    bleed, never the whole oversized photo. */
-.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: filter .35s var(--ease) .3s; }
-/* The blur waits (.3s delay) for the row to finish opening or closing
-   (.pc-more's .3s), so the phone never resizes the row and changes the blur
-   in the same frames: open, then sharpen; collapse, then frost. */
+.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: filter .35s var(--ease); }
 .pc.open .pc-bg { filter: blur(0px); }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
@@ -507,5 +504,4 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: .01ms !important; scroll-behavior: auto !important; }
-  .pc-bg { transition-delay: 0s !important; } /* nothing to wait for */
 }
