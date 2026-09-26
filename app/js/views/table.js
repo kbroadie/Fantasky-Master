@@ -63,7 +63,7 @@ export function standingsRows(d) {
     const now = p.weeks[wk - 1];
     // No pick that week: Patatas stands in.
     const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
-    const bg = face ? pickBackdrop(face, frost(rank, d.players.length)) : "";
+    const bg = face ? pickBackdrop(face) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       ${bg}
@@ -80,25 +80,15 @@ export function standingsRows(d) {
 }
 
 /**
- * The backdrop's frosted glass, by rank on the active board: the leader's
- * photo is lightly frosted (3px blur) and each place down a little more, to
- * 9px for last. Colour is untouched. Opening the row clears it (.pc.open).
- */
-function frost(rank, n) {
-  const t = n > 1 ? (rank - 1) / (n - 1) : 0;
-  return `${(3 + 6 * t).toFixed(1)}px`;
-}
-
-/**
  * The row's backdrop: the contestant the player picked this week (or
  * Patatas if they didn't pick), cropped from their photo, scaled so every head is the same size and
  * the photo spans the row edge to edge, with the eyes on the centre line of
  * the row's top line and in the gap between the name and the Show column.
  * It covers the whole row, so opening the row just uncovers more of the
- * photo below; nothing moves. Frosted by rank (frost) until the row opens.
+ * photo below; nothing moves. Frosted (.pc-bg) until the row opens.
  */
-function pickBackdrop(f, blur) {
-  const vars = `--blur:${blur};--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
+function pickBackdrop(f) {
+  const vars = `--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
   return `<span class="pc-bg" aria-hidden="true" style="${vars}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
 }
 

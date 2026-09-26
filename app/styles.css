@@ -185,7 +185,6 @@ strong { color: var(--t1); font-weight: 700; }
 
 .pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
-.pc.lead::before { content: ""; position: absolute; z-index: 2; left: 0; top: 0; bottom: 0; width: 2px; background: linear-gradient(180deg, transparent 10%, var(--gold2) 50%, transparent 90%); box-shadow: 0 0 6px var(--gold-glow); }
 .pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
 .pc-head:active { background: rgba(255, 255, 255, .03); }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -211,7 +210,12 @@ strong { color: var(--t1); font-weight: 700; }
    between the name and Show. Anchored to the top, so opening the row only
    uncovers more of the face below. */
 .pc-head, .pc-more { position: relative; z-index: 1; }
-.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
+/* The backdrop bleeds --bleed past every side of the row (.pc clips it), so
+   the frosted blur only ever samples photo and shade, never the transparent
+   edge that would glow. Positions inside are measured from the bled box, so
+   the row's own top is at --bleed; horizontally the bleed is symmetric, so
+   50cqw is still the row's centre. */
+.pc-bg { --bleed: 24px; position: absolute; inset: calc(-1 * var(--bleed)); z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
 .pc-bg img, .pc-bg .edge {
   /* Head --face across, and at least wide enough to span the row, unless
      --cap limits how far that can enlarge the head (Patatas: a narrow photo
@@ -220,7 +224,7 @@ strong { color: var(--t1); font-weight: 700; }
   position: absolute; left: calc(var(--tx) - var(--ex) * var(--W)); width: var(--W);
 }
 .pc-bg img {
-  max-width: none; height: auto; top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
+  max-width: none; height: auto; top: calc(var(--bleed) + var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
   transform: translateY(var(--py, 0px)); /* scroll parallax, set in main.js */
 }
 /* A capped photo that doesn't span the row fades into it at both edges. */
@@ -232,21 +236,19 @@ strong { color: var(--t1); font-weight: 700; }
    separate layers, iOS Safari could draw the photo unshaded for a frame
    while the top bar resized, flashing the white pillars. */
 .pc-bg { isolation: isolate; }
-/* Frosted glass over the photo (--blur by rank, from table.js), clearing as
-   the row opens. The filter is on the whole backdrop, photo and shading
-   together; the photo overflows the row, so the blur has real pixels at the
-   edges and .pc's overflow clip keeps them in. */
-.pc-bg { filter: blur(var(--blur, 0px)); transition: filter .35s var(--ease); }
+/* Frosted glass over the photo, the same for every row, clearing as the row
+   opens. The filter is on the whole backdrop, photo and shading together. */
+.pc-bg { filter: blur(6px); transition: filter .35s var(--ease); }
 .pc.open .pc-bg { filter: blur(0px); }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
-  /* The shade's own dark edges carried past the row's sides, so the frosted
-     blur doesn't fade them out into a bright rim */
-  box-shadow: -32px 0 0 rgba(16, 13, 16, .82), 32px 0 0 rgba(16, 13, 16, .84);
+  /* Stops are placed on the row (--r: a percentage of the row's width, past
+     the bleed); the ends carry on flat through the bleed. */
+  --r: calc(100% - 2 * var(--bleed));
   background:
-    linear-gradient(180deg, transparent var(--head), rgba(16, 13, 16, .5) calc(var(--head) + 24px)),
+    linear-gradient(180deg, transparent calc(var(--bleed) + var(--head)), rgba(16, 13, 16, .5) calc(var(--bleed) + var(--head) + 24px)),
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
-    linear-gradient(90deg, rgba(16, 13, 16, .82) 0, rgba(16, 13, 16, .66) 22%, rgba(16, 13, 16, .22) 40%, rgba(16, 13, 16, .22) 54%, rgba(16, 13, 16, .66) 66%, rgba(16, 13, 16, .84) 80%);
+    linear-gradient(90deg, rgba(16, 13, 16, .82) var(--bleed), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .22), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .4), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .54), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .66), rgba(16, 13, 16, .84) calc(var(--bleed) + var(--r) * .8));
 }
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
@@ -312,7 +314,7 @@ strong { color: var(--t1); font-weight: 700; }
 
 /* ── Episodes ──────────────────────────────────────────────────────── */
 .ep-title { font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 5.6vw, 27px); line-height: 1.08; text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px; text-wrap: balance; }
-.ep-body { padding: 14px var(--px) 18px; }
+.ep-body { padding: 12px var(--px) 0; } /* 12px to the first card, like every tab; the last card's 12px margin + the body's 24px below, like every tab */
 .pod {
   display: flex; align-items: flex-end; gap: 6px; padding: 12px 8px 10px; margin-bottom: 12px;
   border: 1px solid var(--b-gold); border-radius: 12px;
@@ -372,7 +374,7 @@ strong { color: var(--t1); font-weight: 700; }
 .tt .tot .best { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
 
 /* ── Cast ──────────────────────────────────────────────────────────── */
-.cd-hero { display: flex; align-items: center; gap: 4px; padding: 10px var(--px); border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, var(--red-t), transparent); }
+.cd-hero { display: flex; align-items: center; gap: 4px; padding: 10px var(--px); margin-bottom: 12px; border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, var(--red-t), transparent); }
 .cd-img { width: clamp(118px, 30vw, 160px); flex-shrink: 0; }
 .cd-img .fp { filter: drop-shadow(0 3px 14px rgba(0, 0, 0, .85)); }
 .cd-info { flex: 1; min-width: 0; padding-left: 12px; }
@@ -449,7 +451,7 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 }
 .hs-cell[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }
 .hs-avg { font-size: 13px; font-weight: 700; color: var(--t2); text-align: right; }
-.hs-cap { padding: 6px 12px 10px; font-size: 13px; line-height: 1.4; color: var(--t3); min-height: calc(2.8em + 16px); } /* two lines, so a long caption doesn't move the page */
+.hs-cap { padding: 6px 12px 12px; font-size: 13px; line-height: 1.4; color: var(--t3); } /* one line until a long caption needs two */
 .hs-legend { display: inline-flex; align-items: center; gap: 2px; }
 .hs-key { width: 9px; height: 9px; border-radius: 2px; background: color-mix(in srgb, var(--c) calc(var(--v) * 19% + 5%), var(--s2)); }
 .hs-key[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }
