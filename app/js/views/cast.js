@@ -55,7 +55,7 @@ const Z = 3;
 const SIGMAS = [-2, -1, 0, 1, 2];
 
 function radar(d, c) {
-  const n = KINDS.length, R = 80, cx = 170, cy = 124;
+  const n = KINDS.length, R = 80, cx = 170, cy = 136;
   const eps = Math.max(1, d.weeksScored), st = state.stats;
   const z = (k) => (st[k].sd ? (c.ty[k] / eps - st[k].mean) / st[k].sd : 0);
   const r = (k) => Math.min(1, Math.max(0, (z(k) + Z) / (2 * Z)));
@@ -70,25 +70,24 @@ function radar(d, c) {
     const [x, y] = at(i, f), a = ang(i) + Math.PI / 2, dx = Math.cos(a) * 3, dy = Math.sin(a) * 3;
     return `<line class="rd-tick" x1="${f1(x - dx)}" y1="${f1(y - dy)}" x2="${f1(x + dx)}" y2="${f1(y + dy)}"/>`;
   }).join("")).join("");
-  // Label = icon + word. DM Mono is monospaced, so the word's width is known
-  // (11px, 0.6em advance + 0.12em tracking) and the pair can be placed as a unit.
+  // One centred group per axis, set clear of the circle: the z-score as the
+  // headline, with the icon and name as a quiet caption underneath. DM Mono
+  // is monospaced, so the caption's width is known (11px × 0.66em per
+  // character) and the icon + word can be centred as a unit.
   const labels = KINDS.map(([k, label], i) => {
-    const [x, y] = at(i, 1.13), side = Math.abs(x - cx) < 1 ? 0 : x > cx ? 1 : -1;
-    const w = label.length * 11 * 0.72, ico = 13, gap = 5, total = ico + gap + w;
-    const left = side === 1 ? x : side === -1 ? x - total : x - total / 2;
-    // The word, then the z-score on the line below it.
-    const base = y < cy ? y - 17 : y + 13;
-    const zx = side === 1 ? left : side === -1 ? left + total : x, zAnchor = side === 1 ? "start" : side === -1 ? "end" : "middle";
-    return `<g class="rd-ico" transform="translate(${f1(left)} ${f1(base - 10.5)}) scale(${ico / 16})"><path d="${ICON_PATHS[k]}"/></g>`
-      + `<text class="rd-label" x="${f1(left + ico + gap)}" y="${f1(base)}">${label}</text>`
-      + `<text class="rd-z" x="${f1(zx)}" y="${f1(base + 16)}" text-anchor="${zAnchor}">${zText(z(k))}<tspan class="rd-sigma">σ</tspan></text>`;
+    const top = i === 0, side = Math.sign(Math.round(Math.cos(ang(i)) * 100));
+    const gx = top ? cx : cx + side * (R + 34), vy = top ? cy - R - 30 : cy + R * 0.5 + 6;
+    const ico = 12, gap = 5, w = ico + gap + label.length * 11 * 0.66, left = gx - w / 2, ly = vy + 17;
+    return `<text class="rd-z" x="${f1(gx)}" y="${f1(vy)}" text-anchor="middle">${zText(z(k))}<tspan class="rd-sigma" dx="1">σ</tspan></text>`
+      + `<g class="rd-ico" transform="translate(${f1(left)} ${f1(ly - 10)}) scale(${ico / 16})"><path d="${ICON_PATHS[k]}"/></g>`
+      + `<text class="rd-label" x="${f1(left + ico + gap)}" y="${f1(ly)}">${label}</text>`;
   }).join("");
   const id = `rd-${esc(c.key).replace(/\W/g, "")}`;
   const summary = KINDS.map(([k, label]) => `${label} ${zText(z(k))} standard deviations`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
       <div class="card-head"><span>Performance</span><span class="legend">z-score vs all series</span></div>
-      <svg viewBox="0 0 340 236" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
+      <svg viewBox="0 0 340 226" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
         <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}" stop-opacity=".9"/><stop offset="1" stop-color="${c.color}" stop-opacity=".65"/></linearGradient></defs>
         <circle class="rd-face" cx="${cx}" cy="${cy}" r="${R}"/>
         ${rings}${spokes}${ticks}
