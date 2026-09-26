@@ -14,6 +14,9 @@ export function faceFor(series, key) {
   return face ? { src: face.src || g.src, ratio: face.ratio || g.ratio, ex: face.eye[0], ey: face.eye[1], head: face.head } : null;
 }
 
+/** Patatas, standing in on Standings for a player who didn't pick that week. */
+export const NO_PICK = { src: "https://i.imgur.com/xkfkjKd.png", ratio: 810 / 1095, ex: 0.57, ey: 0.403, head: 0.318, cap: 1.6 };
+
 export const GROUP = {
   // Series 21: each contestant's own hero photo (1440 × 1872), not the group
   // shot, so each face carries its own src.
