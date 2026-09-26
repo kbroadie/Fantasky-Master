@@ -17,7 +17,7 @@ The layout follows the v1 prototype. A sticky, frosted-glass top bar holds:
 
 - the title
 - the series number, a gold chip: tap it to switch series
-- the next poll deadline, in your own time zone, over a gold pill of time left
+- a one-line countdown to the next episode: "Ep 5 airs in 5d 18h"
 - three tabs: **Standings · Episodes · Cast**
 
 On scroll the bar shrinks to one thin line. All three pages are drawn when the app loads, so switching tabs is instant. There is no personal "you" view; the app is the same for everyone.

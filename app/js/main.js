@@ -3,7 +3,7 @@
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
-import { $, $$, esc, reducedMotion, state, fmtSoon, until } from "./ui.js";
+import { $, $$, esc, reducedMotion, state, fmtWhen, until } from "./ui.js";
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
@@ -149,7 +149,7 @@ function bindSwiper(sw, onEdge, labels) {
   }, { passive: true });
 }
 
-// ── Countdown to the next poll deadline, in the device's time ────────────────
+// ── Countdown: one line, "Ep 5 airs in 5d 18h" ──────────────────────────────
 
 let timer = 0;
 
@@ -157,18 +157,20 @@ function countdown() {
   clearInterval(timer);
   const el = $("#cd"), e = state.d.nextEp;
   if (!e) {
-    el.innerHTML = `<span class="cd-label">Series ${state.key}</span><span class="cd-pill done">Complete</span>`;
+    el.innerHTML = `<span class="cd-pill"><span class="cd-what">Series ${state.key}</span> <b>complete</b></span>`;
+    el.removeAttribute("aria-label");
     return;
   }
-  el.innerHTML = `<span class="cd-label">Ep ${e.ep} · ${esc(fmtSoon.format(e.air))}</span><span class="cd-pill" id="cd-left"></span>`;
-  el.setAttribute("aria-label", `Poll for episode ${e.ep} closes ${e.air.toLocaleString()}`);
+  el.innerHTML = `<span class="cd-pill"><span class="cd-what" id="cd-what"></span> <span class="cd-left" id="cd-left"></span></span>`;
+  el.setAttribute("aria-label", `Episode ${e.ep} airs ${fmtWhen.format(e.air)}`);
   let last = "";
   const tick = () => {
     const ms = e.air - Date.now();
-    const html = ms > 0
-      ? until(ms).map(([n, u]) => `<b>${n}</b><small>${u}</small>`).join(" ")
-      : `<b>Poll closed</b>`;
-    if (html !== last) $("#cd-left").innerHTML = last = html;
+    const html = ms > 0 ? until(ms).map(([n, u]) => `<b>${n}</b><small>${u}</small>`).join(" ") : "";
+    if (html === last) return;
+    last = html;
+    $("#cd-what").textContent = ms > 0 ? `Ep ${e.ep} airs in` : `Ep ${e.ep} is on air`;
+    $("#cd-left").innerHTML = html;
     if (ms <= 0) clearInterval(timer);
   };
   tick();

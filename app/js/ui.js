@@ -15,10 +15,6 @@ export const tier = (rank) => rank <= 3 ? ` t${rank}` : "";
 // Dates and deadlines are shown in the device's own time zone and locale.
 export const fmtDay = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short" });
 export const fmtWhen = new Intl.DateTimeFormat(undefined, { weekday: "short", day: "numeric", month: "short", hour: "numeric", minute: "2-digit", timeZoneName: "short" });
-const soonFull = new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric", minute: "2-digit" });
-const soonHour = new Intl.DateTimeFormat(undefined, { weekday: "short", hour: "numeric" });
-/** "Thu 9 PM", or "Thu 9:30 PM" when it isn't on the hour locally. */
-export const fmtSoon = { format: (d) => (d.getMinutes() ? soonFull : soonHour).format(d) };
 /** Time left as its two largest units: "5d 19h", "19h 25m", "25m 10s". */
 export function until(ms) {
   const s = Math.max(0, Math.floor(ms / 1000)), d = Math.floor(s / 86400), h = Math.floor(s / 3600) % 24, m = Math.floor(s / 60) % 60;

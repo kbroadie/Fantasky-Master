@@ -27,7 +27,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **Top bar** (sticky, frosted glass):
   - The brand.
   - The series number, a gold chip with a swap icon: tap it to switch series.
-  - The poll deadline in local time over a gold pill of time left.
+  - A one-line gold chip counting down to the next episode: "Ep 5 airs in 5d 18h". The air date and time are on the episode page, not here.
   - Below them, three segmented tabs, with a gold panel that slides behind the active one.
   - On scroll it compacts to one thin line plus label-only tabs. The height it saves goes back as margin (`--hdr-h`, `--tabs-h`… in `:root`), so the layout height never changes. Keep that invariant, or scroll anchoring makes the bar flicker.
 - **Standings:**
@@ -40,7 +40,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Portraits, the league's picks and the task table all run in finishing order.
   - The next episode shows its poll deadline and the five contestants.
   - The Cast tab shows points per episode as bars on one scale for all five contestants.
-- **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen`, `fmtSoon` in `ui.js`). Never hard-code London.
+- **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
 - **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
 
