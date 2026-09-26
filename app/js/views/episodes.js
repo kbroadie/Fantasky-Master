@@ -139,7 +139,7 @@ function raceChart(d, upTo) {
   const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
-  const grid = ticks.map((v) => `<line class="rc-grid${v ? "" : " lead"}" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === upTo ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode

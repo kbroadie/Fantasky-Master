@@ -322,7 +322,6 @@ strong { color: var(--t1); font-weight: 700; }
 .rc-axis.now { fill: var(--gold2); }
 .rc-axis.later { opacity: .45; }
 .race path { fill: none; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.rc-grid.lead { stroke: var(--gold4); stroke-dasharray: 3 3; } /* 0: the leader's line */
 .race .rc-tap { stroke: transparent; stroke-width: 16; cursor: pointer; } /* a wide, invisible target along each line */
 .rc-name { cursor: pointer; }
 /* Tap a line: it comes forward (moved last in main.js) and the rest fade */
