@@ -12,20 +12,29 @@ function leaders(d, key) {
   return d.players.filter((p) => p[key] === top).map((p) => p.name);
 }
 
-/** "Riley leads Show   Jamie leads League" ("wins" once the series is over). */
+/** Tap "Show" or "League" in the leaders line to open a line explaining it. */
+const TERMS = {
+  show: "Show points: what your pick scored that episode.",
+  league: "League points: 5 if your pick wins, down to 1 for last.",
+};
+const term = (key, label) => `<button class="st-term" data-term="${key}" aria-expanded="false">${label}</button>`;
+
+/** "Riley leads the Show   Jamie leads the League" ("wins" once the series is over). */
 function leaderLine(d) {
   const show = leaders(d, "show"), league = leaders(d, "league");
   const verb = (names) => (d.complete ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
   const who = (names) => `<b>${esc(listing(names))}</b>`;
-  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} Show and League</span>`;
-  return `<span>${who(show)} ${verb(show)} Show</span><span>${who(league)} ${verb(league)} League</span>`;
+  const S = term("show", "Show"), L = term("league", "League");
+  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} the ${S} and the ${L}</span>`;
+  return `<span>${who(show)} ${verb(show)} the ${S}</span><span>${who(league)} ${verb(league)} the ${L}</span>`;
 }
 
 /** The hero: "Week 4 Standings" and who leads each board, or when the series starts. */
 function standingsHero(d) {
   const e = d.weeksScored;
   if (!e) return `<h2 class="ep-title">Series ${state.key} starts</h2><div class="ep-sub">${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
-  return `<h2 class="ep-title">Week ${e} Standings</h2><p class="st-leaders">${leaderLine(d)}</p>`;
+  return `<h2 class="ep-title">Week ${e} Standings</h2><p class="st-leaders">${leaderLine(d)}</p>
+    <div class="st-explain"><div>${Object.entries(TERMS).map(([k, t]) => `<p data-for="${k}">${t}</p>`).join("")}</div></div>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -52,7 +61,7 @@ export function standingsRows(d) {
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
     const now = p.weeks[wk - 1];
-    const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick], now.won) : "";
+    const bg = heroRows() && now?.pick ? pickBackdrop(d.cast[now.pick]) : "";
     return `
     <div class="pc${rank === 1 ? " lead" : ""}">
       ${bg}
@@ -77,10 +86,10 @@ export function standingsRows(d) {
  * and the Show column. It covers the whole row, so opening the row just
  * uncovers more of the photo below; nothing moves.
  */
-function pickBackdrop(c, won) {
+function pickBackdrop(c) {
   const f = faceFor(state.key, c.key);
   if (!f) return "";
-  return `<span class="pc-bg${won ? " won" : ""}" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>`;
+  return `<span class="pc-bg" aria-hidden="true"><img src="${f.src}" alt="" decoding="async" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}"></span>`;
 }
 
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
