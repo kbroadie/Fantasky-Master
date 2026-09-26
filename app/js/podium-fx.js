@@ -420,10 +420,14 @@ if (!REDUCED) {
   document.addEventListener("visibilitychange", wake);
 }
 
-/** Attach effects to every podium under `root` (the episode swiper). */
+/**
+ * Attach effects to every podium under `root` (the episode swiper), and to
+ * every .fx-stage (the Cast header of whoever is in first place, which gets
+ * the winner's gold light around their portrait).
+ */
 export function mountPodiumFx(root) {
   for (const s of scenes) if (!s.pod.isConnected) { io.unobserve(s.pod); scenes.delete(s); visible.delete(s); }
-  for (const pod of root.querySelectorAll(".pod")) {
+  for (const pod of root.querySelectorAll(".pod, .fx-stage")) {
     if (pod.__fx || !pod.querySelector(".pod-col.win, .pod-col.last")) continue;
     const s = new Scene(pod);
     scenes.add(s);
