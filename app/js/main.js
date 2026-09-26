@@ -8,6 +8,7 @@ import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
+import { loadStats, allTimePerEpisode } from "./alltime.js";
 
 const PAGES = ["standings", "episodes", "cast"];
 let SERIES = {}, CURRENT = null;
@@ -267,9 +268,13 @@ addEventListener("hashchange", () => {
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
 try {
-  SERIES = await loadData();
+  const [series, allTime] = await Promise.all([loadData(), loadStats()]);
+  SERIES = series;
   CURRENT = currentSeriesKey(SERIES, new Date());
-  state.stats = perEpisodeStats(SERIES);
+  // The radar compares against every contestant in Taskmaster history when
+  // the all-time stats are available, otherwise against the league's series.
+  state.allTime = allTime;
+  state.stats = allTime.length ? allTimePerEpisode(allTime) : { ...perEpisodeStats(SERIES), n: 0 };
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);

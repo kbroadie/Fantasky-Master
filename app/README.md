@@ -11,6 +11,8 @@ The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_dat
 - `js/csv.js` parses the CSV.
 - `js/league.js` derives the boards, ranks, movement, tiebreak placings, rank history, pick-rule status and contestant stats.
 
+It also reads **[`../data/taskmaster_stats.csv`](../data/taskmaster_stats.csv)**, all-time stats for every Taskmaster contestant (series 1–22), for the Cast tab. `js/alltime.js` reads it. It's imported from a community Google Sheet with `node tools/import-stats.mjs`; don't edit it by hand. If it fails to load, the Cast tab still works and the radar compares against the league's own series.
+
 ## Layout
 
 The layout follows the v1 prototype. A sticky, frosted-glass top bar holds:
@@ -26,7 +28,7 @@ On scroll the bar shrinks to one thin line. All three pages are drawn when the a
 |---|---|
 | **Standings** | Last week at a glance: the winner's portrait, who called it, and who leads Show and League (tap it to open that episode). Then one table with every player's rank and movement and their Show and League points. For Series 22, behind each row is the contestant they picked this week: their face from the cast group photo, every face the same size with the eyes centred in the row (warmed gold if the pick won), drifting slightly as you scroll. Opening a row uncovers the rest of the face. Series 21 has no group photo in the app, so its rows are plain. Tap **Show** or **League** to sort (▼/▲ shows the direction). Tap a player (the chevron) to open their ten weekly picks. |
 | **Episodes** | A strip of Ep 1–10, each with a dot in the winner's colour, above swipeable episodes. Each has the five framed portraits from lowest score to highest, with scores and how many players picked each. The winner glows in gold light that spills onto the portraits beside them; last place gives off a heavy green gas that sinks behind the portraits to the bottom of the card and spreads like dry ice, sloshing when you scroll. Then come the league's picks (who backed whom, as plain names, and what they earned), the task-by-task table (long names show two lines; tap for the rest) and the write-up. Every future episode shows when its poll closes, in your time, with the five contestants. You can swipe anywhere down to the bottom of the screen. |
-| **Cast** | A strip of names in standings order above swipeable contestant pages: portrait and total, how often the league picked them, points per episode as bars in their colour (a crown for a win), a Performance radar of their Prize, Filmed and Live points per episode as z-scores against every contestant in every series (each axis shows its z-score, e.g. +2.48σ; rings every σ from −3σ at the centre to +3σ at the edge, the dashed ring is average; team tasks aren't counted), then the bio and a stat. |
+| **Cast** | A strip of names in standings order above swipeable contestant pages: portrait and total, how often the league picked them, points per episode as bars in their colour (a crown for a win), a Performance radar of their Prize, Filmed and Live points per episode as z-scores against all 110 contestants in Taskmaster history (each axis shows its z-score, e.g. +2.48σ; rings every σ from −3σ at the centre to +3σ at the edge, the dashed ring is average; team tasks aren't counted), then the bio and a stat. Above the bars, **All-time records** lists every stat where they rank in the top 10 of all 110 contestants (e.g. "Chaos agent #1: first or last in 69% of solo tasks"), marked "so far" while the series is running. After the radar, a **Fact file**: age, star sign, height, birthplace, education, family, awards and more. |
 
 Swiping left on Standings opens Episodes, swiping past the last episode carries on into the Cast tab, and swiping back from the first episode returns to Standings.
 
@@ -53,6 +55,7 @@ Swiping left on Standings opens Episodes, swiping past the last episode carries 
   - missing or duplicate scores
   - gaps in scored episodes
   - ties without a tiebreak winner
+  - totals that disagree with the all-time stats file, e.g. a live task entered as a prize task
 - CI runs this check on every push and pull request.
 - Pull requests also get a **screenshots** artifact of every view at phone and desktop size (from `tools/screenshots.mjs`); download it from the PR's Checks tab.
 

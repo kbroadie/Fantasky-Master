@@ -8,6 +8,8 @@ This CSV holds **every hand-entered piece of league data**, for all series. Noth
 - Row order doesn't matter to the data, but keeping each episode's rows together makes weekly edits easy.
 - Text fields may use `<strong>…</strong>` for bold. Everything else is plain text.
 
+> **`taskmaster_stats.csv`** is the other file here: all-time stats for every Taskmaster contestant (series 1–22), used on the app's Cast tab. It is **imported, not hand-edited**. Refresh it with `node tools/import-stats.mjs`, which downloads the first tab of the community stats Google Sheet and keeps only the columns the app uses. Then run `node tools/check-data.mjs`, which warns if a finished series here disagrees with it.
+
 ## Columns
 
 `record, series, episode, task_no, task_type, task_name, player, contestant, score, title, air_date, tiebreak_winner, full_name, accent_color, portrait_url, bio, stat, analysis`

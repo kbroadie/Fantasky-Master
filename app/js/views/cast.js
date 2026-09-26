@@ -1,5 +1,6 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
 import { esc, rich, framed, state, ICON_PATHS } from "../ui.js";
+import { statsFor, badgesFor, factsFor } from "../alltime.js";
 
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
@@ -30,19 +31,47 @@ function slide(d, c, max) {
       </div>
     </div>
     <div class="cd-league">Picked <b>${c.pickedBy}</b> time${c.pickedBy === 1 ? "" : "s"} by the league · earned them <b>${c.deliveredTo}</b> points</div>
+    ${records(d, c)}
     <div class="card">
       <div class="card-head"><span>Points per episode</span>${c.wins ? `<span class="legend">👑 = won</span>` : ""}</div>
       <div class="bars" style="--c:${c.color}">${bars}</div>
     </div>
     ${radar(d, c)}
+    ${factFile(c)}
     ${c.bio ? `<div class="card note"><div class="card-head"><span>Profile</span></div><p>${rich(c.bio)}</p></div>` : ""}
     ${c.stat ? `<div class="card note gold"><div class="card-head"><span>Statistical insight</span></div><p>${rich(c.stat)}</p></div>` : ""}`;
 }
 
+// ── All-time records and fact file (alltime.js) ──────────────────────────────
+
+const statsRow = (c) => statsFor(state.allTime, state.key, c.full);
+
+/** Badges for stats where this contestant is in Taskmaster's all-time top 10. */
+function records(d, c) {
+  const badges = badgesFor(state.allTime, statsRow(c));
+  if (!badges.length) return "";
+  return `
+    <div class="card records">
+      <div class="card-head"><span>All-time records</span><span class="legend">of ${badges[0].of} contestants</span></div>
+      ${badges.map((b) => `<div class="rec"><b class="rec-label">${esc(b.label)}</b><span class="rec-rank${b.rank === 1 ? " top" : ""}">${b.tied ? "=" : ""}#${b.rank}</span><span class="rec-text">${esc(b.text)}</span></div>`).join("")}
+    </div>`;
+}
+
+function factFile(c) {
+  const facts = factsFor(statsRow(c));
+  if (!facts.length) return "";
+  return `
+    <div class="card facts">
+      <div class="card-head"><span>Fact file</span></div>
+      <dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>
+    </div>`;
+}
+
 // ── Performance radar ───────────────────────────────────────────────────────
 // Points per episode from Prize, Filmed and Live tasks (team tasks aren't
-// counted), as z-scores against every contestant in every series
-// (state.stats). The scale runs from −3σ at the centre to +3σ at the edge,
+// counted), as z-scores against every contestant in Taskmaster history
+// (state.stats, from the all-time stats; the league's series if those are
+// missing). The scale runs from −3σ at the centre to +3σ at the edge,
 // with a hairline ring at every whole σ and ticks where they cross the axes;
 // the middle ring (dashed) is the all-series average. With ten or so
 // contestants no z-score can pass ±3, so nothing is clipped in practice.
@@ -86,7 +115,7 @@ function radar(d, c) {
   const summary = KINDS.map(([k, label]) => `${label} ${zText(z(k))} standard deviations`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
-      <div class="card-head"><span>Performance</span><span class="legend">z-score vs all series</span></div>
+      <div class="card-head"><span>Performance</span><span class="legend">${state.stats.n ? `z-score vs all ${state.stats.n} contestants` : "z-score vs all series"}</span></div>
       <svg viewBox="0 0 340 226" role="img" aria-label="${esc(c.key)}'s points per episode against every contestant in every series: ${summary}">
         <defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}" stop-opacity=".9"/><stop offset="1" stop-color="${c.color}" stop-opacity=".65"/></linearGradient></defs>
         <circle class="rd-face" cx="${cx}" cy="${cy}" r="${R}"/>

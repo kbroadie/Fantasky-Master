@@ -367,6 +367,18 @@ strong { color: var(--t1); font-weight: 700; }
 .bar.won b { color: var(--gold3); }
 .bar.won::before { content: "👑"; position: absolute; top: -16px; font-size: 12px; }
 .bar.tbd i { height: 3px; background: var(--b-gold); }
+/* All-time records: a badge per stat where the contestant is in the top 10 */
+.records .rec { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 8px 12px; border-top: 1px solid var(--b-dim); }
+.rec-label { font-family: var(--ff-name); font-size: 16px; font-weight: 700; color: var(--gold3); }
+.rec-rank { font-size: 15px; font-weight: 800; color: var(--t2); text-align: right; }
+.rec-rank.top { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
+.rec-text { grid-column: 1 / -1; font-size: 13px; color: var(--t2); margin-top: 1px; }
+
+/* Fact file: label over value, two columns */
+.facts dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; padding: 2px 14px 14px; }
+.facts dt { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }
+.facts dd { font-size: 15px; color: var(--t1); margin-top: 2px; }
+
 /* Performance radar: hairline σ rings and axes with ticks, a dashed
    all-series average ring, one filled shape with small vertex points */
 .radar svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; padding-bottom: 8px; overflow: visible; shape-rendering: geometricPrecision; }

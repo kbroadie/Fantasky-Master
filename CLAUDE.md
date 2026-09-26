@@ -9,6 +9,7 @@ Fantasy league for the TV show *Taskmaster*. Players pick one contestant per epi
 
 ```
 data/fantasky_master_data.csv   ← the ONLY league data (hand-edited; schema in data/README.md)
+data/taskmaster_stats.csv       all-time stats for every contestant, S1–22 (imported, never hand-edited)
 app/index.html                  sticky top bar (masthead + 3 tabs) and the three pages
 app/styles.css                  all styles; mobile-first, wider layouts in @media at the end
 app/js/main.js                  renders all pages at load, tabs, swipers, sorting, series toggle, countdown, routing (#/series/page/arg)
@@ -18,7 +19,9 @@ app/js/podium-fx.js             canvas effects on episode podiums: winner's gold
 app/js/heroes.js                presentation only: each series' cast group photo, and each contestant's eyes and pupil distance in it
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
-tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
+app/js/alltime.js               loads taskmaster_stats.csv: the radar baseline, all-time record badges, fact files
+tools/check-data.mjs            validates the CSV + worked-example regression + cross-check against the stats (no deps)
+tools/import-stats.mjs          regenerates taskmaster_stats.csv from the all-time stats Google Sheet
 tools/screenshots.mjs           Playwright shots of every view at 390px and 1440px → shots/
 ```
 
@@ -58,9 +61,11 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Every future episode shows its poll deadline, the time left and the five contestants.
   - The swiper always reaches the bottom of the screen (`fit` in `main.js`), so you can swipe below a short slide.
   - The Cast tab shows points per episode as bars on one scale for all five contestants (a crown and gold number for a win, no outline), and a Performance radar with three axes, Prize, Filmed and Live, each labelled with its line icon (team tasks aren't counted, not even in Filmed).
-    - Each axis is a z-score of points per episode against every contestant in every series (`perEpisodeStats` in `ui.js`, stored as `state.stats`). It's per episode so a series in progress compares fairly with a finished one.
+    - Above the bars, an **All-time records** card: every stat where the contestant is in the top 10 of all 110 (`BADGES` in `alltime.js`), best rank first. Ties show "=#3"; #1 glows gold. For the series in progress the text says "so far".
+    - After the radar, a **Fact file**: age, star sign, height, birthplace, seat, education, children, siblings, Edinburgh Comedy Award, biggest film and so on (`factsFor`), skipping anything blank.
+    - Each axis is a z-score of points per episode against all 110 contestants in Taskmaster history (`allTimePerEpisode` in `alltime.js`, stored as `state.stats`; `perEpisodeStats` in `ui.js` over the league's own series is the fallback if the stats file fails to load). It's per episode so a series in progress compares fairly with a finished one.
     - The scale runs from −3σ at the centre to +3σ at the edge of the circle. There's a hairline ring at every whole σ, with ticks where the rings cross the axes, and a dashed gold ring at 0σ (the all-series average).
-    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points and no outline. Each axis has one centred group set clear of the circle: the z-score to two decimals as the headline ("+2.48σ"), with the icon and name as a muted caption below. The card head says "z-score vs all series". The look is precise and minimal: hairlines, no decoration.
+    - Only the selected contestant is drawn: a solid shape in their colour with a subtle gradient, small vertex points and no outline. Each axis has one centred group set clear of the circle: the z-score to two decimals as the headline ("+2.48σ"), with the icon and name as a muted caption below. The card head says "z-score vs all 110 contestants". The look is precise and minimal: hairlines, no decoration.
 - **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen` in `ui.js`). Never hard-code London.
 - **Icons:** task types (Prize, Filmed, Team, Live) use one monoline SVG set (`ICON_PATHS` / `icon()` in `ui.js`): 16px grid, 1.5 stroke, gold. Don't mix in emoji; they render in clashing styles. Emoji are only for the 👑/🏆/crown badges.
 - **Nothing smaller than 11px.** Use weight and colour for hierarchy.
@@ -87,6 +92,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 ```sh
 npm run serve                 # http://localhost:8000/app/
 node tools/check-data.mjs     # run after any CSV or league.js change
+node tools/import-stats.mjs   # refresh data/taskmaster_stats.csv from the Google Sheet, then run check-data
 npm ci && npx playwright install chromium && node tools/screenshots.mjs
 ```
 
