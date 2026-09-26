@@ -188,18 +188,18 @@ strong { color: var(--t1); font-weight: 700; }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
 
-/* The week's pick as the row's backdrop: their face from the group photo, behind the whole row
-   card (head and expanded picks). It spans the row edge to edge and is
-   scaled up until only that face is in frame: the photo's width (--W) is
-   the smallest that keeps the view inside the face's clear band (--x0 to
-   --x1, before a pillar or another person) on both sides of the eyes. The eyes (--ex/--ey)
+/* The week's pick as the row's backdrop: their face from the group photo,
+   behind the whole row card (head and expanded picks). Every face is drawn
+   the same size: the photo's width (--W) puts --eyes between the pupils
+   (--sep is the pupil distance as a fraction of the photo's width), and is
+   never less than it takes to span the row edge to edge. The eyes (--ex/--ey)
    sit on the head line's centre (--head / 2) and at --tx across, the gap
    between the name and Show. Anchored to the top, so opening the row only
-   uncovers more of the photo below. */
+   uncovers more of the face below. */
 .pc-head, .pc-more { position: relative; z-index: 1; }
-.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); }
+.pc-bg { position: absolute; inset: 0; z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --eyes: 50px; }
 .pc-bg img {
-  --W: calc(max(var(--tx) / (var(--ex) - var(--x0)), (100cqw - var(--tx)) / (var(--x1) - var(--ex))) + 2px);
+  --W: max(var(--eyes) / var(--sep), var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px);
   position: absolute; max-width: none; width: var(--W); height: auto;
   left: calc(var(--tx) - var(--ex) * var(--W)); top: calc(var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
   filter: saturate(.85) brightness(.8) contrast(1.05);
@@ -388,7 +388,7 @@ strong { color: var(--t1); font-weight: 700; }
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
-  .pc-bg { --tx: calc(50cqw - 42px); }
+  .pc-bg { --tx: calc(50cqw - 42px); --eyes: 64px; }
   .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%); }
   .bars { height: 180px; }
 }

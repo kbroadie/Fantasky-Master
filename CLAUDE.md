@@ -15,7 +15,7 @@ app/js/main.js                  renders all pages at load, tabs, swipers, sortin
 app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
 app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
 app/js/podium-fx.js             canvas effects on episode podiums: winner's gold light, last place's stink gas
-app/js/heroes.js                presentation only: each series' cast group photo, and each contestant's eyes and clear band in it
+app/js/heroes.js                presentation only: each series' cast group photo, and each contestant's eyes and pupil distance in it
 app/js/league.js                pure scoring engine (derive) — must match the systems doc
 app/js/csv.js                   CSV → series objects
 tools/check-data.mjs            validates the CSV + worked-example regression (no deps)
@@ -37,7 +37,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
   - Each row shows rank and movement, the player's name (no 👑/🏆 on it), Show, League and a chevron. Tap a row to open that player's ten picks: portraits and points only, with no text line under them.
   - **Series with a group photo (22):** the player's pick that week is the row's backdrop (`pickBackdrop` in `table.js`), behind the whole row card.
-    - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). It spans the row edge to edge, scaled up until only that face is in frame: the view stays inside the face's clear band (`clear`), before a pillar or another person. The eyes get comically big, which is on purpose.
+    - The backdrop is the contestant's face cropped from the series' cast group photo (`GROUP` in `heroes.js`: `https://i.imgur.com/aTYNG68.jpeg`, 5246×3936). Every face is drawn the same size: the photo is scaled so the pupils are `--eyes` apart (50px on phones, 64px from 600px up; `sep` in `heroes.js` is each face's pupil distance), and never smaller than it takes to span the row edge to edge. Pillars and neighbours at the sides are fine; the reshade darkens them.
     - The eyes sit on the centre line of the row's top line (`--head / 2`) and in the gap between the name and Show (`--tx`).
     - It's anchored to the top, so opening a row doesn't move it; it just uncovers more of the photo, lightly dimmed behind the picks.
     - Reshaded darker behind the name and numbers, and warmed gold if the pick won.
