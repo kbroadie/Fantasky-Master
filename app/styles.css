@@ -186,7 +186,6 @@ strong { color: var(--t1); font-weight: 700; }
 .pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 .pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
-.pc-head:active { background: rgba(255, 255, 255, .03); }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
 .pc-rank b { font-size: 18px; font-weight: 800; color: var(--t2); line-height: 1; }
 .pc-rank i { font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; }
