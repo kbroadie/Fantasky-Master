@@ -153,7 +153,8 @@ function raceChart(d, upTo) {
   const lines = [...ends].reverse().map((name) => {
     const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(gap(name, e))]);
     const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
-    const dots = pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    // No points on the lines; only Episode 1, with no lines yet, shows dots.
+    const dots = upTo > 1 ? "" : pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
     const [lx, ly] = pts.at(-1), ty = labelY[name], g = gap(name, upTo);
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
     const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
