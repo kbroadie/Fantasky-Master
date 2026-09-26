@@ -27,4 +27,24 @@ export const framed = (c) => `<img class="fp" src="${c.img}" alt="${esc(c.key)}"
 /** A contestant's first name in their accent colour. */
 export const named = (c) => `<b class="cn" style="color:${c.color}">${esc(c.key)}</b>`;
 
-export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0 };
+export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, ep: 1, cast: 0, best: null };
+
+/**
+ * The best points per episode by any contestant in any series, for each kind
+ * of task (P prize, F filmed, L live). Per episode so a series in progress
+ * compares fairly with a finished one. The Cast radar scales to these.
+ */
+export function bestPerEpisode(series) {
+  const best = { P: 0, F: 0, L: 0 };
+  for (const raw of Object.values(series)) {
+    const scored = raw.tasks.reduce((m, t) => Math.max(m, t.ep), 0);
+    if (!scored) continue;
+    raw.cast.forEach((_, i) => {
+      for (const k of Object.keys(best)) {
+        const pts = raw.tasks.filter((t) => t.t === k).reduce((a, t) => a + t.s[i], 0);
+        best[k] = Math.max(best[k], pts / scored);
+      }
+    });
+  }
+  return best;
+}

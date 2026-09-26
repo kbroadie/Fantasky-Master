@@ -336,10 +336,10 @@ strong { color: var(--t1); font-weight: 700; }
 .bar.won i { box-shadow: 0 0 0 2px var(--gold3), 0 0 10px var(--gold-glow); }
 .bar.won::before { content: "👑"; position: absolute; top: -16px; font-size: 12px; }
 .bar.tbd i { height: 3px; background: var(--b-gold); }
-/* Strengths radar: two solid shapes, no outlines, numbers or legend */
-.radar svg { display: block; width: 100%; max-width: 340px; margin: 0 auto; padding-bottom: 8px; overflow: visible; }
-.rd-area { fill: rgba(255, 255, 255, .07); }
-.rd-me { fill: var(--c); }
+/* Strengths radar: a circle with quarter gridlines; the contestant's area
+   is a solid shape in their colour with a subtle gradient, no outline */
+.radar svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; padding-bottom: 8px; overflow: visible; }
+.rd-grid { fill: none; stroke: rgba(255, 255, 255, .09); stroke-width: 1; }
 .rd-label { font-family: var(--fm); font-size: 12px; fill: var(--t2); letter-spacing: .08em; text-transform: uppercase; }
 
 /* Narrow phones: a little more room for the one-line countdown */

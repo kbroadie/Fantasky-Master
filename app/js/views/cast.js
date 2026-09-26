@@ -1,5 +1,5 @@
 // Cast: a name strip (in standings order) above swipeable contestant slides.
-import { esc, rich, framed } from "../ui.js";
+import { esc, rich, framed, state, ICON } from "../ui.js";
 
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
@@ -40,32 +40,43 @@ function slide(d, c, max) {
 }
 
 // ── Strengths radar ─────────────────────────────────────────────────────────
-// Points from Prize, Filmed and Live tasks (team tasks aren't counted). Each
-// axis is scaled to the best in the cast, so the corner of the grey triangle
-// means "top of the cast" there. Two solid shapes: the full triangle and
-// this contestant's area in their colour.
+// Points per episode from Prize, Filmed and Live tasks (team tasks aren't
+// counted). Each axis runs from 0 at the centre to the best per-episode
+// figure by any contestant in any series at the edge of the circle
+// (state.best). Gridlines at quarters; this contestant's area is a solid
+// shape in their colour, with subtle gradients and no outline.
 
 const KINDS = [["P", "Prize"], ["F", "Filmed"], ["L", "Live"]];
 
 function radar(d, c) {
-  const n = KINDS.length, R = 84, cx = 160, cy = 118;
-  const max = Object.fromEntries(KINDS.map(([k]) => [k, Math.max(1, ...d.contestants.map((x) => x.ty[k]))]));
+  const n = KINDS.length, R = 84, cx = 170, cy = 112;
+  const eps = Math.max(1, d.weeksScored), best = state.best;
+  const val = (k) => c.ty[k] / eps;
   const at = (i, f) => {
     const a = -Math.PI / 2 + (i * 2 * Math.PI) / n;
     return [cx + Math.cos(a) * R * f, cy + Math.sin(a) * R * f];
   };
-  const pts = (f) => KINDS.map(([k], i) => at(i, f(k)).map((v) => v.toFixed(1)).join(",")).join(" ");
-  const labels = KINDS.map(([, label], i) => {
-    const [x, y] = at(i, 1.16), anchor = Math.abs(x - cx) < 1 ? "middle" : x > cx ? "start" : "end";
-    return `<text class="rd-label" x="${x.toFixed(1)}" y="${(y < cy ? y - 4 : y + 14).toFixed(1)}" text-anchor="${anchor}">${label}</text>`;
+  const xy = ([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`;
+  const shape = KINDS.map(([k], i) => xy(at(i, Math.min(1, best[k] ? val(k) / best[k] : 0)))).join(" ");
+  const rings = [0.25, 0.5, 0.75].map((f) => `<circle class="rd-grid" cx="${cx}" cy="${cy}" r="${(R * f).toFixed(1)}"/>`).join("");
+  const spokes = KINDS.map((_, i) => { const [x, y] = at(i, 1); return `<line class="rd-grid" x1="${cx}" y1="${cy}" x2="${x.toFixed(1)}" y2="${y.toFixed(1)}"/>`; }).join("");
+  const labels = KINDS.map(([k, label], i) => {
+    const [x, y] = at(i, 1.14), anchor = Math.abs(x - cx) < 1 ? "middle" : x > cx ? "start" : "end";
+    return `<text class="rd-label" x="${x.toFixed(1)}" y="${(y < cy ? y - 2 : y + 14).toFixed(1)}" text-anchor="${anchor}">${ICON[k]} ${label}</text>`;
   }).join("");
-  const summary = KINDS.map(([k, label]) => `${label} ${c.ty[k]} of a cast best ${max[k]}`).join(", ");
+  const id = `rd-${esc(c.key).replace(/\W/g, "")}`;
+  const summary = KINDS.map(([k, label]) => `${label} ${val(k).toFixed(1)} per episode (best in any series: ${best[k].toFixed(1)})`).join(", ");
   return `
     <div class="card radar" style="--c:${c.color}">
       <div class="card-head"><span>Strengths</span></div>
-      <svg viewBox="0 0 320 196" role="img" aria-label="${esc(c.key)}'s task points: ${summary}">
-        <polygon class="rd-area" points="${pts(() => 1)}"/>
-        <polygon class="rd-me" points="${pts((k) => c.ty[k] / max[k])}"/>
+      <svg viewBox="0 0 340 214" role="img" aria-label="${esc(c.key)}'s points per episode: ${summary}">
+        <defs>
+          <radialGradient id="${id}-bg"><stop offset="0" stop-color="#fff" stop-opacity=".09"/><stop offset="1" stop-color="#fff" stop-opacity=".035"/></radialGradient>
+          <linearGradient id="${id}-me" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c.color}"/><stop offset="1" stop-color="${c.color}" stop-opacity=".62"/></linearGradient>
+        </defs>
+        <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#${id}-bg)"/>
+        ${rings}${spokes}
+        <polygon points="${shape}" fill="url(#${id}-me)"/>
         ${labels}
       </svg>
     </div>`;
