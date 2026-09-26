@@ -24,9 +24,24 @@ tools/screenshots.mjs           Playwright shots of every view at 390px and 1440
 
 The user's v1 prototype is the model: fast, clean, obvious navigation. The aim is to make it fun and emotionally engaging without making anyone think harder.
 
-- **Top bar** (sticky): brand; the series number, which you tap to switch series; a red seven-segment countdown to the next episode. Below it are three segmented tabs, with a gold panel that slides behind the active one. The bar compacts on scroll.
-- **Standings:** one table sorted by Show or League (tap a header to sort, tap again to reverse). Each row shows rank, movement, the player's pick that week as a framed face, then Show and League. Tap a row to open that player's ten picks.
-- **Episodes / Cast:** a tab strip over scroll-snapped slides. Swiping past the first or last slide carries on into the neighbouring tab.
+- **Top bar** (sticky, frosted glass):
+  - The brand.
+  - The series number, a gold chip with a swap icon: tap it to switch series.
+  - The poll deadline in local time over a gold pill of time left.
+  - Below them, three segmented tabs, with a gold panel that slides behind the active one.
+  - On scroll it compacts to one thin line plus label-only tabs. The height it saves goes back as margin (`--hdr-h`, `--tabs-h`… in `:root`), so the layout height never changes. Keep that invariant, or scroll anchoring makes the bar flicker.
+- **Standings:**
+  - A last-week strip at the top: the winner's portrait, who called it, and who leads each board. Tap it to open that episode.
+  - Then one table sorted by Show or League. The active header shows ▼/▲; tap again to reverse.
+  - Each row shows rank and movement, a crown on #1, the player's pick that week as a framed face, Show, League and a chevron. Tap a row to open that player's ten picks.
+- **Episodes / Cast:** a tab strip over scroll-snapped slides.
+  - Swiping past the first or last slide carries on into the neighbouring tab, and a gold edge tab ("Cast ›") slides in while you pull.
+  - Episode tabs carry a dot in the winner's colour.
+  - Portraits, the league's picks and the task table all run in finishing order.
+  - The next episode shows its poll deadline and the five contestants.
+  - The Cast tab shows points per episode as bars on one scale for all five contestants.
+- **Times are local:** every date, time and countdown uses the device's time zone and locale (`fmtDay`, `fmtWhen`, `fmtSoon` in `ui.js`). Never hard-code London.
+- **Nothing smaller than 11px.** Use weight and colour for hierarchy.
 - **Emotion comes from faces, gold and colour, not motion.** Use framed portraits, a crown for the winner, gold/silver/bronze for the top three, gold for a pick that won, and contestant accent colours. There are no decorative animations; transitions are only for navigation, such as the tab slide and the row expanding.
 
 ## Conventions
