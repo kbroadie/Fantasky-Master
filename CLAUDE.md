@@ -35,7 +35,13 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 - **No build step, no framework, no runtime dependencies.** Native ES modules; `package.json` is for tooling only.
 - **Views** are functions returning template strings. Escape user and CSV text with `esc()`, or `rich()` to allow `<strong>`. Interactions go through delegated listeners in `main.js`.
 - **Contestants** always appear as full gold-framed portraits (`framed()`), never cropped circles.
-- **Fonts:** system fonts only for now. The stacks are `--ff` (text), `--ff-name` (rounded, for names) and `--fm` (mono, for labels). Use tabular figures for numbers.
+- **Fonts:** the v1 set, loaded from Google Fonts, one job each:
+  - `--ff-head` Bungee: headings and the brand. It has one weight; keep it at 400.
+  - `--ff-name` Fredoka: player and contestant names.
+  - `--ff` Inter: body text and every score.
+  - `--fm` DM Mono: labels. Only 400 and 500 are loaded.
+  - `font-synthesis: none` is set, so never ask for a weight that isn't loaded.
+  - Use tabular figures for numbers.
 - **Terms:** use **Show** and **League** points, as in README.md.
 - **Imgur images:** the page sets `referrer: no-referrer` because Imgur blocks some referrers. Portraits load as `…m.webp`.
 
@@ -48,7 +54,7 @@ npm ci && npx playwright install chromium && node tools/screenshots.mjs
 ```
 
 In the Claude cloud sandbox:
-- The headless browser can't reach Imgur, so use `FM_CURL_IMAGES=1 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tools/screenshots.mjs`.
+- The headless browser can't reach Imgur or Google Fonts, so use `FM_CURL_IMAGES=1 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tools/screenshots.mjs`.
 - The shots land in `shots/` (gitignored). Read them to review changes.
 
 ## Workflow

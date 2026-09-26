@@ -2,8 +2,8 @@
 // without opening a browser. Serves the repo itself, so run from anywhere:
 //   npm ci && npx playwright install chromium   (once)
 //   node tools/screenshots.mjs [outDir]         (default: shots/)
-// FM_CURL_IMAGES=1 fetches Imgur images through curl (for sandboxes whose
-// headless browser can't reach it directly).
+// FM_CURL_IMAGES=1 fetches Imgur images and Google Fonts through curl (for
+// sandboxes whose headless browser can't reach them directly).
 
 import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
@@ -39,6 +39,7 @@ const SHOTS = [
 await mkdir(OUT, { recursive: true });
 const browser = await chromium.launch();
 const cache = new Map();
+const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36"; // so Google serves woff2
 let series = null;
 
 for (const [name, w, h, hash, action] of SHOTS) {
@@ -47,10 +48,11 @@ for (const [name, w, h, hash, action] of SHOTS) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   if (process.env.FM_CURL_IMAGES) {
-    await page.route(/i\.imgur\.com/, async (r) => {
+    await page.route(/i\.imgur\.com|fonts\.googleapis\.com|fonts\.gstatic\.com/, async (r) => {
       const u = r.request().url();
-      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", u]));
-      await r.fulfill({ body: cache.get(u), headers: { "content-type": "image/webp" } });
+      if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", "-A", UA, u]));
+      const type = u.includes("googleapis") ? "text/css" : u.includes("gstatic") ? "font/woff2" : "image/webp";
+      await r.fulfill({ body: cache.get(u), headers: { "content-type": type, "access-control-allow-origin": "*" } });
     });
   }
   await page.goto(BASE + hash.replace("{S}", series));

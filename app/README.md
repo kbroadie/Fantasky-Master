@@ -35,7 +35,7 @@ Swiping past the last episode carries on into the Cast tab, and swiping back fro
 - **Palette:** Taskmaster red and gold on near-black.
 - **Colour has one meaning each:** gold is the best result, green is moving up and red is moving down.
 - **Faces:** contestants always appear as their gold-framed portraits.
-- **Fonts:** system fonts only, so there's nothing to download.
+- **Fonts:** as in v1, from Google Fonts: **Bungee** for headings, **Fredoka** for names, **Inter** for text and scores, **DM Mono** for labels.
 - **Motion:** used only for navigation, such as the sliding tab and a row opening.
 
 ## Performance
