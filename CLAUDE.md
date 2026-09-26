@@ -41,10 +41,10 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Swiping past the first or last slide carries on into the neighbouring tab, and a left swipe on Standings goes to Episodes (`edgeNav` in `main.js`). There's no visual hint while you pull (removed on request).
   - Episode tabs carry a dot in the winner's colour.
   - The episode portraits run lowest score to highest (winner on the right), and the task-table columns follow them so each sits under its portrait. The league's picks read winner first.
-  - The winner gets a crown and gold light; last place (ties included) gets stink gas and a green score. Both are canvas effects (`podium-fx.js`), aiming for over-the-top realism:
+  - The winner gets gold light (no crown on the episode portraits); last place (ties included) gets stink gas and a score in the fog's muted olive (#a3a86e). Both are canvas effects (`podium-fx.js`), aiming for over-the-top realism:
     - **Gold:** a volumetric glow and slowly turning light rays behind the frame, a light pool on the shelf, warm bounce light screened onto the neighbouring portraits, neighbours casting shadows along the shelf away from the winner, a blooming rim light on the gilt frame, rising gold dust and glints.
-    - **Stink:** heavier-than-air gas, drawn as shaded puffs (lit from above, darker beneath). It seeps from the portrait, sinks under gravity, pools on the shelf and creeps sideways with turbulence. There's no cartoon cloud.
-    - **Scroll physics:** the gas and dust have inertia. Page scrolling sloshes the gas and stirs the dust, swiping between episodes shoves them sideways, and scroll speed briefly surges the gold.
+    - **Stink:** heavier-than-air gas, drawn as shaded puffs (lit from above, darker beneath), mostly on the back layer behind the portraits, with a faint veil in front for the low bank. It seeps from behind the portrait, sinks to the bottom of the podium card and spreads along it like dry ice on a countertop, flattening as it lands. It collides with all four sides and never leaves the card. There's no cartoon cloud.
+    - **Scroll physics:** the gas and dust have inertia. Page scrolling sloshes the gas and stirs the dust, and scroll speed briefly surges the gold. Swiping between episodes doesn't push them, and an episode's gas is cleared when it goes off screen, so none trails into the next one.
     - **Cost:** only podiums on screen are simulated, nothing runs in a hidden tab, and reduced motion gets one settled still frame.
   - The league's picks list each contestant's backers as plain comma-separated names (no pills, not bold).
   - Every future episode shows its poll deadline, the time left and the five contestants.
