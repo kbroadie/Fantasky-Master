@@ -6,23 +6,19 @@ import { GROUP, faceFor } from "../heroes.js";
 /** The latest episode anyone has a pick for: the "this week" column. */
 export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
 
-/** 👑 marks the Show points leader and 🏆 the League points leader. */
-const CROWN = `<span role="img" aria-label="Show">👑</span>`;
-const TROPHY = `<span role="img" aria-label="League">🏆</span>`;
-
 /** Everyone on the top score of a board (ties share the lead). */
 function leaders(d, key) {
   const top = Math.max(...d.players.map((p) => p[key]));
   return d.players.filter((p) => p[key] === top).map((p) => p.name);
 }
 
-/** "👑 Riley leads Show   🏆 Jamie leads League" ("win" once the series is over). */
+/** "Riley leads Show   Jamie leads League" ("wins" once the series is over). */
 function leaderLine(d) {
   const show = leaders(d, "show"), league = leaders(d, "league");
   const verb = (names) => (d.complete ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
   const who = (names) => `<b>${esc(listing(names))}</b>`;
-  if (listing(show) === listing(league)) return `<span>${CROWN}${TROPHY} ${who(show)} ${verb(show)} Show and League</span>`;
-  return `<span>${CROWN} ${who(show)} ${verb(show)} Show</span><span>${TROPHY} ${who(league)} ${verb(league)} League</span>`;
+  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} Show and League</span>`;
+  return `<span>${who(show)} ${verb(show)} Show</span><span>${who(league)} ${verb(league)} League</span>`;
 }
 
 /** The hero: "Week 4 Standings" and who leads each board, or when the series starts. */

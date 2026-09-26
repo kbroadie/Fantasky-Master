@@ -153,8 +153,12 @@ strong { color: var(--t1); font-weight: 700; }
 /* The table sits in a rounded card, like the cards on the other tabs.
    The sort buttons' tap area reaches past the slim header row. */
 .card.board { margin: 12px var(--px); }
-.board .st-head, .board .pc-head { padding-inline: 12px; } /* the card head's 12px sides */
-.board .pk-grid { padding-inline: 12px; }
+/* Optically balanced inside the card: the rank column's text and the
+   chevron sit the same distance from the card's edges (the chevron's box is
+   visually lighter, so it gets a little more padding); Show and League are
+   close enough to read as a pair. */
+.board .st-head, .board .pc-head { grid-template-columns: 32px minmax(0, 1fr) 54px 54px 12px; column-gap: 8px; padding-inline: 12px 16px; }
+.board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
 .st-head {
   padding-block: 9px 7px; /* the same height as a card head on the other tabs */ border-bottom: 1px solid var(--b-gold);
@@ -433,6 +437,8 @@ strong { color: var(--t1); font-weight: 700; }
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
+  .board .st-head, .board .pc-head { grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 16px 22px; }
+  .board .pk-grid { padding-inline: 20px; }
   .pc-bg { --tx: calc(50cqw - 42px); --face: 106px; }
   .pc-bg.won::before { background: radial-gradient(ellipse 18% 40px at calc(50% - 42px) calc(var(--head) / 2), rgba(236, 192, 64, .22), transparent 70%), linear-gradient(rgba(150, 100, 20, .16), rgba(150, 100, 20, .16)); }
   .bars { --plot: 126px; }
