@@ -26,7 +26,7 @@
 <body class="loading">
   <div class="topbar">
     <header class="hdr">
-      <div class="brand"><span class="g">FAN</span>TASK<span class="g">Y</span> MASTER <button id="series" class="series" type="button">22</button></div>
+      <div class="brand"><span><span class="g">FAN</span>TASK<span class="g">Y</span> MASTER</span><button id="series" class="series" type="button"><span id="series-num">22</span><svg class="swap" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 4h8M7 1.5 9.5 4 7 6.5M10.5 8h-8M5 5.5 2.5 8 5 10.5"/></svg></button></div>
       <div class="cd" id="cd" role="timer"></div>
     </header>
     <nav class="tabs" aria-label="Sections">
@@ -42,6 +42,8 @@
         <span>Cast</span></button>
     </nav>
   </div>
+
+  <div class="peek" id="peek" aria-hidden="true"></div>
 
   <main>
     <section class="page" id="p-standings"><p class="loading-msg">Opening the envelopes…</p></section>

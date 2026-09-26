@@ -3,7 +3,7 @@
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
-import { $, $$, esc, reducedMotion, state } from "./ui.js";
+import { $, $$, esc, reducedMotion, state, fmtSoon, until } from "./ui.js";
 import { standingsHead, standingsRows } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
@@ -35,7 +35,8 @@ function loadSeries(key) {
   state.ep = Math.max(1, d.weeksScored);
   state.cast = 0;
   const btn = $("#series");
-  btn.textContent = key;
+  $("#series-num").textContent = key;
+  btn.classList.toggle("multi", Object.keys(SERIES).length > 1);
   btn.classList.toggle("past", key !== CURRENT);
   btn.setAttribute("aria-label", `Series ${key}. Tap to switch series`);
   $("#p-standings").innerHTML = standingsHead(d);
@@ -50,7 +51,12 @@ function loadSeries(key) {
 
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
-  $$(".st-num").forEach((b) => b.classList.toggle("on", b.dataset.sort === state.sort));
+  for (const b of $$(".st-num")) {
+    const on = b.dataset.sort === state.sort;
+    b.classList.toggle("on", on);
+    b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
+    b.setAttribute("aria-label", `Sort by ${b.dataset.sort}${on ? `, now ${state.dir < 0 ? "highest" : "lowest"} first` : ""}`);
+  }
 }
 
 function show(page) {
@@ -92,7 +98,16 @@ function jump(sw, i) {
   fit(body);
 }
 
-function bindSwiper(sw, onEdge) {
+/** A gold tab that slides in from the edge while you pull past the last slide. */
+const peek = $("#peek");
+function pull(side, label, dist) {
+  if (!side) { peek.className = "peek"; return; }
+  peek.textContent = side === "left" ? `‹ ${label}` : `${label} ›`;
+  peek.className = `peek ${side}${dist >= 50 ? " ready" : ""}`;
+  peek.style.setProperty("--pull", `${Math.min(dist, 70)}px`);
+}
+
+function bindSwiper(sw, onEdge, labels) {
   const body = $(sw.body);
   let raf = 0, settle = 0;
   body.addEventListener("scroll", () => {
@@ -115,7 +130,16 @@ function bindSwiper(sw, onEdge) {
     atStart = body.scrollLeft <= 2;
     atEnd = body.scrollLeft >= body.scrollWidth - body.clientWidth - 2;
   }, { passive: true });
+  body.addEventListener("touchmove", (e) => {
+    if (x0 == null) return;
+    const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0;
+    const side = atStart && dx > 0 && labels.prev ? "left" : atEnd && dx < 0 && labels.next ? "right" : null;
+    if (side && Math.abs(dx) > Math.abs(dy) * 1.5) pull(side, side === "left" ? labels.prev : labels.next, Math.abs(dx));
+    else pull(null);
+  }, { passive: true });
+  body.addEventListener("touchcancel", () => { x0 = null; pull(null); }, { passive: true });
   body.addEventListener("touchend", (e) => {
+    pull(null);
     if (x0 == null) return;
     const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0;
     x0 = null;
@@ -125,30 +149,27 @@ function bindSwiper(sw, onEdge) {
   }, { passive: true });
 }
 
-// ── Countdown: a red seven-segment clock to the next episode ─────────────────
+// ── Countdown to the next poll deadline, in the device's time ────────────────
 
-const SEGS = { 0: "abcdef", 1: "bc", 2: "abged", 3: "abgcd", 4: "fgbc", 5: "afgcd", 6: "afgecd", 7: "abc", 8: "abcdefg", 9: "abcdfg" };
-const digit = (ch) => `<span class="seg">${[..."abcdefg"].map((s) => `<i class="s${s}${SEGS[ch].includes(s) ? " on" : ""}"></i>`).join("")}</span>`;
-const two = (n) => [...String(Math.min(n, 99)).padStart(2, "0")].map(digit).join("");
 let timer = 0;
 
 function countdown() {
   clearInterval(timer);
   const el = $("#cd"), e = state.d.nextEp;
-  if (!e) { el.innerHTML = `<span class="cd-label">Series complete</span>`; return; }
-  const unit = (id, l) => `<span class="cd-unit"><span class="cd-nums" id="cd-${id}"></span><small>${l}</small></span>`;
-  const colon = `<span class="cd-colon"><i></i><i></i></span>`;
-  el.innerHTML = `<span class="cd-label">Episode ${e.ep}</span><span class="cd-digits">${unit("d", "Days")}${colon}${unit("h", "Hrs")}${colon}${unit("m", "Mins")}</span>`;
-  el.setAttribute("aria-label", `Episode ${e.ep} airs ${e.air.toLocaleString()}`);
+  if (!e) {
+    el.innerHTML = `<span class="cd-label">Series ${state.key}</span><span class="cd-pill done">Complete</span>`;
+    return;
+  }
+  el.innerHTML = `<span class="cd-label">Ep ${e.ep} · ${esc(fmtSoon.format(e.air))}</span><span class="cd-pill" id="cd-left"></span>`;
+  el.setAttribute("aria-label", `Poll for episode ${e.ep} closes ${e.air.toLocaleString()}`);
   let last = "";
   const tick = () => {
-    const m = Math.max(0, Math.floor((e.air - Date.now()) / 60000));
-    const s = `${Math.floor(m / 1440)}|${Math.floor(m / 60) % 24}|${m % 60}`;
-    if (s === last) return;
-    last = s;
-    const [dd, hh, mm] = s.split("|").map(Number);
-    $("#cd-d").innerHTML = two(dd); $("#cd-h").innerHTML = two(hh); $("#cd-m").innerHTML = two(mm);
-    if (!m) clearInterval(timer);
+    const ms = e.air - Date.now();
+    const html = ms > 0
+      ? until(ms).map(([n, u]) => `<b>${n}</b><small>${u}</small>`).join(" ")
+      : `<b>Poll closed</b>`;
+    if (html !== last) $("#cd-left").innerHTML = last = html;
+    if (ms <= 0) clearInterval(timer);
   };
   tick();
   timer = setInterval(tick, 1000);
@@ -174,6 +195,8 @@ $("#p-standings").addEventListener("click", (e) => {
     state.sort = s.dataset.sort;
     return renderRows();
   }
+  const last = e.target.closest("[data-ep]");
+  if (last) { state.ep = +last.dataset.ep; return show("episodes"); }
   const head = e.target.closest(".pc-head");
   if (head) head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
 });
@@ -181,10 +204,13 @@ $("#p-standings").addEventListener("click", (e) => {
 bindSwiper(EP, (dir) => {
   if (dir < 0) show("standings");
   else { state.cast = 0; show("cast"); }
-});
+}, { prev: "Standings", next: "Cast" });
 bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
-});
+}, { prev: "Episodes" });
+
+// Long task names are clamped to two lines; tap one to read it in full.
+$("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 
 // The top bar compacts once you scroll. Its layout height stays the same
 // (see .topbar.compact in the CSS), and the two thresholds differ so it

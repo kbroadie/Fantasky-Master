@@ -1,25 +1,42 @@
-// Episodes: a scrollable Ep 1–10 strip above swipeable episode slides. Each
-// slide shows the five framed portraits with their scores, who in the league
-// backed whom, the task-by-task table and the write-up.
-import { esc, rich, ord, listing, framed, named, fmtDay, ICON } from "../ui.js";
+// Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
+// swipeable episode slides. Portraits, the league's picks and the task table
+// all run in finishing order, so each column sits under its portrait.
+import { esc, rich, ord, listing, framed, named, fmtDay, fmtWhen, untilText, ICON } from "../ui.js";
 
-export const epTabs = (d) => d.episodes.map((e) =>
-  `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}">Ep ${e.ep}</button>`).join("");
+export const epTabs = (d) => d.episodes.map((e) => {
+  const w = d.winners[e.ep];
+  const dot = w ? `<i class="dot" style="background:${d.cast[w.winner].color}" aria-hidden="true"></i>` : "";
+  return `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}">${dot}Ep ${e.ep}</button>`;
+}).join("");
 
 export const epSlides = (d) => d.episodes.map((e) => `<section class="slide">${slide(d, e)}</section>`).join("");
+
+function upcoming(d, e) {
+  if (e.ep <= d.weeksAired) {
+    return `<div class="card soon"><p class="soon-main">Results coming soon</p><p class="soon-sub">Aired ${esc(fmtWhen.format(e.air))}</p></div>`;
+  }
+  if (d.nextEp?.ep !== e.ep) {
+    return `<div class="card soon"><p class="soon-sub">Airs</p><p class="soon-main">${esc(fmtWhen.format(e.air))}</p></div>`;
+  }
+  return `
+    <div class="card soon next">
+      <p class="soon-sub">Who wins Episode ${e.ep}? The poll closes</p>
+      <p class="soon-main">${esc(fmtWhen.format(e.air))}</p>
+      <p class="soon-left">in ${untilText(e.air - Date.now())}</p>
+      <div class="ballot">${d.names.map((n) => `<span>${framed(d.cast[n])}<b style="color:${d.cast[n].color}">${esc(n)}</b></span>`).join("")}</div>
+    </div>`;
+}
 
 function slide(d, e) {
   const head = (line) => `
     <div class="ep-head">
-      <div class="kicker">Episode ${e.ep} · ${fmtDay.format(e.air)}</div>
+      <div class="kicker">Episode ${e.ep} · ${esc(fmtDay.format(e.air))}</div>
       <h2 class="ep-title">${esc(e.title || `Episode ${e.ep}`)}</h2>
       <div class="ep-sub">${line}</div>
     </div>`;
   if (e.ep > d.weeksScored) {
-    const aired = e.ep <= d.weeksAired;
-    const next = d.nextEp?.ep === e.ep;
-    return head(aired ? "Aired · results coming soon" : next ? "Up next · airs 10pm UK" : "Awaiting broadcast")
-      + `<div class="ep-body"><div class="pod">${d.names.map((n) => `<div class="pod-col dim">${framed(d.cast[n])}<span class="pod-name" style="color:${d.cast[n].color}">${esc(n)}</span></div>`).join("")}</div></div>`;
+    const line = e.ep <= d.weeksAired ? "Aired · results coming soon" : d.nextEp?.ep === e.ep ? "Up next · poll open" : "Awaiting broadcast";
+    return head(line) + `<div class="ep-body">${upcoming(d, e)}</div>`;
   }
 
   const w = d.winners[e.ep], wk = d.weekly[e.ep], pts = (n) => d.EPS[n][e.ep];
@@ -27,22 +44,25 @@ function slide(d, e) {
   const line = `Won by ${named(d.cast[w.winner])} with ${w.top}${w.tiebreak ? " after a tiebreak" : ""}`
     + ` · ${called ? `${called} of ${wk.voters} called it` : "nobody called it"}`;
 
-  // Portraits and table columns stay in seating (alphabetical) order so each
-  // column sits under its portrait.
-  const pod = d.names.map((n) => `
+  const order = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a) || a.localeCompare(b));
+  const col = order.map((n) => d.idx[n]);
+
+  const pod = order.map((n) => {
+    const backers = wk.by[n].length;
+    return `
     <div class="pod-col${n === w.winner ? " win" : ""}">
       ${framed(d.cast[n])}
       <span class="pod-name" style="color:${d.cast[n].color}">${esc(n)}</span>
       <b class="pod-pts">${pts(n)}</b>
-    </div>`).join("");
+      <span class="pod-picks">${backers ? `${backers} pick${backers > 1 ? "s" : ""}` : "no picks"}</span>
+    </div>`;
+  }).join("");
 
-  // Who backed whom, in finishing order.
-  const finish = [...d.names].sort((a, b) => d.placing[e.ep][a] - d.placing[e.ep][b] || pts(b) - pts(a));
   const noVote = d.players.filter((p) => !p.weeks[e.ep - 1].pick).map((p) => p.name);
   const league = `
     <div class="card">
       <div class="card-head"><span>The league's picks</span><span class="cols"><span>Show</span><span>League</span></span></div>
-      ${finish.map((n) => {
+      ${order.map((n) => {
         const by = wk.by[n];
         return `<div class="lg-row${n === w.winner ? " win" : ""}" style="--c:${d.cast[n].color}">
           <div class="lg-who">${named(d.cast[n])} <small>${ord(d.placing[e.ep][n])}</small>
@@ -56,13 +76,13 @@ function slide(d, e) {
   const tasks = d.epTasks(e.ep);
   const table = `
     <div class="card tt-wrap"><table class="tt">
-      <thead><tr><th>Task</th>${d.names.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
+      <thead><tr><th>Task</th>${order.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
       <tbody>${tasks.map((t) => {
-        const hi = Math.max(...t.s), lo = Math.min(...t.s);
-        return `<tr><td><span class="tn"><span>${ICON[t.t] || ""}</span>${esc(t.n)}</span></td>${t.s.map((s) =>
-          `<td class="sc${hi > lo && s === hi ? " best" : hi > lo && s === lo ? " worst" : ""}">${s}</td>`).join("")}</tr>`;
+        const s = col.map((i) => t.s[i]), hi = Math.max(...s), lo = Math.min(...s);
+        return `<tr><td><span class="tn"><span aria-hidden="true">${ICON[t.t] || ""}</span><span class="tname" title="${esc(t.n)}">${esc(t.n)}</span></span></td>${s.map((v) =>
+          `<td class="sc${hi > lo && v === hi ? " best" : hi > lo && v === lo ? " worst" : ""}">${v}</td>`).join("")}</tr>`;
       }).join("")}
-      <tr class="tot"><td>Total</td>${d.names.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
+      <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
     </table></div>`;
 
   const notes = e.analysis ? `<div class="card note"><div class="card-head"><span>Episode analysis</span></div><p>${rich(e.analysis)}</p></div>` : "";
