@@ -63,10 +63,20 @@ The layers sit at different depths in a CSS 3D scene. The far and near layers ar
 - **Portraits** load as small WebP versions of the Imgur images.
 - **Reduced motion** settings are respected.
 
+## Checks and screenshots
+
+- `node tools/check-data.mjs` validates the CSV and re-checks the scoring against the worked example. It catches:
+  - misspelt contestant or player names
+  - missing or duplicate scores
+  - gaps in scored episodes
+  - ties without a tiebreak winner
+- CI runs this check on every push and pull request.
+- Pull requests also get a **screenshots** artifact of every view at phone and desktop size (from `tools/screenshots.mjs`); download it from the PR's Checks tab.
+
 ## Run locally
 
 Serve the repository root, because the app loads `../data/…`:
 
 ```sh
-python3 -m http.server 8000   # then open http://localhost:8000/app/
+npm run serve   # then open http://localhost:8000/app/
 ```
