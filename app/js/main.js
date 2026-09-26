@@ -230,6 +230,16 @@ bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
 }, { prev: true, next: false });
 
+// Task heat strip (Cast): tap a square to read its episode, task and score.
+$("#cast-body").addEventListener("click", (e) => {
+  const cell = e.target.closest(".hs-cell");
+  if (!cell) return;
+  const card = cell.closest(".heat");
+  for (const x of card.querySelectorAll(".hs-cell.on")) x.classList.remove("on");
+  cell.classList.add("on");
+  card.querySelector(".hs-cap").textContent = cell.dataset.say;
+});
+
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 

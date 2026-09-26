@@ -416,6 +416,31 @@ strong { color: var(--t1); font-weight: 700; }
 .profile dt { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--t3); }
 .profile dd { font-size: 15px; color: var(--t1); margin-top: 2px; }
 
+/* Task heat strip: one row per task type, one column per episode. A
+   square's strength is its score: the contestant's colour mixed into the
+   card at 24% for a 1, then 43, 62, 81 and 100% for a 5 (even steps); 0 is
+   an empty outline. Tasks sharing a slot split it. */
+.hs-grid { display: grid; grid-template-columns: 62px repeat(10, minmax(0, 1fr)) 28px; gap: 3px 2px; align-items: center; padding: 2px 12px 4px; }
+.hs-ep { font-family: var(--fm); font-size: 11px; color: var(--t4); text-align: center; }
+.hs-ep.tbd { opacity: .5; }
+.hs-type { display: flex; align-items: center; gap: 4px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--t3); white-space: nowrap; }
+.hs-type .ico { width: 13px; height: 13px; }
+.hs-slot { display: flex; gap: 2px; height: 22px; }
+.hs-slot.tbd { border-radius: 3px; background: rgba(255, 255, 255, .025); }
+.hs-cell {
+  flex: 1; min-width: 0; padding: 0; border-radius: 3px;
+  background: color-mix(in srgb, var(--c) calc(var(--v) * 19% + 5%), var(--s2));
+}
+.hs-cell[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }
+.hs-cell.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-index: 1; }
+.hs-avg { font-size: 13px; font-weight: 700; color: var(--t2); text-align: right; }
+.hs-cap { padding: 6px 12px 10px; font-size: 13px; color: var(--t3); min-height: 1.4em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hs-legend { display: inline-flex; align-items: center; gap: 2px; }
+.hs-key { width: 9px; height: 9px; border-radius: 2px; background: color-mix(in srgb, var(--c) calc(var(--v) * 19% + 5%), var(--s2)); }
+.hs-key[style*="--v:0"] { background: none; box-shadow: inset 0 0 0 1px var(--b-dim); }
+.hs-key:first-of-type { margin-left: 4px; }
+.hs-key:last-of-type { margin-right: 4px; }
+
 /* Performance radar: hairline σ rings and axes with ticks, a dashed
    all-series average ring, one filled shape with small vertex points */
 .radar svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; padding-bottom: 8px; overflow: visible; shape-rendering: geometricPrecision; }
