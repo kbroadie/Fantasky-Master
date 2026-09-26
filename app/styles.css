@@ -495,7 +495,6 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 .ducks::before { background: linear-gradient(90deg, transparent, var(--b-gold)); margin-right: 4px; }
 .ducks::after { background: linear-gradient(90deg, var(--b-gold), transparent); margin-left: 4px; }
 .duck { width: 18px; height: 14px; fill: var(--gold2); opacity: .8; }
-.foot-line { margin-top: 8px; font-family: var(--fm); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--t4); }
 
 @media (min-width: 600px) {
   :root { --px: 20px; }

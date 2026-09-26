@@ -65,16 +65,13 @@ export function perEpisodeStats(series) {
 }
 
 // ── Footer ──────────────────────────────────────────────────────────────────
-// A row of rubber ducks as the closing rule on every tab, and one line saying
-// how fresh the scores are. One duck is drawn once (a <symbol>) and reused.
+// A row of rubber ducks as the closing rule on every tab, nothing else.
+// One duck is drawn once (a <symbol>) and reused.
 
 const DUCK = `<symbol id="duck" viewBox="0 0 20 16"><path d="M1.8 7.6Q3 9.4 6.5 9.4H11A3.6 3.6 0 1 1 15.6 6L19.2 5.7Q19.6 8.2 15.3 8.1A3.6 3.6 0 0 1 14.2 9.5Q16.6 10.2 16.6 12.2Q16.6 15 12 15H6Q2.6 15 2 11.9Q1.6 9.8 1.8 7.6Z M13.6 4.4A.75 .75 0 1 0 13.61 4.4Z" fill-rule="evenodd"/></symbol>`;
 
-/** "Scores updated after Episode 4", the final word, or nothing before it starts. */
-export function footer(d, key) {
-  const e = d.weeksScored;
-  const line = !e ? "" : d.complete ? `Series ${key} · final scores` : `Scores updated after Episode ${e}`;
+export function footer() {
   const ducks = Array.from({ length: 7 }, () => `<svg class="duck"><use href="#duck"/></svg>`).join("");
   return `<svg width="0" height="0" aria-hidden="true" style="position:absolute">${DUCK}</svg>
-    <div class="ducks" aria-hidden="true">${ducks}</div>${line ? `<p class="foot-line">${line}</p>` : ""}`;
+    <div class="ducks" aria-hidden="true">${ducks}</div>`;
 }
