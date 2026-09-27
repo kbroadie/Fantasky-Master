@@ -9,6 +9,12 @@
   --gold-t: rgba(184, 128, 24, .12); --gold-glow: rgba(212, 160, 40, .30);
   --silver: #c9bba4; --bronze: #c98a45;
   --up: #34d399;
+  /* The two boards' colours: red for the Show, blue for the League (the
+     scoring cards, the table's column heads and its theme, the leaders line) */
+  --show: #e5484d; --show-hi: #ff8f86; --show-glow: rgba(229, 72, 77, .30); --show-edge: rgba(229, 72, 77, .38);
+  --league: #3e7bfa; --league-hi: #93b8ff; --league-glow: rgba(62, 123, 250, .30); --league-edge: rgba(90, 140, 250, .38);
+  /* A fine film grain (SVG noise), for textured surfaces */
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 
   --bg: #070507; --s1: #100d10; --s2: #171417; --s3: #1f1b1f;
   --t1: #ede8dc; --t2: #b9a98f; --t3: #b6977b; --t4: #8f705c;
@@ -138,6 +144,8 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero .ep-sub { margin-top: 5px; }
 .st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
 .st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
+.st-leaders .st-show { color: var(--show-hi); }
+.st-leaders .st-league { color: var(--league-hi); }
 /* "How scoring works" under the leaders line opens both explanations below
    it (the hero grows; tap again to close). A gold label with a chevron, so
    it reads as something to tap. */
@@ -167,7 +175,6 @@ strong { color: var(--t1); font-weight: 700; }
 .how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(3, auto); gap: 0 10px; max-width: 30rem; margin: 14px auto 4px; text-align: left; }
 .card.how-card {
   --lx: 0;
-  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   position: relative; display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);
   margin: 0; border-color: var(--hc-edge);
   background:
@@ -178,8 +185,8 @@ strong { color: var(--t1); font-weight: 700; }
   box-shadow: 0 4px 14px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06);
   animation: how-drift 14s ease-in-out infinite alternate;
 }
-.card.how-card.show { --hc: #e5484d; --hc-hi: #ff8f86; --hc-glow: rgba(229, 72, 77, .30); --hc-deep: #2a0d10; --hc-edge: rgba(229, 72, 77, .38); }
-.card.how-card.league { --hc: #3e7bfa; --hc-hi: #93b8ff; --hc-glow: rgba(62, 123, 250, .30); --hc-deep: #0c1428; --hc-edge: rgba(90, 140, 250, .38); animation-duration: 17s; animation-delay: -6s; }
+.card.how-card.show { --hc: var(--show); --hc-hi: var(--show-hi); --hc-glow: var(--show-glow); --hc-deep: #2a0d10; --hc-edge: var(--show-edge); }
+.card.how-card.league { --hc: var(--league); --hc-hi: var(--league-hi); --hc-glow: var(--league-glow); --hc-deep: #0c1428; --hc-edge: var(--league-edge); animation-duration: 17s; animation-delay: -6s; }
 /* The glow drifts across the top: its layer is wider than the card */
 @keyframes how-drift { from { background-position: 0 0, 0% 0, 0 0; } to { background-position: 0 0, 100% 0, 0 0; } }
 .how-head { padding: 14px 12px 0; }
@@ -235,7 +242,23 @@ strong { color: var(--t1); font-weight: 700; }
 .st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
 /* The table sits in a rounded card, like the cards on the other tabs.
    The sort buttons' tap area reaches past the slim header row. */
-.card.board { margin: 12px var(--px); }
+.card.board { position: relative; margin: 12px var(--px); transition: border-color .6s var(--ease); }
+/* The table takes on the board it's sorted by: a red edge and a soft red glow
+   through the header for the Show, blue for the League, neutral for Player.
+   Each glow is its own layer (with the film grain), so re-sorting cross-fades
+   between them while the rows slide. The header's own background is
+   translucent so the glow shows through; the rows (photos) sit above it. */
+.card.board[data-board="show"] { border-color: var(--show-edge); }
+.card.board[data-board="league"] { border-color: var(--league-edge); }
+.card.board::before, .card.board::after {
+  content: ""; position: absolute; inset: 0 0 auto; height: 90px; z-index: 0; pointer-events: none; opacity: 0;
+  transition: opacity .6s var(--ease);
+}
+.card.board::before { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(229, 72, 77, .42), transparent 80%); }
+.card.board::after { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(62, 123, 250, .42), transparent 80%); }
+.card.board[data-board="show"]::before, .card.board[data-board="league"]::after { opacity: 1; }
+.board .st-head { position: relative; z-index: 1; background: linear-gradient(180deg, rgba(31, 27, 31, .25), rgba(23, 20, 23, .5)); }
+.board #rows { position: relative; z-index: 1; }
 /* Optically balanced inside the card: the rank column's text and the
    chevron sit the same distance from the card's edges (the chevron's box is
    visually lighter, so it gets a little more padding); Show and League are
@@ -250,12 +273,24 @@ strong { color: var(--t1); font-weight: 700; }
 }
 .st-rank { white-space: nowrap; }
 .st-num, .st-name { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
-/* The label is centred over its column; the sort arrow hangs off its left */
+/* Show and League labels are centred over their columns; their icons hang off the left */
 .st-num > span { position: relative; }
-.st-num .arr, .st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
-.st-num.on, .st-name.on { text-decoration: none; }
-.st-num.on .arr, .st-name.on .arr { visibility: visible; }
-.st-num.on, .st-name.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+.st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
+.st-name.on { text-decoration: none; }
+.st-name.on .arr { visibility: visible; }
+.st-name.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+/* Show and League wear their colours, with the crown and trophy from the
+   scoring cards: muted until sorted by, then full and glowing. */
+/* The icon hangs off the label's left, so the word itself (SHOW, LEAGUE) is
+   centred over its numbers. They always sort highest first, so there's no
+   arrow or dotted underline; the colour says which board is showing. */
+.st-num { letter-spacing: .02em; text-decoration: none; }
+.st-ico { position: absolute; right: 100%; top: 50%; margin: -5px 3px 0 0; width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.st-num[data-sort="show"] { --c: var(--show-hi); --g: var(--show-glow); }
+.st-num[data-sort="league"] { --c: var(--league-hi); --g: var(--league-glow); }
+.st-num { color: color-mix(in srgb, var(--c) 62%, var(--t3)); }
+.st-num.on { color: var(--c); text-shadow: 0 0 8px var(--g); }
+.st-num.on .st-ico { filter: drop-shadow(0 0 3px var(--g)); }
 /* Player sorts by name; it's left-aligned, so its arrow follows the label */
 .st-name { justify-content: flex-start; }
 .st-name .arr { position: static; margin: 0 0 0 3px; }
@@ -276,7 +311,10 @@ strong { color: var(--t1); font-weight: 700; }
 /* A chevron: rows open on tap */
 .chev { justify-self: end; width: 8px; height: 8px; border-right: 2px solid var(--t3); border-bottom: 2px solid var(--t3); transform: rotate(45deg) translate(-2px, -2px); transition: transform .3s var(--ease); }
 .pc.open .chev { transform: rotate(225deg) translate(-2px, -2px); }
-.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; }
+.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; transition: color .6s var(--ease); }
+/* The board not being shown steps back a tone, so the active one reads first
+   (first place stays gold in both). */
+.board[data-board="show"] .pc-head > :nth-child(4), .board[data-board="league"] .pc-head > :nth-child(3) { color: var(--t2); }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }

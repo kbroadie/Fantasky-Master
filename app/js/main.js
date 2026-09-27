@@ -91,12 +91,17 @@ function renderRows() {
 
 /** The sort buttons: the active one shows ▼/▲ (highest first / A to Z is the default). */
 function markSort() {
+  // The table takes on the board it's sorted by (red Show, blue League, neutral Player).
+  const board = $(".card.board");
+  if (board) board.dataset.board = state.sort;
   for (const b of $$(".st-head [data-sort]")) {
     const on = b.dataset.sort === state.sort, name = b.dataset.sort === "name";
     b.classList.toggle("on", on);
-    b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
-    const order = name ? (state.dir > 0 ? "A to Z" : "Z to A") : `${state.dir < 0 ? "highest" : "lowest"} first`;
-    b.setAttribute("aria-label", `Sort by ${name ? "player" : b.dataset.sort}${on ? `, now ${order}` : ""}`);
+    b.setAttribute("aria-pressed", on);
+    if (name) {
+      b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
+      b.setAttribute("aria-label", `Sort by player${on ? `, now ${state.dir > 0 ? "A to Z" : "Z to A"}` : ""}`);
+    } else b.setAttribute("aria-label", `Show the ${b.dataset.sort} standings, highest first`);
   }
 }
 
@@ -235,9 +240,13 @@ $("#series").addEventListener("click", () => {
 $("#p-standings").addEventListener("click", (e) => {
   const s = e.target.closest("[data-sort]");
   if (s) {
-    // Points start highest first, names A to Z; tap again to reverse.
-    state.dir = state.sort === s.dataset.sort ? -state.dir : s.dataset.sort === "name" ? 1 : -1;
-    state.sort = s.dataset.sort;
+    // Show and League always sort highest first (tapping the active one does
+    // nothing); Player sorts A to Z, and tapping it again reverses.
+    const k = s.dataset.sort;
+    if (k === "name") state.dir = state.sort === "name" ? -state.dir : 1;
+    else if (state.sort === k) return;
+    else state.dir = -1;
+    state.sort = k;
     if (state.sort !== "name") state.board = state.sort;
     markSort();
     return patchRows(); // the rows slide to their new places
