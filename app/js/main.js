@@ -284,20 +284,22 @@ function openRow(row, side) {
 /**
  * The opened half's L comes into focus: a sharp copy of the row's backdrop
  * (.pc-bg.sharp) fades in over the frosted one, clipped to that half and the
- * picks below, so the other half stays frosted. It exists only while the row
- * is open. When the backdrop's photos change (a week change), a new copy
- * fades in over the old one, which fades out.
+ * picks below, so the other half stays frosted. It holds only the opened
+ * player's pick. It exists only while the row is open. When its photo
+ * changes (the other half opened, or a week change), a new copy fades in over
+ * the old one, which fades out.
  */
 const bgKey = (bg) => [...bg.querySelectorAll(".pf")].map((f) => f.getAttribute("style") + f.querySelector("img").getAttribute("src")).join("|");
 function sharpen(row, side) {
   const bg = row.querySelector(".pc-bg:not(.sharp):not(.pc-ghost)");
   let sh = row.querySelector(".pc-bg.sharp:not(.gone)");
-  if (sh && (!side || !bg || sh.dataset.key !== bgKey(bg))) { unsharpen(sh); sh = null; }
+  if (sh && (!side || !bg || sh.dataset.key !== bgKey(bg) + side)) { unsharpen(sh); sh = null; }
   if (!side || !bg) return;
   if (!sh) {
     sh = bg.cloneNode(true);
     sh.classList.add("sharp");
-    sh.dataset.key = bgKey(bg);
+    sh.querySelector(side === "show" ? ".pf.r" : ".pf.l")?.remove(); // only the opened player's pick
+    sh.dataset.key = bgKey(bg) + side;
     sh.dataset.side = side;
     [...row.querySelectorAll(".pc-bg")].pop().after(sh); // over the frosted one (and any fading copies)
     sh.getBoundingClientRect(); // start from transparent, so the fade always runs
