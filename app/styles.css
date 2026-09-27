@@ -128,21 +128,32 @@ strong { color: var(--t1); font-weight: 700; }
 /* ── Pages ─────────────────────────────────────────────────────────── */
 .page { display: none; }
 .page.active { display: block; }
-.kicker { font-family: var(--fm); font-size: 11px; color: var(--t3); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 4px; }
+.kicker { font-family: var(--fm); font-size: 11px; color: var(--t3); letter-spacing: .16em; text-transform: uppercase; margin-bottom: 6px; }
 
-/* Shared header block (Standings hero, episode head) */
+/* Shared header block (Standings hero, episode head, Cast header), one pattern
+   on every tab: a DM Mono kicker, the Bungee title, then one line of Inter
+   (names in Fredoka, figures bold). A stage: a soft red light from above with
+   the scoring cards' film grain, closed by a gold hairline that fades out at
+   both ends (like the footer's) rather than a hard rule. */
 .hero, .ep-head {
-  padding: 12px var(--px); border-bottom: 1px solid var(--b-gold);
-  background: linear-gradient(180deg, var(--red-t), transparent);
+  position: relative; padding: 12px var(--px);
+  background: var(--grain), radial-gradient(90% 100% at 50% 0%, rgba(196, 24, 24, .16), transparent 80%);
 }
-.ep-head { text-align: center; padding-block: 16px 14px; }
-.ep-sub { font-family: var(--fm); font-size: 12px; color: var(--t2); letter-spacing: .03em; }
+.hero::after, .ep-head::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(184, 128, 24, .45) 25%, rgba(212, 160, 40, .6) 50%, rgba(184, 128, 24, .45) 75%, transparent);
+}
+.ep-head { text-align: center; padding-block: 18px 16px; }
+.ep-head .kicker, .hero .kicker, .ep-head .ep-sub, .hero .ep-sub { text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
+.ep-sub { font-size: 14px; color: var(--t2); font-variant-numeric: tabular-nums; }
+.ep-sub b { font-weight: 700; color: var(--t1); }
+.ep-sub .cn { font-family: var(--ff-name); }
 
 /* Standings hero: one headline, "Week 4 Standings", set like an episode title */
-.st-hero { text-align: center; padding-block: 16px 14px; } /* the same as .ep-head */
+.st-hero { text-align: center; padding-block: 18px 16px; } /* the same as .ep-head */
 .st-hero .ep-title { margin-bottom: 0; }
-.st-hero .ep-sub { margin-top: 5px; }
-.st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
+.st-hero .ep-sub { margin-top: 6px; }
+.st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 6px; font-size: 14px; color: var(--t2); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
 .st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
 .st-leaders .st-show { color: var(--show-hi); }
 .st-leaders .st-league { color: var(--league-hi); }
@@ -235,12 +246,12 @@ strong { color: var(--t1); font-weight: 700; }
    rank (centre) · player (left) · Show and League (centre, under their headers)
    · chevron (centre). With a group photo (Series 22) the week's pick is the
    row's backdrop (.pc-bg); without them (Series 21) it isn't shown. */
-.st-head, .pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
-.st-head > :nth-child(1), .pc-head > :nth-child(1) { justify-self: center; }
-.st-head > :nth-child(2), .pc-head > :nth-child(2) { justify-self: start; }
-.st-head > :nth-child(3), .pc-head > :nth-child(3),
-.st-head > :nth-child(4), .pc-head > :nth-child(4) { justify-self: stretch; text-align: center; }
-.st-head > :nth-child(5), .pc-head > :nth-child(5) { justify-self: center; }
+.pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
+.pc-head > :nth-child(1) { justify-self: center; }
+.pc-head > :nth-child(2) { justify-self: start; }
+.pc-head > :nth-child(3),
+.pc-head > :nth-child(4) { justify-self: stretch; text-align: center; }
+.pc-head > :nth-child(5) { justify-self: center; }
 /* The table sits in a rounded card, like the cards on the other tabs.
    The sort buttons' tap area reaches past the slim header row. */
 .card.board { position: relative; margin: 12px var(--px); transition: border-color .6s var(--ease); }
@@ -258,63 +269,70 @@ strong { color: var(--t1); font-weight: 700; }
 .card.board::before { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(229, 72, 77, .42), transparent 80%); }
 .card.board::after { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(62, 123, 250, .42), transparent 80%); }
 .card.board[data-board="show"]::before, .card.board[data-board="league"]::after { opacity: 1; }
-.board .st-head { position: relative; z-index: 1; background: linear-gradient(180deg, rgba(31, 27, 31, .25), rgba(23, 20, 23, .5)); }
 .board #rows { position: relative; z-index: 1; }
 /* Optically balanced inside the card: the rank column's text and the
    chevron sit the same distance from the card's edges (the chevron's box is
    visually lighter, so it gets a little more padding); Show and League are
    close enough to read as a pair. */
-.board .st-head, .board .pc-head { grid-template-columns: 32px minmax(0, 1fr) 64px 64px 10px; column-gap: 8px; padding-inline: 12px 16px; }
+.board .pc-head { grid-template-columns: 32px minmax(0, 1fr) 64px 64px 10px; column-gap: 8px; padding-inline: 12px 16px; }
 .board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
+/* The sort tiles: Player, Show and League as the scoring cards' square icon
+   tiles, big, with their names under them, standing over their columns and
+   hanging over the table's top edge (the card's line crosses their middles).
+   They sit outside the card (which clips its rows), in a grid that matches
+   the rows' columns. Show is red, League blue, Player neutral; the one the
+   table is sorted by is lit (full colour, the icon glowing, a halo), the
+   others dim. Pressing squashes a tile, it springs back, and choosing one
+   pops it with a ring and a glint (popTile in main.js). Player's chevron
+   gives the direction: up A to Z, down Z to A. */
 .st-head {
-  padding-block: 9px 7px; /* the same height as a card head on the other tabs */ border-bottom: 1px solid var(--b-gold);
-  background: linear-gradient(180deg, var(--s3), var(--s2));
-  font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
+  --tile: 48px;
+  position: relative; z-index: 2; display: grid; grid-template-columns: 32px minmax(0, 1fr) 64px 64px 10px; column-gap: 8px; align-items: start;
+  margin: 14px var(--px) calc(-1 * (var(--tile) / 2 + 24px)); padding-inline: 13px 17px; /* the rows' padding plus the card's border */
+  pointer-events: none;
 }
-/* Rank is "#": the numbers explain themselves, and it leaves the Player tile room */
-.st-rank { font-size: 13px; }
-.st-num, .st-name { display: flex; justify-content: center; align-items: center; font-weight: 500; letter-spacing: .02em; text-transform: inherit; -webkit-tap-highlight-color: transparent; }
-/* Show and League are a two-way toggle: each a rounded tile like the scoring cards' icon, as wide as its column,
-   in its colour with the scoring cards' crown and trophy. The active one is
-   filled and glowing, the other outlined, so it's plain they switch the
-   board. The tap area reaches past the tile into the gaps and above and
-   below the slim header (about 68 × 42px). They always sort highest first. */
-.st-num { position: relative; padding: 10px 4px; margin: -10px -4px; letter-spacing: .02em; text-decoration: none; -webkit-tap-highlight-color: transparent; }
-.st-num[data-sort="show"] { --c: var(--show-hi); --b: var(--show); --g: var(--show-glow); }
-.st-num[data-sort="league"] { --c: var(--league-hi); --b: var(--league); --g: var(--league-glow); }
-.st-num > span {
-  --a: 10%; --e: 28%;
-  display: inline-flex; align-items: center; justify-content: center; gap: 3px; width: 100%; height: 24px; border-radius: 7px;
-  color: color-mix(in srgb, var(--c) 55%, var(--t3));
-  background: radial-gradient(circle at 50% 25%, color-mix(in srgb, var(--b) var(--a), transparent), color-mix(in srgb, var(--b) 4%, transparent) 80%);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--b) var(--e), transparent), inset 0 1px 0 rgba(255, 255, 255, .06);
-  transition: color .3s var(--ease), box-shadow .3s var(--ease);
+.st-sort {
+  --a: 12%; --e: 30%; pointer-events: auto; position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px;
+  padding: 0 8px 6px; margin-inline: -8px; font: 500 11px/13px var(--fm); letter-spacing: .1em; text-transform: uppercase; color: var(--t3);
+  -webkit-tap-highlight-color: transparent; transition: color .3s var(--ease);
 }
-.st-num.on > span {
-  --a: 34%; --e: 55%;
-  color: var(--c);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--b) var(--e), transparent), inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 14px color-mix(in srgb, var(--b) 30%, transparent);
+.st-sort[data-sort="name"] { grid-column: 2; justify-self: start; --c: var(--t1); --b: #b6977b; }
+.st-sort[data-sort="show"] { grid-column: 3; justify-self: center; --c: var(--show-hi); --b: var(--show); }
+.st-sort[data-sort="league"] { grid-column: 4; justify-self: center; --c: var(--league-hi); --b: var(--league); }
+.st-tile {
+  position: relative; display: grid; place-items: center; width: var(--tile); height: var(--tile); border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 28%, color-mix(in srgb, var(--b) var(--a), transparent), color-mix(in srgb, var(--b) 5%, transparent) 72%),
+    linear-gradient(180deg, #231d21, #151116); /* opaque: it covers the card's edge */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--b) var(--e), transparent), inset 0 1px 0 rgba(255, 255, 255, .07), 0 6px 14px rgba(0, 0, 0, .45);
+  transition: transform .55s cubic-bezier(.34, 1.8, .5, 1), box-shadow .3s var(--ease);
 }
-.st-num.on .st-ico { filter: drop-shadow(0 0 3px var(--b)); }
-.st-num:active > span { --a: 26%; }
-.st-ico { flex: none; width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-/* Player is the third sort, a quiet neutral tile of the same shape hugging
-   its label (its padding hangs into the gap, so the word lines up with the
-   names). Its chevron says the direction: up A to Z, down Z to A. Rank isn't
-   a control, so it stays a plain label. */
-.st-name { justify-content: flex-start; padding: 10px 0; margin-block: -10px; }
-.st-name > span {
-  display: inline-flex; align-items: center; gap: 5px; height: 24px; padding-inline: 7px; margin-left: -7px; border-radius: 7px;
-  color: var(--t3); background: rgba(255, 255, 255, .02);
-  box-shadow: inset 0 0 0 1px rgba(182, 151, 123, .2), inset 0 1px 0 rgba(255, 255, 255, .04);
-  transition: color .3s var(--ease), box-shadow .3s var(--ease), background-color .3s var(--ease);
+.st-tile svg {
+  width: calc(var(--tile) / 2); height: calc(var(--tile) / 2); fill: none; stroke: color-mix(in srgb, var(--c) 50%, var(--t4)); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round;
+  transition: stroke .3s var(--ease), filter .3s var(--ease);
 }
-.st-name.on > span { color: var(--t1); background: rgba(255, 255, 255, .06); box-shadow: inset 0 0 0 1px rgba(236, 224, 208, .38), inset 0 1px 0 rgba(255, 255, 255, .08); }
-.st-name:active > span { background: rgba(255, 255, 255, .08); }
-.st-name .arr { display: none; width: 5px; height: 5px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: translateY(-1.5px) rotate(45deg); transition: transform .3s var(--ease); }
-.st-name.on .arr { display: block; }
-.st-name[data-dir="1"] .arr { transform: translateY(1.5px) rotate(225deg); }
+.st-sort.on { --a: 36%; --e: 62%; color: var(--c); }
+.st-sort.on .st-tile { box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--b) var(--e), transparent), inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 20px color-mix(in srgb, var(--b) 42%, transparent), 0 6px 14px rgba(0, 0, 0, .45); }
+.st-sort.on .st-tile svg { stroke: var(--c); filter: drop-shadow(0 0 4px var(--b)); }
+.st-sort:active .st-tile { transform: scale(.86); transition: transform .1s var(--ease), box-shadow .3s var(--ease); }
+@media (hover: hover) { .st-sort:hover .st-tile { transform: translateY(-2px); } }
+.st-ring { position: absolute; inset: 0; border-radius: inherit; box-shadow: 0 0 0 1.5px var(--c); opacity: 0; pointer-events: none; }
+.st-glint {
+  position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; opacity: 0; pointer-events: none;
+  background:
+    radial-gradient(circle, #fff 0 1px, transparent 2.2px),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(0deg, transparent, rgba(255, 255, 255, .9), transparent) center / 1px 100% no-repeat;
+  filter: drop-shadow(0 0 3px var(--c));
+}
+.st-lbl { position: relative; }
+.st-sort .arr { position: absolute; left: 100%; top: 3px; margin-left: 5px; display: none; width: 5px; height: 5px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: rotate(225deg); transition: transform .3s var(--ease); }
+.st-sort.on .arr { display: block; }
+.st-sort[data-dir="-1"] .arr { transform: translateY(-2px) rotate(45deg); }
+/* The card's top holds the tiles' lower halves and their names */
+.st-head + .card.board { margin-top: 0; }
+.board .st-pad { position: relative; z-index: 1; height: calc(var(--tile, 48px) / 2 + 26px); border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, rgba(31, 27, 31, .25), rgba(23, 20, 23, .5)); }
 
 /* Rows are not compositing layers of their own: with one per row (plus each
    backdrop's), iOS ran short of layer memory and dropped rows' text after
@@ -490,7 +508,7 @@ strong { color: var(--t1); font-weight: 700; }
 .cn { font-weight: 700; }
 
 /* ── Episodes ──────────────────────────────────────────────────────── */
-.ep-title { font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 5.6vw, 27px); line-height: 1.08; text-transform: uppercase; letter-spacing: .01em; margin-bottom: 5px; text-wrap: balance; }
+.ep-title { font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 5.6vw, 27px); line-height: 1.08; text-transform: uppercase; letter-spacing: .01em; margin-bottom: 6px; text-wrap: balance; }
 .ep-body { padding: 12px var(--px) 0; } /* 12px to the first card, like every tab; the last card's 12px margin + the body's 24px below, like every tab */
 .pod {
   display: flex; align-items: flex-end; gap: 6px; padding: 12px 8px 10px; margin-bottom: 12px;
@@ -557,7 +575,8 @@ strong { color: var(--t1); font-weight: 700; }
 
 /* ── Cast ──────────────────────────────────────────────────────────── */
 .cd-head { margin-bottom: 12px; } /* Cast header: the episode head's pattern (kicker, Bungee title, mono line) */
-.cd-head .ep-sub b { font-family: var(--ff); font-weight: 800; }
+.cd-head .ep-sub b { font-weight: 800; }
+.cd-head .kicker { color: var(--t2); text-shadow: 0 0 10px rgba(0, 0, 0, .9), 0 1px 3px rgba(0, 0, 0, .8); } /* legible over the winner's rays */
 .cd-img { width: 104px; margin: 0 auto 10px; }
 #cast-body .card { margin-inline: var(--px); }
 .legend { letter-spacing: 0; text-transform: none; color: var(--t4); }
@@ -762,8 +781,10 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 
 @media (min-width: 600px) {
   :root { --px: 20px; }
-  .st-head, .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
-  .board .st-head, .board .pc-head { grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 16px 22px; }
+  .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
+  .board .pc-head { grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 16px 22px; }
+  .st-head { --tile: 54px; grid-template-columns: 40px minmax(0, 1fr) 72px 72px 14px; column-gap: 12px; padding-inline: 17px 23px; }
+  .board .st-pad { height: calc(54px / 2 + 26px); }
   .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }

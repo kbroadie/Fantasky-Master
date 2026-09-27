@@ -243,6 +243,7 @@ $("#p-standings").addEventListener("click", (e) => {
     // Show and League always sort highest first (tapping the active one does
     // nothing); Player sorts A to Z, and tapping it again reverses.
     const k = s.dataset.sort;
+    popTile(s);
     if (k === "name") state.dir = state.sort === "name" ? -state.dir : 1;
     else if (state.sort === k) return;
     else state.dir = -1;
@@ -266,7 +267,7 @@ $("#p-standings").addEventListener("click", (e) => {
     sizeOpen(head.parentElement);
     head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
     // Rows below slide as this one opens; keep their parallax in step.
-    followParallax(400);
+    followParallax(settled([head.parentElement.querySelector(".pc-more")]));
   }
 });
 
@@ -353,9 +354,25 @@ function patchRows(before) {
     const done = (e) => { if (e.target === r && e.propertyName === "transform") { r.style.transition = ""; r.removeEventListener("transitionend", done); } };
     r.addEventListener("transitionend", done);
   }
-  // Each photo's parallax follows its row as it slides, so it ends where
-  // scrolling would put it (and doesn't jump when something next re-reads it).
-  followParallax(1100);
+  // Each photo's parallax follows its row as it slides, until the slide has
+  // really finished (it can start late while new photos decode), so it ends
+  // where scrolling would put it.
+  followParallax(settled([...rows.children]));
+}
+
+/**
+ * A sort tile, chosen: it pops (squash, overshoot, settle), a ring in its
+ * colour spreads from it and a glint flares on its corner.
+ */
+function popTile(btn) {
+  if (reducedMotion) return;
+  const tile = btn.querySelector(".st-tile");
+  tile?.animate([{ transform: "scale(.86)" }, { transform: "scale(1.12)", offset: 0.35 }, { transform: "scale(.97)", offset: 0.7 }, { transform: "scale(1)" }],
+    { duration: 520, easing: "ease-out" });
+  btn.querySelector(".st-ring")?.animate([{ opacity: 0.9, transform: "scale(1)" }, { opacity: 0, transform: "scale(1.5)" }],
+    { duration: 650, easing: "cubic-bezier(.22, 1, .36, 1)" });
+  btn.querySelector(".st-glint")?.animate([{ opacity: 0, transform: "scale(.2) rotate(0deg)" }, { opacity: 1, transform: "scale(1.15) rotate(45deg)", offset: 0.35 }, { opacity: 0, transform: "scale(.35) rotate(90deg)" }],
+    { duration: 700, easing: "ease-out" });
 }
 
 /** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
@@ -472,15 +489,18 @@ function parallax() {
   }
 }
 const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };
-/** Keep the parallax in step while rows move for `ms` (opening a row, or sliding to new places). */
-let followUntil = 0;
-function followParallax(ms) {
-  const running = performance.now() < followUntil;
-  followUntil = Math.max(followUntil, performance.now() + ms);
-  if (running) return;
-  const step = () => { parallax(); if (performance.now() < followUntil) requestAnimationFrame(step); };
-  requestAnimationFrame(step);
+/**
+ * Keep the parallax in step while rows move (a row opening, or rows sliding to
+ * new places): every frame until `done` settles, then once more at rest.
+ */
+let following = 0;
+function followParallax(done) {
+  const step = () => { parallax(); if (following) requestAnimationFrame(step); };
+  if (following++ === 0) requestAnimationFrame(step);
+  Promise.race([done, new Promise((r) => setTimeout(r, 2500))]).finally(() => { following--; requestAnimationFrame(parallax); });
 }
+/** When the elements' current animations and transitions (their own, not their children's) have ended. */
+const settled = (els) => Promise.all(els.flatMap((el) => el?.getAnimations?.() || []).map((a) => a.finished.catch(() => {})));
 addEventListener("scroll", queueParallax, { passive: true });
 
 addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueParallax(); });

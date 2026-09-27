@@ -2,7 +2,7 @@
 // leaders, then one sortable table (Show or League) as it stood after that week.
 // A week not yet scored is "Week 5 Picks": the table as it stands now, each row
 // behind that week's pick. Tapping a row opens that player's ten weekly picks.
-import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, framed, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -39,8 +39,11 @@ const HOW_ICONS = {
   crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
   trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
 };
-/** The crown or trophy, small, for the table's Show and League heads. */
-const stIcon = (k) => `<svg class="st-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[k]}"/></svg>`;
+/** The sort tiles over the table: a player, the crown (Show) and the trophy (League). */
+const PLAYER_ICON = "M8 2.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2z M2.75 13.5c.3-2.8 2.5-4.4 5.25-4.4s4.95 1.6 5.25 4.4";
+const sortTile = (key, path, label, arr = "") => `<button class="st-sort" type="button" data-sort="${key}">
+      <span class="st-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg><i class="st-ring"></i><i class="st-glint"></i></span>
+      <span class="st-lbl">${label}${arr}</span></button>`;
 const TERMS = [
   { icon: "crown", name: "Show", rule: ["The player with the ", "most points", " at the end of the series wins, regardless of episode placements."], range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: ["The player with the ", "best episode placements", " throughout the series wins, regardless of points."], range: "1–5", unit: "pts per episode" },
@@ -72,8 +75,10 @@ export function standingsHero(d) {
   const w = stWeek(d);
   const how = `<button type="button" class="st-how" aria-expanded="${state.how}" aria-controls="st-explain">How scoring works<i class="st-how-chev" aria-hidden="true"></i></button>
     <div class="st-explain" id="st-explain"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
-  if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
-  return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
+  // The kicker, like the episode head's: the series and that week's episode.
+  const kicker = `<div class="kicker">Series ${esc(state.key)} · ${esc(fmtDay.format(d.episodes[w - 1].air))}</div>`;
+  if (!d.weeksScored) return `${kicker}<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">The series starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
+  return `${kicker}<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -87,14 +92,13 @@ export function standingsHead(d) {
   return `
     <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
+    <div class="st-head" role="group" aria-label="Sort the standings">
+      ${sortTile("name", PLAYER_ICON, "Player", `<i class="arr" aria-hidden="true"></i>`)}
+      ${sortTile("show", HOW_ICONS.crown, "Show")}
+      ${sortTile("league", HOW_ICONS.trophy, "League")}
+    </div>
     <div class="card board" data-board="${state.sort}">
-      <div class="st-head">
-        <span class="st-rank" title="Rank">#</span>
-        <button class="st-name" data-sort="name"><span>Player<i class="arr" aria-hidden="true"></i></span></button>
-        <button class="st-num" data-sort="show"><span>${stIcon("crown")}Show</span></button>
-        <button class="st-num" data-sort="league"><span>${stIcon("trophy")}League</span></button>
-        <span></span>
-      </div>
+      <div class="st-pad"></div>
       <div id="rows"></div>
     </div>`;
 }
