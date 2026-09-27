@@ -295,7 +295,13 @@ strong { color: var(--t1); font-weight: 700; }
 .sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
 .sd { grid-template-columns: minmax(0, 1fr) var(--sc); }
 .sd.l { padding: 0 8px 0 10px; }
-.sd.r { padding: 0 0 0 8px; }
+.sd.r { padding: 0 var(--pe) 0 8px; margin-right: calc(-1 * var(--pe)); } /* its cell runs to the card's edge */
+/* In an opened row, the other player's cell steps back (on request): a
+   little darker, its text dimmed, so the opened player reads first. */
+.sd { transition: background-color .35s var(--ease); }
+.sd > * { transition: opacity .35s var(--ease); }
+.pc[data-open="show"] .sd.r, .pc[data-open="league"] .sd.l { background-color: rgba(8, 6, 8, .32); }
+.pc[data-open="show"] .sd.r > *, .pc[data-open="league"] .sd.l > * { opacity: .6; }
 /* The place column's strip: darker, with a gold hairline on its right, down
    the row's head (the opened picks run full width under it). It's painted
    over the row's backdrop and under its text. */
