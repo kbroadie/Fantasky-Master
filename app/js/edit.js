@@ -75,7 +75,14 @@ function applyScores(rows, { s, ep, tasks, cast, tb, title }) {
   if (title) rows[at][C.title] = title;
 }
 
-const apply = (rows, op) => (op.kind === "pick" ? applyPick : applyScores)(rows, op);
+function applyTitle(rows, { s, ep, title }) {
+  const C = colsOf(rows), { at } = block(rows, C, s, ep);
+  if (at < 0) throw new Error(`Series ${s} has no episode ${ep}`);
+  rows[at][C.title] = title;
+}
+
+const APPLY = { pick: applyPick, scores: applyScores, title: applyTitle };
+const apply = (rows, op) => APPLY[op.kind](rows, op);
 const replay = (text) => { const rows = parseRows(text); for (const op of ops) apply(rows, op); return toCSV(rows); };
 
 function addOp(op) {
@@ -113,6 +120,7 @@ function message() {
   const picks = ops.filter((o) => o.kind === "pick"), scores = ops.filter((o) => o.kind === "scores");
   const lines = [
     ...scores.map((o) => `Scores: Series ${o.s} Ep ${o.ep}${o.src ? ` (${o.src})` : ""}`),
+    ...ops.filter((o) => o.kind === "title").map((o) => `Title: Series ${o.s} Ep ${o.ep}: ${o.title}`),
     ...[...new Set(picks.map((o) => `${o.s}/${o.ep}`))].map((k) => {
       const [s, ep] = k.split("/"), these = picks.filter((o) => `${o.s}/${o.ep}` === k);
       return `Picks: Series ${s} Wk ${ep} (${these.map((o) => `${o.player}: ${o.c || "none"}`).join(", ")})`;
@@ -387,6 +395,36 @@ function useGrid(card, d, ep) {
   return true;
 }
 
+// ── Titles (Episodes, before an episode airs) ───────────────────────────────
+
+/** In edit mode, an episode that hasn't aired starts with a card for its title. */
+export function titleCard(d, e) {
+  const pending = ops.some((o) => o.kind === "title" && o.s === state.key && o.ep === e.ep);
+  return `<div class="card ed-card ed-tcard" data-ep="${e.ep}">
+    <div class="card-head"><span>Title</span><span class="legend">${pending ? "changed, not saved yet" : e.title ? "entered" : "not entered yet"}</span></div>
+    <div class="ed-form">
+      <input data-f="title" value="${esc(e.title || "")}" placeholder="Episode ${e.ep}" aria-label="Episode ${e.ep} title">
+      <p class="ed-msg" hidden></p>
+      <div class="ed-actions"><button type="button" class="ed-btn" data-ed="title-wiki">Get from the wiki</button><span></span><button type="button" class="ed-btn gold" data-ed="title-use">Use</button></div>
+    </div></div>`;
+}
+
+async function titleAction(card, ep, what) {
+  const inp = card.querySelector('[data-f="title"]'), msg = card.querySelector(".ed-msg");
+  const say = (t, bad = false) => { msg.hidden = !t; msg.textContent = t; msg.classList.toggle("bad", bad); };
+  if (what === "title-use") {
+    const title = inp.value.trim() || `Episode ${ep}`;
+    if (title === (state.d.episodes[ep - 1].title || `Episode ${ep}`)) return say("That's already the title.");
+    return addOp({ kind: "title", s: state.key, ep, title }); // the page redraws with it
+  }
+  say("Asking the wiki…");
+  try {
+    const { fetchTitle } = await import("./wiki.js");
+    inp.value = await fetchTitle(state.key, ep);
+    say("From the wiki. Tap Use to keep it.");
+  } catch (err) { say(err.message, true); }
+}
+
 // ── Setup ───────────────────────────────────────────────────────────────────
 
 /**
@@ -407,7 +445,7 @@ export function initEdit(text, onChange) {
     addOp({ kind: "pick", s: state.key, ep: +box.dataset.week, player: box.dataset.player, c: b.dataset.pick || null });
   });
 
-  // Episodes: the scores card.
+  // Episodes: the scores card, or the title card before an episode airs.
   const eps = $("#ep-body");
   eps.addEventListener("input", (e) => { const card = e.target.closest(".ed-card.open"); if (card) readGrid(card); });
   eps.addEventListener("click", (e) => {
@@ -419,6 +457,7 @@ export function initEdit(text, onChange) {
       if (el) el.outerHTML = scoresCard(d, d.episodes[ep - 1], el.dataset.order.split("|"));
     };
     const what = b.dataset.ed;
+    if (what.startsWith("title-")) return titleAction(card, ep, what);
     if (what === "wiki") return fromWiki(card, d, ep, redraw);
     if (what === "hand") { drafts[k] = current(d, ep); if (!drafts[k].tasks.length) drafts[k].tasks = [blankTask(d)]; }
     if (what === "cancel") delete drafts[k];

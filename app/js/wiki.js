@@ -26,6 +26,13 @@ export function episodePage(seriesText, ep) {
   return m ? m[1].trim() : null;
 }
 
+/** An episode's title, from the series page's list (listed before it airs). */
+export async function fetchTitle(seriesKey, ep) {
+  const page = episodePage(await wikitext(`Series ${seriesKey}`), ep);
+  if (!page) throw new Error(`The wiki doesn't have a title for episode ${ep} yet`);
+  return titleCase(page);
+}
+
 /** "This is food glue." → "This Is Food Glue", like the data file's titles. */
 const SMALL = new Set(["a", "an", "and", "as", "at", "but", "by", "for", "in", "of", "on", "or", "the", "to", "vs"]);
 export function titleCase(t) {

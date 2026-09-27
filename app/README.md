@@ -13,6 +13,7 @@ The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_dat
 Tap all seven rubber ducks at the bottom of any tab to open edit mode. The first time on a device it asks for a GitHub key: a [fine-grained token](https://github.com/settings/personal-access-tokens/new) with access to only this repository and **Contents: Read and write**. The key stays in that browser; it's never part of the site.
 
 - **Picks:** on Standings, pick a week, open a player's row and tap their pick (or None).
+- **Titles:** on Episodes, each episode that hasn't aired yet starts with a Title card. **Get from the wiki** fills in the title as soon as the wiki lists it; tap **Use** to keep it.
 - **Scores:** on Episodes, each aired episode starts with a Scores card. **Get from the wiki** fills in the scores from the [Taskmaster Wiki](https://taskmaster.fandom.com); check them, add any DQs, then **Use these**. **Enter by hand** works too.
 - **Save** writes everything into the data file on GitHub in one commit. The data is checked first with the same rules as `tools/check-data.mjs`. Everyone sees the change about a minute later, when the site redeploys. **Done** leaves edit mode (asking first if anything isn't saved).
 - Scores, standings, sorting and every chart are worked out from the data file, so nothing else needs doing.

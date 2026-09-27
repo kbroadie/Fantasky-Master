@@ -447,6 +447,8 @@ try {
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);
+  // A link to another week: draw that week (loadSeries drew the latest).
+  if (state.wk !== state.d.weeksScored) { $(".st-hero").innerHTML = standingsHero(state.d); renderRows(); }
   show(h.page);
   initEdit(text, refresh);
 } catch (err) {

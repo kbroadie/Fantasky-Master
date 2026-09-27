@@ -5,7 +5,7 @@
 import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
-import { scoresCard } from "../edit.js";
+import { scoresCard, titleCard } from "../edit.js";
 
 /** The cast in seat order; the CSV's order if the stats aren't loaded. */
 function seated(d) {
@@ -39,8 +39,8 @@ function slide(d, e) {
       <h2 class="ep-title">${esc(e.title || `Episode ${e.ep}`)}</h2>
       <div class="ep-sub">${line}</div>
     </div>`;
-  // Edit mode: every aired episode starts with a card to enter its scores.
-  const ed = state.edit && e.ep <= Math.max(d.weeksAired, d.weeksScored) ? scoresCard(d, e, seated(d)) : "";
+  // Edit mode: an aired episode starts with a card for its scores, a later one with a card for its title.
+  const ed = !state.edit ? "" : e.ep <= Math.max(d.weeksAired, d.weeksScored) ? scoresCard(d, e, seated(d)) : titleCard(d, e);
   if (e.ep > d.weeksScored) {
     const line = e.ep <= d.weeksAired ? "Aired · results coming soon" : d.nextEp?.ep === e.ep ? "Up next · poll open" : "Awaiting broadcast";
     return head(line) + `<div class="ep-body">${ed}${upcoming(d, e)}</div>`;
