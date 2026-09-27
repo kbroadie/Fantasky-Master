@@ -1,6 +1,5 @@
 /* Fantasky Master. Mobile-first; wider layouts in @media at the end.
-   Palette: Taskmaster red and gold on near-black. Red means "down",
-   green means "up", gold means "best". Fonts from v1 (see CLAUDE.md).
+   Palette: Taskmaster red and gold on near-black; gold means "best". Fonts from v1 (see CLAUDE.md).
    Nothing is set smaller than 11px. */
 
 :root {
@@ -8,7 +7,6 @@
   --gold: #b88018; --gold2: #d4a028; --gold3: #ecc040; --gold4: #8a6010;
   --gold-t: rgba(184, 128, 24, .12); --gold-glow: rgba(212, 160, 40, .30);
   --silver: #c9bba4; --bronze: #c98a45;
-  --up: #34d399;
   /* The two boards' colours: red for the Show, blue for the League (the
      scoring cards, the table's column heads and its theme, the leaders line) */
   --show: #e5484d; --show-hi: #ff8f86; --show-glow: rgba(229, 72, 77, .30); --show-edge: rgba(229, 72, 77, .38);
@@ -289,10 +287,9 @@ strong { color: var(--t1); font-weight: 700; }
 .sd.r { grid-template-columns: var(--rk) minmax(0, 1fr) var(--sc); padding: 0 var(--pe) 0 3px; }
 .sd.l .pc-name { justify-self: end; }
 .sd.r .pc-name { justify-self: start; }
-.pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.pc-rank b { font-size: 16px; font-weight: 800; color: var(--t2); line-height: 1; }
-.pc-rank i { font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; }
-.up { color: var(--up); } .dn { color: #ff5a4a; } .flat { color: var(--t4); }
+/* Just the rank: no movement arrows (removed on request) */
+.pc-rank { text-align: center; }
+.pc-rank b { font-size: 17px; font-weight: 800; color: var(--t2); line-height: 1; }
 .pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
 .pc-name .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* A chevron: rows open on tap. Drawn like the How scoring works chevron

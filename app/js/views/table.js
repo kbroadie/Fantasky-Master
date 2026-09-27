@@ -11,18 +11,15 @@ import { pickChooser } from "../edit.js";
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
 
 /**
- * Each player as the table stood after week w: totals, ranks and movement
- * since the week before (from league.js's per-week history).
+ * Each player as the table stood after week w: totals and ranks (from
+ * league.js's per-week history).
  */
 export function atWeek(d, w) {
-  // Weeks not yet scored: the table as it stands now, with no movement.
-  if (w > d.weeksScored) return d.weeksScored ? atWeek(d, d.weeksScored).map((p) => ({ ...p, showDelta: 0, leagueDelta: 0 })) : d.players;
+  // Weeks not yet scored: the table as it stands now.
+  if (w > d.weeksScored) return d.weeksScored ? atWeek(d, d.weeksScored) : d.players;
   return d.players.map((p) => {
-    const h = p.history[w - 1], was = p.history[w - 2] || h;
-    return {
-      ...p, show: h.show, league: h.league, showRank: h.showRank, leagueRank: h.leagueRank,
-      showDelta: was.showRank - h.showRank, leagueDelta: was.leagueRank - h.leagueRank,
-    };
+    const h = p.history[w - 1];
+    return { ...p, show: h.show, league: h.league, showRank: h.showRank, leagueRank: h.leagueRank };
   });
 }
 
@@ -117,7 +114,7 @@ export function standingsRows(d) {
     const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
     const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
     const name = `<span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>`;
-    const rk = `<span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(p[`${k}Delta`])}</span>`;
+    const rk = `<span class="pc-rank"><b class="${tier(rank)}">${rank}</b></span>`;
     return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${side === "show" ? num + name + rk : rk + name + num}</button>`;
   };
   return show.map((l, i) => {
@@ -158,7 +155,6 @@ function pickBackdrop(lf, rf) {
   return `<span class="pc-bg" aria-hidden="true">${face(lf, "l")}${face(rf, "r")}</span>`;
 }
 
-const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
 
 function picks(d, p, side) {
   const league = side === "league";
