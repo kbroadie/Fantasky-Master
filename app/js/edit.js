@@ -307,11 +307,10 @@ export function scoresCard(d, e, order) {
       ${dr.warnings?.length ? dr.warnings.map((w) => `<p class="ed-msg">${esc(w)}</p>`).join("") : ""}
       <label class="ed-field"><span>Title</span><input data-f="title" value="${esc(dr.title)}" placeholder="Episode ${e.ep}"></label>
       ${heads}${tasks}
-      <div class="ed-actions"><button type="button" class="ed-btn" data-ed="add">+ Task</button></div>
+      <div class="ed-actions"><button type="button" class="ed-btn" data-ed="add">+ Task</button><span></span><button type="button" class="ed-btn" data-ed="wiki">Get from the wiki</button></div>
       <label class="ed-field"><span>Tiebreak</span><select data-f="tb">${opt("", "None", !dr.tb)}${order.map((n) => opt(n, n, dr.tb === n)).join("")}</select></label>
       <p class="ed-hint">Scores are whole numbers, or DQ for a disqualification.</p>
       <div class="ed-actions">
-        <button type="button" class="ed-btn" data-ed="wiki">Get from the wiki</button>
         <span></span>
         <button type="button" class="ed-btn" data-ed="cancel">Cancel</button>
         <button type="button" class="ed-btn gold" data-ed="use">Use these</button>
@@ -425,7 +424,18 @@ export function initEdit(text, onChange) {
     if (what === "cancel") delete drafts[k];
     if (what === "add") readGrid(card).tasks.push(blankTask(d));
     if (what === "del") readGrid(card).tasks.splice(+b.closest(".ed-task").dataset.i, 1);
-    if (what === "use" && useGrid(card, d, ep)) return;
+    if (what === "use") {
+      // Invalid boxes are outlined in place; a redraw would lose that.
+      if (!useGrid(card, d, ep)) {
+        const form = card.querySelector(".ed-form");
+        let msg = form.querySelector(".ed-msg.bad");
+        if (!msg) form.insertAdjacentHTML("afterbegin", `<p class="ed-msg bad"></p>`), msg = form.querySelector(".ed-msg.bad");
+        msg.textContent = drafts[k].error;
+        delete drafts[k].error;
+        card.querySelector(".bad:not(.ed-msg)")?.focus();
+      }
+      return;
+    }
     redraw();
   });
 }
