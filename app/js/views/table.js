@@ -54,14 +54,14 @@ const howCard = (t) => `<div class="card how-card ${t.name.toLowerCase()}">
     <p class="how-range"><b>${esc(t.range)}</b><span>${esc(t.unit)}</span></p>
   </div>`;
 
-/** "Riley leads the Show   Jamie leads the League" ("wins" once the series is over). */
+/** "Riley leads The Show   Jamie leads The League" ("wins" once the series is over). */
 function leaderLine(d, rows, w) {
   const show = leaders(rows, "show"), league = leaders(rows, "league"), final = d.complete && w === d.episodes.length;
   const verb = (names) => (final ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
   const who = (names) => `<b>${esc(listing(names))}</b>`;
-  const S = `<span class="st-show">Show</span>`, L = `<span class="st-league">League</span>`;
-  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} the ${S} and the ${L}</span>`;
-  return `<span>${who(show)} ${verb(show)} the ${S}</span><span>${who(league)} ${verb(league)} the ${L}</span>`;
+  const S = `<span class="st-show">The Show</span>`, L = `<span class="st-league">The League</span>`;
+  if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} ${S} and ${L}</span>`;
+  return `<span>${who(show)} ${verb(show)} ${S}</span><span>${who(league)} ${verb(league)} ${L}</span>`;
 }
 
 /**
