@@ -271,7 +271,7 @@ $("#p-standings").addEventListener("click", (e) => {
 });
 
 // ── Standings weeks ──────────────────────────────────────────────────────────
-// The Wk 1–10 strip and sideways swipes change the week on show. The table
+// The Ep 1–10 strip and sideways swipes change the week on show. The table
 // stays put: each row keeps its element (and whether it's open), its numbers
 // update, and the rows slide from their old places to their new ones (FLIP).
 // A left swipe on the last week goes on to Episodes.

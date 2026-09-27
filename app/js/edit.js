@@ -122,7 +122,7 @@ function message() {
     ...ops.filter((o) => o.kind === "title").map((o) => `Title: Series ${o.s} Ep ${o.ep}: ${o.title}`),
     ...[...new Set(picks.map((o) => `${o.s}/${o.ep}`))].map((k) => {
       const [s, ep] = k.split("/"), these = picks.filter((o) => `${o.s}/${o.ep}` === k);
-      return `Picks: Series ${s} Wk ${ep} (${these.map((o) => `${o.player}: ${o.c || "none"}`).join(", ")})`;
+      return `Picks: Series ${s} Ep ${ep} (${these.map((o) => `${o.player}: ${o.c || "none"}`).join(", ")})`;
     }),
   ];
   return `${lines.length > 1 ? `${lines.length} edits from edit mode` : lines[0]}\n\n${lines.join("\n")}\n\nSaved from the app's edit mode.`;
@@ -276,7 +276,7 @@ export function pickChooser(d, p, w) {
   const cur = p.weeks[w - 1]?.pick ?? null;
   const opts = d.names.map((n) => `<button type="button" class="pk${cur === n ? " on" : ""}" data-pick="${esc(n)}" aria-pressed="${cur === n}">${framed(d.cast[n])}<b style="color:${d.cast[n].color}">${esc(n)}</b></button>`).join("");
   return `<div class="pk-edit" data-player="${esc(p.name)}" data-week="${w}">
-    <p class="pk-edit-h">Wk ${w} pick</p>
+    <p class="pk-edit-h">Ep ${w} pick</p>
     <div class="pk-choose">${opts}<button type="button" class="pk pk-none${cur == null ? " on" : ""}" data-pick="" aria-pressed="${cur == null}"><span class="pk-blank">–</span><b>None</b></button></div>
   </div>`;
 }
