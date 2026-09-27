@@ -315,15 +315,8 @@ class Scene {
       gr.addColorStop(1, "rgba(255,140,40,0)");
       light.fillStyle = gr;
       light.fillRect(0, 0, this.w, this.h);
-      // Rim light: the gilt frame blooms where the light catches it.
-      light.globalCompositeOperation = "lighter";
-      light.save();
-      light.shadowColor = `rgba(255,196,90,${Math.min(1, 0.7 * I)})`;
-      light.shadowBlur = 14 + 10 * I;
-      light.strokeStyle = `rgba(255,214,130,${0.35 * I})`;
-      light.lineWidth = 2;
-      light.strokeRect(f.x + 2, f.y + 2, f.w - 4, f.h - 4);
-      light.restore();
+      // (No rim light: a glowing rectangle traced the frame's box, not its
+      // ornate edge, and screened over the gold it read as a greenish band.)
       // Dust and glints.
       const { dust, spark } = sprites();
       for (const p of this.dust) {

@@ -79,7 +79,10 @@ export function buildSeries(records) {
           };
           s.tasks.push(t);
         }
-        t.scores[r.contestant] = +r.score;
+        // "DQ" is a disqualification: 0 points, marked as such in the app.
+        const dq = /^dq$/i.test(r.score.trim());
+        t.scores[r.contestant] = dq ? 0 : +r.score;
+        if (dq) (t.dqs ||= new Set()).add(r.contestant);
         break;
       }
       case "pick":
@@ -93,7 +96,10 @@ export function buildSeries(records) {
     s.cast.sort((a, b) => a.key.localeCompare(b.key));
     s.episodes.sort((a, b) => a.ep - b.ep);
     s.tasks.sort((a, b) => a.ep - b.ep || a.no - b.no);
-    for (const t of s.tasks) t.s = s.cast.map((c) => t.scores[c.key] ?? 0);
+    for (const t of s.tasks) {
+      t.s = s.cast.map((c) => t.scores[c.key] ?? 0);
+      t.dq = s.cast.map((c) => !!t.dqs?.has(c.key));
+    }
     for (const p of s.players) s.picks[p] ||= [];
     for (const p of Object.keys(s.picks)) s.picks[p] = Array.from({ length: 10 }, (_, i) => s.picks[p][i] || null);
   }

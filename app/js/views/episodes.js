@@ -1,4 +1,4 @@
-// Episodes: a scrollable Ep 1–10 strip (a dot in each winner's colour) above
+// Episodes: a scrollable Ep 1–10 strip above
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
 // columns (each under its portrait) and the ballot.
@@ -12,11 +12,8 @@ function seated(d) {
   return [...d.names].sort((a, b) => seat(a) - seat(b) || d.names.indexOf(a) - d.names.indexOf(b));
 }
 
-export const epTabs = (d) => d.episodes.map((e) => {
-  const w = d.winners[e.ep];
-  const dot = w ? `<i class="dot" style="background:${d.cast[w.winner].color}" aria-hidden="true"></i>` : "";
-  return `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}">${dot}Ep ${e.ep}</button>`;
-}).join("");
+export const epTabs = (d) => d.episodes.map((e) =>
+  `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}">Ep ${e.ep}</button>`).join("");
 
 export const epSlides = (d) => d.episodes.map((e) => `<section class="slide">${slide(d, e)}</section>`).join("");
 
@@ -131,10 +128,14 @@ function raceChart(d, upTo) {
   const W = 340, L = 10, R = 330, T = 12, B = 160, H = B + 24; // the plot fills the card
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
-  // The plot fills the card (to R); only when this episode's dots would leave
-  // too little room for their labels (about 66 units: "JOA 165", so episodes
-  // 9 and 10) does the axis tighten just enough to keep them to the right.
-  const last = d.episodes.length, LBL = 66;
+  // Labels: the three-letter name just right of the line's end, then the
+  // number right-aligned in a column (NAME is the name's width, DIG a digit's).
+  // The plot fills the card (to R); only when this episode's line ends would
+  // leave too little room for the labels (episodes 9 and 10) does the axis
+  // tighten just enough to keep them to the right.
+  const NAME = 26, DIG = 7.4, num = (m) => (gap(m, upTo) ? `−${-gap(m, upTo)}` : `${total[m][upTo]}`);
+  const numW = Math.max(...names.map((m) => num(m).length)) * DIG;
+  const last = d.episodes.length, LBL = 14 + NAME + 6 + numW + 4;
   const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, upTo - 1));
   const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
@@ -155,9 +156,10 @@ function raceChart(d, upTo) {
     const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
     // No points on the lines; only Episode 1, with no lines yet, shows dots.
     const dots = upTo > 1 ? "" : pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
-    const [lx, ly] = pts.at(-1), ty = labelY[name], g = gap(name, upTo);
+    const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}<tspan class="rc-total" dx="6">${g ? `−${-g}` : total[name][upTo]}</tspan></text>`;
+    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}</text>`
+      + `<text class="rc-name rc-total" x="${f1(lx + 14 + NAME + 6 + numW)}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);
       const say = `Ep ${e} · ${name} · ${total[name][e]} points · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;

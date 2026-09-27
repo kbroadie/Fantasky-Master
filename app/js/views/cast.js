@@ -81,14 +81,15 @@ function profile(c) {
     <div class="card note profile${f ? " has-face" : ""}">
       ${bg}
       <div class="card-head"><span>Profile</span></div>
-      ${c.bio ? `<p>${rich(c.bio)}</p>` : ""}
+      ${c.bio ? `<p class="pf-bio"><span>${rich(c.bio)}</span></p>` : ""}
       ${facts.length ? `<dl>${facts.map(([k, v]) => `<div><dt>${esc(k)}</dt><dd>${esc(v)}</dd></div>`).join("")}</dl>` : ""}
     </div>`;
 }
 
 // ── Task heat strip ─────────────────────────────────────────────────────────
 // Every task of the series as a square in the contestant's colour, stronger
-// for a higher score (0 is an empty outline): one row per task type, one
+// for a higher score (0 is an empty outline, a DQ a red cross, and a type
+// with no task that episode just a dash): one row per task type, one
 // column per episode (tasks of the same type in an episode share the slot),
 // the type's average at the end. Tap a slot (the whole episode's column in a
 // row, a far bigger target than a square) to read its tasks in the caption.
@@ -99,7 +100,7 @@ function heatStrip(d, c) {
   const i = d.idx[c.key], eps = d.episodes.map((e) => e.ep);
   const byType = Object.fromEntries(HEAT_TYPES.map((k) => [k, []]));
   for (const ep of eps.filter((e) => e <= d.weeksScored)) {
-    for (const t of d.epTasks(ep)) if (byType[t.t]) byType[t.t].push({ ep, name: t.n, v: t.s[i] });
+    for (const t of d.epTasks(ep)) if (byType[t.t]) byType[t.t].push({ ep, name: t.n, v: t.s[i], dq: !!t.dq?.[i] });
   }
   const types = HEAT_TYPES.filter((k) => byType[k].length);
   if (!types.length) return "";
@@ -108,17 +109,19 @@ function heatStrip(d, c) {
     const all = byType[k], avg = all.reduce((a, x) => a + x.v, 0) / all.length;
     const slots = eps.map((e) => {
       const here = all.filter((x) => x.ep === e);
-      if (!here.length) return `<span class="hs-slot${e > d.weeksScored ? " tbd" : ""}"></span>`;
-      const say = `Ep ${e} · ${TASK_NAME[k]} · ${here.map((x) => `${x.name}: ${x.v}`).join(" · ")}`;
-      const cells = here.map((x) => `<i class="hs-cell" style="--v:${x.v}"></i>`).join("");
+      // No task of this type that episode: n/a, a dash rather than a square.
+      if (!here.length) return e > d.weeksScored ? `<span class="hs-slot tbd"></span>` : `<span class="hs-slot na" title="No ${TASK_NAME[k].toLowerCase()} task"></span>`;
+      const say = `Ep ${e} · ${TASK_NAME[k]} · ${here.map((x) => `${x.name}: ${x.dq ? "DQ" : x.v}`).join(" · ")}`;
+      const cells = here.map((x) => `<i class="hs-cell${x.dq ? " dq" : ""}" style="--v:${x.v}"></i>`).join("");
       return `<button class="hs-slot" data-say="${esc(say)}" aria-label="${esc(say)}">${cells}</button>`;
     }).join("");
     return `<span class="hs-type">${icon(k)}${TASK_NAME[k]}</span>${slots}<span class="hs-avg">${avg.toFixed(1)}</span>`;
   }).join("");
   const key = [0, 1, 2, 3, 4, 5].map((v) => `<i class="hs-key" style="--v:${v}"></i>`).join("");
+  const anyDq = types.some((k) => byType[k].some((x) => x.dq));
   return `
     <div class="card heat" style="--c:${c.color}">
-      <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5</span></div>
+      <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5${anyDq ? `<i class="hs-key dq"></i>DQ` : ""}</span></div>
       <div class="hs-grid">${head}${rows}</div>
       <p class="hs-cap"></p>
     </div>`;
