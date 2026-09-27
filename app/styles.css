@@ -275,7 +275,7 @@ strong { color: var(--t1); font-weight: 700; }
 }
 .st-rk { grid-column: 1; background: rgba(10, 8, 10, .45); box-shadow: inset -1px 0 0 var(--b-gold); }
 .st-side.show { grid-column: 2; --c: var(--show-hi); --b: var(--show); }
-.st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-dim); }
+.st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-gold); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 
 /* Rows are not compositing layers of their own: with one per row (plus each
@@ -286,6 +286,12 @@ strong { color: var(--t1); font-weight: 700; }
 /* Rows don't clip (the backdrop clips itself, below), so a half can slide
    across other rows to its player's new place when the week changes. */
 .pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: center; height: var(--head); padding-inline: var(--pe); }
+/* Column rules, like the row rules (1px, --b-gold), on request: the place
+   column's edge (its strip, .pc::after) and this one between the Show and
+   the League (the halves' line: the middle plus half the place column), down
+   each row's head and through the table's head. The opened picks run full
+   width under them. It stays put while the halves slide. */
+.pc-head::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(50% + var(--rk) / 2); width: 1px; background: var(--b-gold); pointer-events: none; }
 .sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
 .sd { grid-template-columns: minmax(0, 1fr) var(--sc); }
 .sd.l { padding: 0 8px 0 10px; }
