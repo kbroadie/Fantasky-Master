@@ -1,4 +1,4 @@
-// Standings: a strip of weeks (Ep 1–10), a "Week 4 Standings" headline and the
+// Standings: a strip of weeks (Ep 1–10), an "Episode 4 Standings" headline and the
 // leaders, then one sortable table (Show or League) as it stood after that week.
 // A week not yet scored is "Episode 5 Picks": the table as it stands now, each row
 // behind that week's pick. Tapping a row opens that player's ten weekly picks.
@@ -41,7 +41,7 @@ const HOW_ICONS = {
 };
 /** The table's head: a tab per sort (a player, the crown for Show, the trophy for League), like the week strip. */
 const PLAYER_ICON = "M8 2.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2z M2.75 13.5c.3-2.8 2.5-4.4 5.25-4.4s4.95 1.6 5.25 4.4";
-const sortTab = (key, path, label, arr = "") => `<button class="st-tab" type="button" data-sort="${key}"><span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg>${label}${arr}</span></button>`;
+const sortTab = (key, path, label, arr = "") => `<button class="st-tab" type="button" data-sort="${key}"><span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg><em>${label}${arr}</em></span></button>`;
 const TERMS = [
   { icon: "crown", name: "Show", rule: ["The player with the ", "most points", " at the end of the series wins, regardless of episode placements."], range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: ["The player with the ", "best episode placements", " throughout the series wins, regardless of points."], range: "1–5", unit: "pts per episode" },
@@ -66,7 +66,7 @@ function leaderLine(d, rows, w) {
 }
 
 /**
- * The hero: "Week 4 Standings" and who leads each board ("Episode 5 Picks" for a
+ * The hero: "Episode 4 Standings" and who leads each board ("Episode 5 Picks" for a
  * week not yet scored), or when the series starts.
  */
 export function standingsHero(d) {
@@ -76,7 +76,7 @@ export function standingsHero(d) {
   // The kicker, like the episode head's: the series and that week's episode.
   const kicker = `<div class="kicker">Series ${esc(state.key)} · ${esc(fmtDay.format(d.episodes[w - 1].air))}</div>`;
   if (!d.weeksScored) return `${kicker}<h2 class="ep-title">Episode ${w} Picks</h2><div class="ep-sub">The series starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
-  return `${kicker}<h2 class="ep-title">${w > d.weeksScored ? `Episode ${w} Picks` : `Week ${w} Standings`}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
+  return `${kicker}<h2 class="ep-title">${w > d.weeksScored ? `Episode ${w} Picks` : `Episode ${w} Standings`}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
