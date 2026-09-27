@@ -1,6 +1,6 @@
-// Standings: a strip of weeks (Wk 1–10), a "Week 4 Standings" headline and the
+// Standings: a strip of weeks (Ep 1–10), a "Week 4 Standings" headline and the
 // leaders, then one sortable table (Show or League) as it stood after that week.
-// A week not yet scored is "Week 5 Picks": the table as it stands now, each row
+// A week not yet scored is "Episode 5 Picks": the table as it stands now, each row
 // behind that week's pick. Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
@@ -66,7 +66,7 @@ function leaderLine(d, rows, w) {
 }
 
 /**
- * The hero: "Week 4 Standings" and who leads each board ("Week 5 Picks" for a
+ * The hero: "Week 4 Standings" and who leads each board ("Episode 5 Picks" for a
  * week not yet scored), or when the series starts.
  */
 export function standingsHero(d) {
@@ -75,16 +75,16 @@ export function standingsHero(d) {
     <div class="st-explain" id="st-explain"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
   // The kicker, like the episode head's: the series and that week's episode.
   const kicker = `<div class="kicker">Series ${esc(state.key)} · ${esc(fmtDay.format(d.episodes[w - 1].air))}</div>`;
-  if (!d.weeksScored) return `${kicker}<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">The series starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
-  return `${kicker}<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
+  if (!d.weeksScored) return `${kicker}<h2 class="ep-title">Episode ${w} Picks</h2><div class="ep-sub">The series starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
+  return `${kicker}<h2 class="ep-title">${w > d.weeksScored ? `Episode ${w} Picks` : `Week ${w} Standings`}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
 const heroRows = () => !!GROUP[state.key]?.faces;
 
-/** Wk 1–10, like the episode strip; weeks not yet scored are faint. */
+/** Ep 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
-  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}">Wk ${ep}</button>`).join("");
+  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}">Ep ${ep}</button>`).join("");
 
 export function standingsHead(d) {
   return `

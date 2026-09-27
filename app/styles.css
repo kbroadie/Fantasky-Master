@@ -31,6 +31,7 @@
   --hdr-h: 62px; --hdr-hc: 36px;
   --tabs-h: 58px; --tabs-hc: 40px;
   --tabs-m: 8px; --tabs-mc: 5px;
+  --strip-h: 44px; --strip-hc: 32px; /* the sub-tab strips, open and compact */
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
 
@@ -434,13 +435,26 @@ strong { color: var(--t1); font-weight: 700; }
 
 /* ── Tab strips over swipers (episodes, cast) ──────────────────────── */
 .strip { display: flex; border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, var(--s2), var(--s1)); }
+/* The sub-tab strips (Standings' episodes, Episodes, Cast) stick under the
+   top bar and compact with it: their tabs shorten from 44px to 32px as the
+   bar does, and like the bar they give the saved height back as margin, so
+   nothing below moves (see .topbar.compact). */
+.page > .strip {
+  position: sticky; z-index: 4; top: calc(var(--hdr-h) + env(safe-area-inset-top) + var(--tabs-h) + 2 * var(--tabs-m));
+  transition: top .3s var(--ease), margin-bottom .3s var(--ease);
+}
+.topbar.compact ~ main .page > .strip {
+  top: calc(var(--hdr-hc) + env(safe-area-inset-top) + var(--tabs-hc) + 2 * var(--tabs-mc));
+  margin-bottom: calc(var(--strip-h) - var(--strip-hc));
+}
+.topbar.compact ~ main .page > .strip .strip-tab { min-height: var(--strip-hc); padding-block: 4px; }
 .strip.scroll { overflow-x: auto; scrollbar-width: none; }
 .strip.scroll::-webkit-scrollbar { display: none; }
 .strip-tab {
-  position: relative; flex-shrink: 0; min-height: 44px; padding: 10px clamp(13px, 3.4vw, 18px);
+  position: relative; flex-shrink: 0; min-height: var(--strip-h); padding: 10px clamp(13px, 3.4vw, 18px);
   font-family: var(--fm); font-size: 12px; color: var(--t3); letter-spacing: .1em; white-space: nowrap;
   border-right: 1px solid var(--b-dim); border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color .15s, background .15s;
+  transition: color .15s, background .15s, min-height .3s var(--ease), padding .3s var(--ease);
 }
 .strip.even .strip-tab { flex: 1; min-width: 0; padding-inline: 4px; overflow: hidden; text-overflow: ellipsis; }
 .strip-tab.tbd { color: var(--t4); }
