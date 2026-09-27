@@ -20,12 +20,12 @@ function readHash() {
   return { key: SERIES[key] ? key : CURRENT, page: PAGES.includes(page) ? page : "standings", arg: arg ? decodeURIComponent(arg) : null };
 }
 function writeHash() {
-  const arg = state.page === "standings" ? (state.d.weeksScored ? stWeek(state.d) : null) : state.page === "episodes" ? state.ep : state.page === "cast" ? castOrder(state.d)[state.cast]?.key : null;
+  const arg = state.page === "standings" ? stWeek(state.d) : state.page === "episodes" ? state.ep : state.page === "cast" ? castOrder(state.d)[state.cast]?.key : null;
   history.replaceState(null, "", `#/${state.key}/${state.page}${arg != null ? `/${encodeURIComponent(arg)}` : ""}`);
 }
 function applyArg(page, arg) {
   if (arg == null) return;
-  if (page === "standings" && +arg >= 1 && +arg <= state.d.weeksScored) state.wk = +arg;
+  if (page === "standings" && +arg >= 1 && +arg <= state.d.episodes.length) state.wk = +arg;
   if (page === "episodes" && +arg >= 1 && +arg <= state.d.episodes.length) state.ep = +arg;
   if (page === "cast") state.cast = Math.max(0, castOrder(state.d).findIndex((c) => c.key === arg));
 }
@@ -231,20 +231,20 @@ $("#p-standings").addEventListener("click", (e) => {
 // The Wk 1–10 strip and sideways swipes change the week on show. The table
 // stays put: each row keeps its element (and whether it's open), its numbers
 // update, and the rows slide from their old places to their new ones (FLIP).
-// A left swipe on the latest week goes on to Episodes.
+// A left swipe on the last week goes on to Episodes.
 
 function markWeek(smooth = true) {
   const tabs = $("#st-tabs"), w = stWeek(state.d);
   if (!tabs) return;
-  for (const b of tabs.children) b.classList.toggle("on", +b.dataset.week === w && state.d.weeksScored > 0);
+  for (const b of tabs.children) b.classList.toggle("on", +b.dataset.week === w);
   const t = tabs.children[w - 1];
   if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
 }
 
 function setWeek(w) {
   const d = state.d;
-  w = Math.max(1, Math.min(d.weeksScored, w));
-  if (!d.weeksScored || w === stWeek(d)) return;
+  w = Math.max(1, Math.min(d.episodes.length, w));
+  if (w === stWeek(d)) return;
   state.wk = w;
   const rows = $("#rows"), first = new Map([...rows.children].map((r) => [r.dataset.p, r.getBoundingClientRect().top]));
   // Patch each row in place from freshly rendered markup, then reorder.
@@ -291,12 +291,12 @@ function setWeek(w) {
 
 $("#p-standings").addEventListener("click", (e) => {
   const b = e.target.closest("#st-tabs [data-week]");
-  if (b && !b.disabled) setWeek(+b.dataset.week);
+  if (b) setWeek(+b.dataset.week);
 });
 
-// Sideways swipes step through the weeks; past the latest, on to Episodes.
+// Sideways swipes step through the weeks; past the last, on to Episodes.
 edgeNav($("#p-standings"), { prev: () => stWeek(state.d) > 1, next: () => true }, (dir) => {
-  if (dir > 0 && stWeek(state.d) >= state.d.weeksScored) return show("episodes");
+  if (dir > 0 && stWeek(state.d) >= state.d.episodes.length) return show("episodes");
   setWeek(stWeek(state.d) + dir);
 });
 bindSwiper(EP, (dir) => {
@@ -379,7 +379,9 @@ addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).o
 addEventListener("hashchange", () => {
   const h = readHash();
   if (h.key !== state.key) loadSeries(h.key);
-  applyArg(h.page, h.arg);
+  // A new week redraws the table (applyArg alone only sets it).
+  if (h.page === "standings" && +h.arg >= 1) setWeek(+h.arg);
+  else applyArg(h.page, h.arg);
   show(h.page);
 });
 

@@ -1,20 +1,20 @@
 // Standings: a strip of weeks (Wk 1–10), a "Week 4 Standings" headline and the
 // leaders, then one sortable table (Show or League) as it stood after that week.
-// Tapping a row opens that player's ten weekly picks.
+// A week not yet scored is "Week 5 Picks": the table as it stands now, each row
+// behind that week's pick. Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 
-/** The latest episode anyone has a pick for: the "this week" column. */
-export const pickWeek = (d) => Math.max(d.weeksScored, ...d.players.map((p) => p.weeks.findLastIndex((w) => w.pick) + 1));
-
 /** The week on show: state.wk, or the latest scored week. */
-export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), Math.max(1, d.weeksScored));
+export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
 
 /**
  * Each player as the table stood after week w: totals, ranks and movement
  * since the week before (from league.js's per-week history).
  */
 export function atWeek(d, w) {
+  // Weeks not yet scored: the table as it stands now, with no movement.
+  if (w > d.weeksScored) return d.weeksScored ? atWeek(d, d.weeksScored).map((p) => ({ ...p, showDelta: 0, leagueDelta: 0 })) : d.players;
   return d.players.map((p) => {
     const h = p.history[w - 1], was = p.history[w - 2] || h;
     return {
@@ -47,20 +47,23 @@ function leaderLine(d, rows, w) {
   return `<span>${who(show)} ${verb(show)} the ${S}</span><span>${who(league)} ${verb(league)} the ${L}</span>`;
 }
 
-/** The hero: "Week 4 Standings" and who leads each board, or when the series starts. */
+/**
+ * The hero: "Week 4 Standings" and who leads each board ("Week 5 Picks" for a
+ * week not yet scored), or when the series starts.
+ */
 export function standingsHero(d) {
-  if (!d.weeksScored) return `<h2 class="ep-title">Series ${state.key} starts</h2><div class="ep-sub">${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
   const w = stWeek(d);
-  return `<h2 class="ep-title">Week ${w} Standings</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>
+  if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
+  return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>
     <div class="st-explain"><div>${Object.entries(TERMS).map(([k, t]) => `<p data-for="${k}">${t}</p>`).join("")}</div></div>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
 const heroRows = () => !!GROUP[state.key]?.faces;
 
-/** Wk 1–10, like the episode strip; weeks not yet scored are faint and inert. */
+/** Wk 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
-  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}"${ep > d.weeksScored ? " disabled" : ""}>Wk ${ep}</button>`).join("");
+  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}">Wk ${ep}</button>`).join("");
 
 export function standingsHead(d) {
   return `
@@ -80,13 +83,11 @@ export function standingsHead(d) {
 
 export function standingsRows(d) {
   const key = state.sort, w = stWeek(d);
-  // The latest week's backdrop is the newest pick (the next episode's, once polled).
-  const wk = w === d.weeksScored ? pickWeek(d) : w;
-  const rows = (d.weeksScored ? atWeek(d, w) : d.players).sort((a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
+  const rows = atWeek(d, w).sort((a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
   return rows.map((p) => {
     const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
-    const now = p.weeks[wk - 1];
-    // No pick that week: Patatas stands in.
+    const now = p.weeks[w - 1];
+    // No pick that week (or none in yet): Patatas stands in.
     const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
     const bg = face ? pickBackdrop(face) : "";
     return `
