@@ -85,6 +85,7 @@ function refresh(text) {
 
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
+  $(".card.board")?.classList.remove("focus");
   queueParallax();
 }
 
@@ -279,6 +280,8 @@ function openRow(row, side) {
   row.classList.toggle("open", !!side);
   for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
   sharpen(row, side);
+  // While anything is open, every other cell steps back.
+  $(".card.board")?.classList.toggle("focus", !!$("#rows .pc.open"));
 }
 
 /**

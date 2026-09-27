@@ -296,12 +296,16 @@ strong { color: var(--t1); font-weight: 700; }
 .sd { grid-template-columns: minmax(0, 1fr) var(--sc); }
 .sd.l { padding: 0 8px 0 10px; }
 .sd.r { padding: 0 var(--pe) 0 8px; margin-right: calc(-1 * var(--pe)); } /* its cell runs to the card's edge */
-/* In an opened row, the other player's cell steps back (on request): a
-   little darker, its text dimmed, so the opened player reads first. */
+/* While a half is open, every other cell steps back (on request): each player
+   cell a little darker with its text dimmed, and the other rows' place
+   numbers dimmed, so the opened player reads first (.board.focus, set in
+   openRow). */
 .sd { transition: background-color .35s var(--ease); }
-.sd > * { transition: opacity .35s var(--ease); }
-.pc[data-open="show"] .sd.r, .pc[data-open="league"] .sd.l { background-color: rgba(8, 6, 8, .32); }
-.pc[data-open="show"] .sd.r > *, .pc[data-open="league"] .sd.l > * { opacity: .6; }
+.sd > *, .pc-rank { transition: opacity .35s var(--ease); }
+.board.focus .sd { background-color: rgba(8, 6, 8, .32); }
+.board.focus .sd > *, .board.focus .pc:not(.open) .pc-rank { opacity: .6; }
+.board.focus .pc[data-open="show"] .sd.l, .board.focus .pc[data-open="league"] .sd.r { background-color: transparent; }
+.board.focus .pc[data-open="show"] .sd.l > *, .board.focus .pc[data-open="league"] .sd.r > * { opacity: 1; }
 /* The place column's strip: darker, with a gold hairline on its right, down
    the row's head (the opened picks run full width under it). It's painted
    over the row's backdrop and under its text. */
