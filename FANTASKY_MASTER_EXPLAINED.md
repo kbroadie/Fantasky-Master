@@ -132,7 +132,7 @@ The CSV holds inputs only; nothing derived (§5–§6) is stored. Each row has a
 | `contestant` | `NAMES`, `CONT`, `PORT` | `series`, `contestant`, `full_name`, `accent_color`, `portrait_url`, `bio` |
 | `player` | keys of `PICKS` (the roster, including players who never vote) | `series`, `player` |
 | `episode` | `EM`, `EI` | `series`, `episode`, `title`, `air_date`, `tiebreak_winner` (→ `tb`), `analysis` |
-| `score` | `TASKS` (one row per task × contestant) | `series`, `episode`, `task_no`, `task_type`, `task_name`, `contestant`, `score` |
+| `score` | `TASKS` (one row per task × contestant) | `series`, `episode`, `task_no`, `task_type`, `task_name`, `contestant`, `score` (`DQ` marks a disqualification and counts as 0 in every calculation) |
 | `pick` | `PICKS` | `series`, `episode`, `player`, `contestant` |
 
 Conventions:

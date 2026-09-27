@@ -4,7 +4,7 @@
 import { loadData } from "./csv.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsHead, standingsRows } from "./views/table.js";
+import { standingsHead, standingsRows, standingsHero, stWeek } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -20,11 +20,12 @@ function readHash() {
   return { key: SERIES[key] ? key : CURRENT, page: PAGES.includes(page) ? page : "standings", arg: arg ? decodeURIComponent(arg) : null };
 }
 function writeHash() {
-  const arg = state.page === "episodes" ? state.ep : state.page === "cast" ? castOrder(state.d)[state.cast]?.key : null;
+  const arg = state.page === "standings" ? (state.d.weeksScored ? stWeek(state.d) : null) : state.page === "episodes" ? state.ep : state.page === "cast" ? castOrder(state.d)[state.cast]?.key : null;
   history.replaceState(null, "", `#/${state.key}/${state.page}${arg != null ? `/${encodeURIComponent(arg)}` : ""}`);
 }
 function applyArg(page, arg) {
   if (arg == null) return;
+  if (page === "standings" && +arg >= 1 && +arg <= state.d.weeksScored) state.wk = +arg;
   if (page === "episodes" && +arg >= 1 && +arg <= state.d.episodes.length) state.ep = +arg;
   if (page === "cast") state.cast = Math.max(0, castOrder(state.d).findIndex((c) => c.key === arg));
 }
@@ -35,6 +36,7 @@ function loadSeries(key) {
   const d = state.d = derive(SERIES[key], new Date());
   state.key = key;
   state.ep = Math.max(1, d.weeksScored);
+  state.wk = d.weeksScored;
   state.cast = 0;
   const btn = $("#series");
   $("#series-num").textContent = key;
@@ -43,6 +45,7 @@ function loadSeries(key) {
   btn.setAttribute("aria-label", `Series ${key}. Tap to switch series`);
   $("#p-standings").innerHTML = standingsHead(d);
   renderRows();
+  markWeek(false);
   $("#ep-tabs").innerHTML = epTabs(d);
   $("#ep-body").innerHTML = epSlides(d);
   mountPodiumFx($("#ep-body"));
@@ -72,7 +75,7 @@ function show(page) {
   $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
   $$(".page").forEach((p, j) => p.classList.toggle("active", j === i));
   scrollTo(0, 0);
-  if (page === "standings") queueParallax();
+  if (page === "standings") { markWeek(false); queueParallax(); }
   if (page === "episodes") jump(EP, state.ep - 1);
   if (page === "cast") jump(CAST, state.cast);
   writeHash();
@@ -119,6 +122,7 @@ function jump(sw, i) {
 function edgeNav(el, can, onEdge) {
   let x0 = null, y0 = 0, prev = false, next = false;
   el.addEventListener("touchstart", (e) => {
+    if (e.target.closest(".strip")) { x0 = null; return; } // a tab strip scrolls sideways itself
     x0 = e.touches[0].clientX; y0 = e.touches[0].clientY;
     prev = can.prev(); next = can.next();
   }, { passive: true });
@@ -223,8 +227,78 @@ $("#p-standings").addEventListener("click", (e) => {
   }
 });
 
-// Standings has nothing to scroll sideways, so a left swipe goes to Episodes.
-edgeNav($("#p-standings"), { prev: () => false, next: () => true }, () => show("episodes"));
+// ── Standings weeks ──────────────────────────────────────────────────────────
+// The Wk 1–10 strip and sideways swipes change the week on show. The table
+// stays put: each row keeps its element (and whether it's open), its numbers
+// update, and the rows slide from their old places to their new ones (FLIP).
+// A left swipe on the latest week goes on to Episodes.
+
+function markWeek(smooth = true) {
+  const tabs = $("#st-tabs"), w = stWeek(state.d);
+  if (!tabs) return;
+  for (const b of tabs.children) b.classList.toggle("on", +b.dataset.week === w && state.d.weeksScored > 0);
+  const t = tabs.children[w - 1];
+  if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
+}
+
+function setWeek(w) {
+  const d = state.d;
+  w = Math.max(1, Math.min(d.weeksScored, w));
+  if (!d.weeksScored || w === stWeek(d)) return;
+  state.wk = w;
+  const rows = $("#rows"), first = new Map([...rows.children].map((r) => [r.dataset.p, r.getBoundingClientRect().top]));
+  // Patch each row in place from freshly rendered markup, then reorder.
+  const fresh = document.createElement("div");
+  fresh.innerHTML = standingsRows(d);
+  const order = [];
+  for (const n of fresh.children) {
+    const old = rows.querySelector(`.pc[data-p="${CSS.escape(n.dataset.p)}"]`);
+    if (!old) { order.push(n); continue; }
+    old.classList.toggle("lead", n.classList.contains("lead"));
+    old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
+    // The backdrop is patched, not replaced: a new crop of the same photo
+    // (every S22 face) just moves, with no reload or blank frame.
+    const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
+    if (ob && nb && ob.querySelector(".edge") == null === (nb.querySelector(".edge") == null)) {
+      ob.setAttribute("style", nb.getAttribute("style"));
+      const oi = ob.querySelector("img"), ni = nb.querySelector("img");
+      if (oi.src !== ni.src) oi.src = ni.src;
+    } else if (nb) { if (ob) ob.replaceWith(nb); else old.prepend(nb); }
+    else if (ob) ob.remove();
+    order.push(old);
+  }
+  rows.append(...order);
+  $(".st-hero").innerHTML = standingsHero(d);
+  $(".st-hero").classList.remove("explain");
+  markWeek();
+  writeHash();
+  queueParallax();
+  if (reducedMotion) return;
+  for (const r of rows.children) {
+    const dy = (first.get(r.dataset.p) ?? r.getBoundingClientRect().top) - r.getBoundingClientRect().top;
+    if (!dy) continue;
+    r.style.transition = "none";
+    r.style.transform = `translateY(${dy}px)`;
+  }
+  rows.getBoundingClientRect(); // commit the inverted positions before playing
+  for (const r of rows.children) {
+    if (!r.style.transform) continue;
+    r.style.transition = "transform .5s var(--ease)";
+    r.style.transform = "";
+    r.addEventListener("transitionend", () => { r.style.transition = ""; }, { once: true });
+  }
+}
+
+$("#p-standings").addEventListener("click", (e) => {
+  const b = e.target.closest("#st-tabs [data-week]");
+  if (b && !b.disabled) setWeek(+b.dataset.week);
+});
+
+// Sideways swipes step through the weeks; past the latest, on to Episodes.
+edgeNav($("#p-standings"), { prev: () => stWeek(state.d) > 1, next: () => true }, (dir) => {
+  if (dir > 0 && stWeek(state.d) >= state.d.weeksScored) return show("episodes");
+  setWeek(stWeek(state.d) + dir);
+});
 bindSwiper(EP, (dir) => {
   if (dir < 0) show("standings");
   else { state.cast = 0; show("cast"); }
