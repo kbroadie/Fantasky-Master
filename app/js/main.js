@@ -68,27 +68,35 @@ function renderSlides(d) {
  * and Cast slides are rebuilt on the same slide.
  */
 function refresh(text) {
+  // Edit mode may redraw while a box has focus: put focus back on its new copy.
+  const fk = document.activeElement?.dataset?.fk;
   SERIES = buildSeries(parseCSV(text));
   const d = state.d = derive(SERIES[state.key], new Date());
   patchRows(() => {
     $("#st-tabs").innerHTML = weekTabs(d);
     $(".st-hero").innerHTML = standingsHero(d);
-    $(".st-hero").classList.remove("explain");
     markWeek(false);
   });
   renderSlides(d);
   for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get());
   else mark(sw, sw.get(), false);
+  if (fk) $(`[data-fk="${CSS.escape(fk)}"]`)?.focus({ preventScroll: true });
 }
 
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
   queueParallax();
-  for (const b of $$(".st-num")) {
-    const on = b.dataset.sort === state.sort;
+  markSort();
+}
+
+/** The sort buttons: the active one shows ▼/▲ (highest first / A to Z is the default). */
+function markSort() {
+  for (const b of $$(".st-head [data-sort]")) {
+    const on = b.dataset.sort === state.sort, name = b.dataset.sort === "name";
     b.classList.toggle("on", on);
     b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
-    b.setAttribute("aria-label", `Sort by ${b.dataset.sort}${on ? `, now ${state.dir < 0 ? "highest" : "lowest"} first` : ""}`);
+    const order = name ? (state.dir > 0 ? "A to Z" : "Z to A") : `${state.dir < 0 ? "highest" : "lowest"} first`;
+    b.setAttribute("aria-label", `Sort by ${name ? "player" : b.dataset.sort}${on ? `, now ${order}` : ""}`);
   }
 }
 
@@ -227,18 +235,21 @@ $("#series").addEventListener("click", () => {
 $("#p-standings").addEventListener("click", (e) => {
   const s = e.target.closest("[data-sort]");
   if (s) {
-    state.dir = state.sort === s.dataset.sort ? -state.dir : -1;
+    // Points start highest first, names A to Z; tap again to reverse.
+    state.dir = state.sort === s.dataset.sort ? -state.dir : s.dataset.sort === "name" ? 1 : -1;
     state.sort = s.dataset.sort;
-    return renderRows();
+    if (state.sort !== "name") state.board = state.sort;
+    markSort();
+    return patchRows(); // the rows slide to their new places
   }
-  // "Show" / "League" in the hero: open a line explaining it; tap again to close.
-  const term = e.target.closest(".st-term");
-  if (term) {
-    const hero = term.closest(".st-hero"), t = term.dataset.term;
-    const open = !(hero.classList.contains("explain") && hero.dataset.term === t);
-    hero.dataset.term = t;
-    hero.classList.toggle("explain", open);
-    for (const b of hero.querySelectorAll(".st-term")) b.setAttribute("aria-expanded", open && b.dataset.term === t);
+  // "How scoring works": open both explanations; tap again to close. It stays
+  // open as the week changes (state.how).
+  const how = e.target.closest(".st-how");
+  if (how) {
+    state.how = !state.how;
+    how.closest(".st-hero").classList.toggle("explain", state.how);
+    how.setAttribute("aria-expanded", state.how);
+    queueParallax();
     return;
   }
   const head = e.target.closest(".pc-head");
@@ -272,7 +283,6 @@ function setWeek(w) {
   state.wk = w;
   patchRows(() => {
     $(".st-hero").innerHTML = standingsHero(d);
-    $(".st-hero").classList.remove("explain");
     markWeek();
     writeHash();
   });
@@ -323,7 +333,7 @@ function patchRows(before) {
   rows.getBoundingClientRect(); // commit the inverted positions before playing
   for (const r of rows.children) {
     if (!r.style.transform) continue;
-    r.style.transition = "transform .5s var(--ease)";
+    r.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each row can be followed
     r.style.transform = "";
     r.addEventListener("transitionend", () => { r.style.transition = ""; }, { once: true });
   }
@@ -410,6 +420,11 @@ function parallax() {
     if (r.bottom < -100 || r.top > innerHeight + 100) continue;
     img.style.setProperty("--py", `${((mid - (r.top + 29)) * PARALLAX).toFixed(1)}px`);
   }
+  // The scoring plaques' metal: its reflection moves as the plaque moves up the screen.
+  for (const c of $$(".st-hero.explain .how-card")) {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--lx", Math.max(-1, Math.min(1, (r.top + r.height / 2 - mid) / mid)).toFixed(3));
+  }
 }
 const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };
 addEventListener("scroll", queueParallax, { passive: true });
@@ -438,6 +453,8 @@ try {
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);
+  // A link to another week: draw that week (loadSeries drew the latest).
+  if (state.wk !== state.d.weeksScored) { $(".st-hero").innerHTML = standingsHero(state.d); renderRows(); }
   show(h.page);
   initEdit(text, refresh);
 } catch (err) {

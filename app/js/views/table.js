@@ -31,19 +31,33 @@ function leaders(rows, key) {
   return rows.filter((p) => p[key] === top).map((p) => p.name);
 }
 
-/** Tap "Show" or "League" in the leaders line to open a line explaining it. */
-const TERMS = {
-  show: "Show points: what your pick scored that episode.",
-  league: "League points: 5 if your pick wins, down to 1 for last.",
+/** "How scoring works", under the leaders line, opens both of these. */
+// The league's words, unchanged, in their order: the title, the rule, the
+// range. The crown and trophy are drawn in the same gold line style as the
+// task icons (16px grid), not emoji.
+const HOW_ICONS = {
+  crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
+  trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
 };
-const term = (key, label) => `<button class="st-term" data-term="${key}" aria-expanded="false">${label}</button>`;
+const TERMS = [
+  { icon: "crown", name: "Show", rule: "The player with the most points at the end of the series wins, regardless of episode placements.", range: "0–25", unit: "pts per episode" },
+  { icon: "trophy", name: "League", rule: "The player with the best episode placements throughout the series wins, regardless of points.", range: "1–5", unit: "pts per episode" },
+];
+const howCard = (t) => `<div class="card how-card ${t.name.toLowerCase()}">
+    <div class="how-head">
+      <span class="how-icon" aria-hidden="true"><svg class="how-ico" viewBox="0 0 16 16"><path d="${HOW_ICONS[t.icon]}"/></svg><i class="how-glint"></i></span>
+      <h3 class="how-title"><span class="how-the">The</span><span class="how-name">${esc(t.name)}</span></h3>
+    </div>
+    <p class="how-rule">${esc(t.rule)}</p>
+    <p class="how-range"><b>${esc(t.range)}</b><span>${esc(t.unit)}</span></p>
+  </div>`;
 
 /** "Riley leads the Show   Jamie leads the League" ("wins" once the series is over). */
 function leaderLine(d, rows, w) {
   const show = leaders(rows, "show"), league = leaders(rows, "league"), final = d.complete && w === d.episodes.length;
   const verb = (names) => (final ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
   const who = (names) => `<b>${esc(listing(names))}</b>`;
-  const S = term("show", "Show"), L = term("league", "League");
+  const S = "Show", L = "League";
   if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} the ${S} and the ${L}</span>`;
   return `<span>${who(show)} ${verb(show)} the ${S}</span><span>${who(league)} ${verb(league)} the ${L}</span>`;
 }
@@ -54,9 +68,10 @@ function leaderLine(d, rows, w) {
  */
 export function standingsHero(d) {
   const w = stWeek(d);
-  if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
-  return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>
-    <div class="st-explain"><div>${Object.entries(TERMS).map(([k, t]) => `<p data-for="${k}">${t}</p>`).join("")}</div></div>`;
+  const how = `<button type="button" class="st-how" aria-expanded="${state.how}" aria-controls="st-explain">How scoring works<i class="st-how-chev" aria-hidden="true"></i></button>
+    <div class="st-explain" id="st-explain"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
+  if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
+  return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */
@@ -69,11 +84,11 @@ export const weekTabs = (d) => d.episodes.map(({ ep }) =>
 export function standingsHead(d) {
   return `
     <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
-    <div class="hero st-hero">${standingsHero(d)}</div>
+    <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
     <div class="card board">
       <div class="st-head">
         <span class="st-rank">Rank</span>
-        <span class="st-name">Player</span>
+        <button class="st-name" data-sort="name"><span>Player<i class="arr"></i></span></button>
         <button class="st-num" data-sort="show"><span><i class="arr"></i>Show</span></button>
         <button class="st-num" data-sort="league"><span><i class="arr"></i>League</span></button>
         <span></span>
@@ -83,10 +98,12 @@ export function standingsHead(d) {
 }
 
 export function standingsRows(d) {
-  const key = state.sort, w = stWeek(d);
-  const rows = atWeek(d, w).sort((a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
+  // Sorted by name, the rank and movement are still the last board sorted by.
+  const key = state.sort, board = key === "name" ? state.board : key, w = stWeek(d);
+  const rows = atWeek(d, w).sort(key === "name" ? (a, b) => state.dir * a.name.localeCompare(b.name)
+    : (a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
   return rows.map((p) => {
-    const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
+    const rank = p[`${board}Rank`], delta = p[`${board}Delta`];
     const now = p.weeks[w - 1];
     // No pick that week (or none in yet): Patatas stands in.
     const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
@@ -122,7 +139,7 @@ function pickBackdrop(f) {
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
 
 function picks(d, p) {
-  const league = state.sort === "league";
+  const league = (state.sort === "name" ? state.board : state.sort) === "league";
   const cells = p.weeks.map((w) => {
     if (!w.pick) return `<div class="pk"><small>${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
     const pts = w.show == null ? "…" : league ? w.league : w.show;

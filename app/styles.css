@@ -138,15 +138,89 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero .ep-sub { margin-top: 5px; }
 .st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
 .st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
-/* "Show" and "League" are dotted-underlined buttons; each opens one line
-   below explaining it (the hero grows by that line; tap again to close). */
-.st-term { color: inherit; text-decoration: underline dotted rgba(182, 151, 123, .7); text-underline-offset: 3px; }
-.st-term[aria-expanded="true"] { color: var(--t1); text-decoration-color: var(--gold2); }
+/* "How scoring works" under the leaders line opens both explanations below
+   it (the hero grows; tap again to close). A gold label with a chevron, so
+   it reads as something to tap. */
+.st-how {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 6px 8px;
+  font: 500 11px var(--fm); letter-spacing: .12em; text-transform: uppercase; color: var(--gold2);
+  -webkit-tap-highlight-color: transparent;
+}
+.st-how-chev { width: 6px; height: 6px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease); }
+.st-how[aria-expanded="true"] .st-how-chev { transform: translateY(1px) rotate(225deg); }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
-.st-explain p { display: none; max-width: 34em; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: balance; }
-.st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
+/* The two systems as a pair of the app's own cards, themed: red for the Show,
+   blue for the League. The same language as everywhere else (a .card with a
+   hairline edge, the episode head's mono kicker over a Bungee title, Inter
+   body, and a footer like the task table's total row), elevated with texture
+   and light:
+   - a fine film grain over the card (SVG noise, --grain);
+   - a pool of the theme colour glowing from the top, drifting slowly and
+     shifting as the card moves up the screen (--lx, set in main.js);
+   - the icon in a lit tile with a soft glow, and a glint that flares on it
+     every so often, the two cards out of step.
+   Paused while closed; still under reduced motion. The words are the
+   league's, unchanged, in their order: the title, the rule, the range. The
+   cards share rows (subgrid), so each level lines up across both. */
+.how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(3, auto); gap: 0 10px; max-width: 30rem; margin: 14px auto 4px; text-align: left; }
+.card.how-card {
+  --lx: 0;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position: relative; display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);
+  margin: 0; border-color: var(--hc-edge);
+  background:
+    var(--grain),
+    radial-gradient(90% 60% at calc(35% + var(--lx) * 25%) -6%, var(--hc-glow), transparent 70%),
+    linear-gradient(160deg, var(--hc-deep), var(--s1) 62%);
+  background-size: 140px 140px, 160% 100%, 100% 100%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06);
+  animation: how-drift 14s ease-in-out infinite alternate;
+}
+.card.how-card.show { --hc: #e5484d; --hc-hi: #ff8f86; --hc-glow: rgba(229, 72, 77, .30); --hc-deep: #2a0d10; --hc-edge: rgba(229, 72, 77, .38); }
+.card.how-card.league { --hc: #3e7bfa; --hc-hi: #93b8ff; --hc-glow: rgba(62, 123, 250, .30); --hc-deep: #0c1428; --hc-edge: rgba(90, 140, 250, .38); animation-duration: 17s; animation-delay: -6s; }
+/* The glow drifts across the top: its layer is wider than the card */
+@keyframes how-drift { from { background-position: 0 0, 0% 0, 0 0; } to { background-position: 0 0, 100% 0, 0 0; } }
+.how-head { padding: 14px 12px 0; }
+.how-icon {
+  position: relative; display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 12px; border-radius: 10px;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--hc) 30%, transparent), color-mix(in srgb, var(--hc) 8%, transparent) 70%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hc) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 16px color-mix(in srgb, var(--hc) 22%, transparent);
+}
+.how-ico { width: 22px; height: 22px; fill: none; stroke: var(--hc-hi); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--hc)); }
+.how-glint {
+  position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; opacity: 0;
+  background:
+    radial-gradient(circle, #fff 0 1px, transparent 2.2px),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(0deg, transparent, rgba(255, 255, 255, .9), transparent) center / 1px 100% no-repeat;
+  filter: drop-shadow(0 0 3px var(--hc-hi));
+  animation: how-glint 11s ease-out infinite;
+}
+.league .how-glint { animation-delay: -5.5s; }
+@keyframes how-glint {
+  0%, 86% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  90% { opacity: 1; transform: scale(1) rotate(40deg); }
+  97%, 100% { opacity: 0; transform: scale(.35) rotate(90deg); }
+}
+.how-title { display: block; }
+.how-the { display: block; margin-bottom: 3px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--hc-hi); opacity: .85; }
+.how-name { display: block; font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 6.2vw, 27px); line-height: 1.05; letter-spacing: .01em; text-transform: uppercase; color: var(--t1); text-shadow: 0 0 18px color-mix(in srgb, var(--hc) 45%, transparent); }
+.how-rule { padding: 10px 12px 14px; font-size: 13px; line-height: 1.5; color: var(--t2); text-wrap: pretty; }
+/* The footer, like the task table's total row */
+.how-range {
+  align-self: end; display: flex; flex-direction: column; padding: 9px 12px 10px;
+  border-top: 1px solid var(--hc-edge); background: color-mix(in srgb, var(--hc) 9%, rgba(0, 0, 0, .25));
+}
+.how-range b { font-size: 24px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--hc-hi); text-shadow: 0 0 12px color-mix(in srgb, var(--hc) 55%, transparent); }
+.how-range span { margin-top: 3px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; white-space: nowrap; text-transform: uppercase; color: var(--t3); }
+/* Closed, or reduced motion: nothing moves */
+.st-hero:not(.explain) .how-card, .st-hero:not(.explain) .how-glint { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .card.how-card { animation: none; background-position: 0 0, 50% 0, 0 0; }
+  .how-glint { display: none; }
+}
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
@@ -175,15 +249,22 @@ strong { color: var(--t1); font-weight: 700; }
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
 }
 .st-rank { white-space: nowrap; }
-.st-num { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
+.st-num, .st-name { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
 /* The label is centred over its column; the sort arrow hangs off its left */
 .st-num > span { position: relative; }
-.st-num .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
-.st-num.on { text-decoration: none; }
-.st-num.on .arr { visibility: visible; }
-.st-num.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+.st-num .arr, .st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
+.st-num.on, .st-name.on { text-decoration: none; }
+.st-num.on .arr, .st-name.on .arr { visibility: visible; }
+.st-num.on, .st-name.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+/* Player sorts by name; it's left-aligned, so its arrow follows the label */
+.st-name { justify-content: flex-start; }
+.st-name .arr { position: static; margin: 0 0 0 3px; }
 
-.pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
+/* will-change: each row is its own compositing layer, so on iOS its overflow
+   clips the backdrop's layer (and the blur's bleed) to the row. Without it the
+   bleed showed past the row as a dark glow, except mid-slide, when the row's
+   transform promoted it anyway. */
+.pc { --head: 58px; position: relative; overflow: hidden; will-change: transform; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 .pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
@@ -559,8 +640,8 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 .ed-btn:disabled { opacity: .4; }
 .ed-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ed-actions > span { flex: 1; }
-.ed-pad { padding: 4px 12px 12px; }
-.ed-note { padding: 4px 12px 14px; font-size: 13px; color: var(--t3); }
+.ed-note { font-size: 13px; line-height: 1.4; color: var(--t3); text-align: center; }
+.ed-note.bad { color: #ff8a7a; }
 .ed-msg { font-size: 13px; line-height: 1.4; color: var(--t2); }
 .ed-hint { font-size: 12px; color: var(--t4); }
 
@@ -577,24 +658,31 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 .ed-dialog .ed-msg { min-height: 1.4em; margin: 8px 0 12px; }
 
 /* Inputs are 16px so iOS doesn't zoom in on them */
-.ed-dialog input, .ed-form input, .ed-form select {
+.ed-dialog input, .ed-tt input, .ed-tt select {
   width: 100%; min-width: 0; font: 400 16px var(--ff); color: var(--t1);
   background: var(--s2); border: 1px solid var(--b-dim); border-radius: 6px; padding: 7px 8px;
 }
-.ed-form select { padding-inline: 4px; }
-.ed-form input:focus, .ed-form select:focus, .ed-dialog input:focus { outline: none; border-color: var(--gold2); }
-.ed-form .bad { border-color: #ff8a7a; box-shadow: 0 0 0 1px #ff8a7a; }
-.ed-form { display: grid; gap: 10px; padding: 4px 12px 12px; }
-.ed-field { display: flex; align-items: center; gap: 10px; }
-.ed-field > span, .ed-heads span { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
-.ed-field > span { width: 64px; flex: none; }
-.ed-task { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--b-dim); }
-.ed-line { display: grid; grid-template-columns: 16px 88px minmax(0, 1fr) 28px; gap: 6px; align-items: center; }
-.ed-no { font-family: var(--fm); font-size: 11px; color: var(--t4); text-align: center; }
-.ed-x { height: 32px; border: 0; background: none; color: var(--t3); font-size: 20px; line-height: 1; }
-.ed-scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.ed-scores input { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-.ed-heads span { text-align: center; }
+.ed-tt input:focus, .ed-tt select:focus, .ed-dialog input:focus, .ed-title:focus { outline: none; border-color: var(--gold2); }
+.ed-tt .bad { border-color: #ff8a7a; box-shadow: 0 0 0 1px #ff8a7a; }
+
+/* Episodes, edited in place: the title is an input set like the heading,
+   with a dashed underline; the task table's names and scores are inputs. */
+.ed-title {
+  display: block; width: 100%; padding: 2px 0 3px; color: var(--t1); text-align: center;
+  background: none; border: 0; border-bottom: 1px dashed var(--b-gold); border-radius: 0;
+}
+.ed-title::placeholder { color: var(--t4); }
+.ed-strip { display: grid; justify-items: center; gap: 6px; margin: 12px var(--px) 0; }
+.ed-tt td { padding: 4px 2px; }
+.ed-tt td:first-child { padding-left: 8px; }
+.ed-tt .tn { gap: 4px; }
+.ed-type { flex: none; display: flex; padding: 6px 4px; margin: -6px 0; border: 0; background: none; -webkit-tap-highlight-color: transparent; }
+.ed-tt .ed-tname { padding: 5px 6px; }
+.ed-tt .ed-sc { height: 34px; padding: 0; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ed-tfoot { display: flex; align-items: center; gap: 10px; padding: 10px 12px 6px; }
+.ed-tb { display: flex; align-items: center; gap: 8px; margin-left: auto; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
+.ed-tt .ed-tb select { width: auto; padding: 6px 4px; }
+.ed-tt .ed-hint { padding: 0 12px 12px; }
 
 /* Picks: an opened row offers the five contestants and None */
 .pk-edit { padding: 2px 12px 14px; }
