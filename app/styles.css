@@ -145,11 +145,12 @@ strong { color: var(--t1); font-weight: 700; }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
-.st-explain p { display: none; max-width: 34em; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: balance; }
-/* Two paragraphs, each balanced; the first opens with "Show score:" */
-.st-explain p span { display: block; text-wrap: balance; }
-.st-explain p span + span { margin-top: .6em; }
-.st-explain p b { font-weight: 600; color: var(--t1); }
+/* A label in the app's label style, then two paragraphs on one measure
+   (about 42 characters), each balanced so no line is left short. */
+.st-explain p { display: none; max-width: 21.5rem; margin: 0 auto; padding-top: 12px; font-size: 13px; line-height: 1.5; color: var(--t2); }
+.st-explain p b { display: block; margin-bottom: 5px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold2); }
+.st-explain p span { display: block; text-wrap: balance; hanging-punctuation: first; }
+.st-explain p span + span { margin-top: .5em; }
 .st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
