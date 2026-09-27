@@ -243,7 +243,6 @@ $("#p-standings").addEventListener("click", (e) => {
     // Show and League always sort highest first (tapping the active one does
     // nothing); Player sorts A to Z, and tapping it again reverses.
     const k = s.dataset.sort;
-    popTile(s);
     if (k === "name") state.dir = state.sort === "name" ? -state.dir : 1;
     else if (state.sort === k) return;
     else state.dir = -1;
@@ -358,21 +357,6 @@ function patchRows(before) {
   // really finished (it can start late while new photos decode), so it ends
   // where scrolling would put it.
   followParallax(settled([...rows.children]));
-}
-
-/**
- * A sort tile, chosen: it pops (squash, overshoot, settle), a ring in its
- * colour spreads from it and a glint flares on its corner.
- */
-function popTile(btn) {
-  if (reducedMotion) return;
-  const tile = btn.querySelector(".st-tile");
-  tile?.animate([{ transform: "scale(.86)" }, { transform: "scale(1.12)", offset: 0.35 }, { transform: "scale(.97)", offset: 0.7 }, { transform: "scale(1)" }],
-    { duration: 520, easing: "ease-out" });
-  btn.querySelector(".st-ring")?.animate([{ opacity: 0.9, transform: "scale(1)" }, { opacity: 0, transform: "scale(1.5)" }],
-    { duration: 650, easing: "cubic-bezier(.22, 1, .36, 1)" });
-  btn.querySelector(".st-glint")?.animate([{ opacity: 0, transform: "scale(.2) rotate(0deg)" }, { opacity: 1, transform: "scale(1.15) rotate(45deg)", offset: 0.35 }, { opacity: 0, transform: "scale(.35) rotate(90deg)" }],
-    { duration: 700, easing: "ease-out" });
 }
 
 /** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
