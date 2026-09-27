@@ -42,15 +42,15 @@ const HOW_ICONS = {
 /** The crown or trophy, small, for the table's Show and League heads. */
 const stIcon = (k) => `<svg class="st-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[k]}"/></svg>`;
 const TERMS = [
-  { icon: "crown", name: "Show", rule: "The player with the most points at the end of the series wins, regardless of episode placements.", range: "0–25", unit: "pts per episode" },
-  { icon: "trophy", name: "League", rule: "The player with the best episode placements throughout the series wins, regardless of points.", range: "1–5", unit: "pts per episode" },
+  { icon: "crown", name: "Show", rule: ["The player with the ", "most points", " at the end of the series wins, regardless of episode placements."], range: "0–25", unit: "pts per episode" },
+  { icon: "trophy", name: "League", rule: ["The player with the ", "best episode placements", " throughout the series wins, regardless of points."], range: "1–5", unit: "pts per episode" },
 ];
 const howCard = (t) => `<div class="card how-card ${t.name.toLowerCase()}">
     <div class="how-head">
       <span class="how-icon" aria-hidden="true"><svg class="how-ico" viewBox="0 0 16 16"><path d="${HOW_ICONS[t.icon]}"/></svg><i class="how-glint"></i></span>
       <h3 class="how-title"><span class="how-the">The</span><span class="how-name">${esc(t.name)}</span></h3>
     </div>
-    <p class="how-rule">${esc(t.rule)}</p>
+    <p class="how-rule">${esc(t.rule[0])}<strong>${esc(t.rule[1])}</strong>${esc(t.rule[2])}</p>
     <p class="how-range"><b>${esc(t.range)}</b><span>${esc(t.unit)}</span></p>
   </div>`;
 
@@ -89,8 +89,8 @@ export function standingsHead(d) {
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
     <div class="card board" data-board="${state.sort}">
       <div class="st-head">
-        <span class="st-rank">Rank</span>
-        <button class="st-name" data-sort="name"><span>Player<i class="arr"></i></span></button>
+        <span class="st-rank" title="Rank">#</span>
+        <button class="st-name" data-sort="name"><span>Player<i class="arr" aria-hidden="true"></i></span></button>
         <button class="st-num" data-sort="show"><span>${stIcon("crown")}Show</span></button>
         <button class="st-num" data-sort="league"><span>${stIcon("trophy")}League</span></button>
         <span></span>
