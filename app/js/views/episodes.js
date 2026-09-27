@@ -5,7 +5,7 @@
 import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
-import { scoresCard, titleCard } from "../edit.js";
+import { edTitle, edStrip, edTable } from "../edit.js";
 
 /** The cast in seat order; the CSV's order if the stats aren't loaded. */
 function seated(d) {
@@ -36,14 +36,14 @@ function slide(d, e) {
   const head = (line) => `
     <div class="ep-head">
       <div class="kicker">Episode ${e.ep} · ${esc(fmtDay.format(e.air))}</div>
-      <h2 class="ep-title">${esc(e.title || `Episode ${e.ep}`)}</h2>
+      ${state.edit ? edTitle(e) : `<h2 class="ep-title">${esc(e.title || `Episode ${e.ep}`)}</h2>`}
       <div class="ep-sub">${line}</div>
-    </div>`;
-  // Edit mode: an aired episode starts with a card for its scores, a later one with a card for its title.
-  const ed = !state.edit ? "" : e.ep <= Math.max(d.weeksAired, d.weeksScored) ? scoresCard(d, e, seated(d)) : titleCard(d, e);
+    </div>${state.edit ? edStrip(d, e) : ""}`;
   if (e.ep > d.weeksScored) {
     const line = e.ep <= d.weeksAired ? "Aired · results coming soon" : d.nextEp?.ep === e.ep ? "Up next · poll open" : "Awaiting broadcast";
-    return head(line) + `<div class="ep-body">${ed}${upcoming(d, e)}</div>`;
+    // Edit mode: an aired episode's scores are entered in an editable task table.
+    const body = state.edit && e.ep <= d.weeksAired ? edTable(d, e, seated(d)) : upcoming(d, e);
+    return head(line) + `<div class="ep-body">${body}</div>`;
   }
 
   const w = d.winners[e.ep], wk = d.weekly[e.ep], pts = (n) => d.EPS[n][e.ep];
@@ -81,7 +81,7 @@ function slide(d, e) {
       <tr class="tot"><td>Total</td>${order.map((n) => `<td class="${n === w.winner ? "best" : ""}">${pts(n)}</td>`).join("")}</tr></tbody>
     </table></div>`;
 
-  return head(line) + `<div class="ep-body">${ed}<div class="pod">${pod}</div>${table}${raceChart(d, e.ep)}</div>`;
+  return head(line) + `<div class="ep-body"><div class="pod">${pod}</div>${state.edit ? edTable(d, e, order) : table}${raceChart(d, e.ep)}</div>`;
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────

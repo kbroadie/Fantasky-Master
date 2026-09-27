@@ -12,7 +12,7 @@
 // onto the copy the page loaded (so the page updates), then, on Save, onto a
 // fresh copy from GitHub (so nobody else's edits are overwritten). The file is
 // checked with the same rules CI runs (checks.js) before it's sent.
-import { $, esc, framed, state } from "./ui.js";
+import { $, esc, framed, icon, TASK_NAME, state } from "./ui.js";
 import { parseRows, toCSV, parseCSV } from "./csv.js";
 import { checkData } from "./checks.js";
 
@@ -20,10 +20,9 @@ const REPO = "kbroadie/Fantasky-Master", BRANCH = "main", PATH = "data/fantasky_
 const FILE_API = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
 const KEY = "fm-gh-key";
 const PREFIX = { P: "Prize: ", T: "Team: ", L: "Live: ", F: "" };
-const TYPES = { P: "Prize", F: "Filmed", T: "Team", L: "Live" };
 
 let base = "", ops = [], onData = () => {};
-const drafts = {}; // open score grids, by "series/ep"
+const drafts = {}; // tables being typed in (Episodes), by "series/ep"
 
 const store = {
   get: () => { try { return localStorage.getItem(KEY) || ""; } catch { return ""; } },
@@ -130,7 +129,7 @@ function message() {
 }
 
 async function save() {
-  if (!ops.length) return;
+  if (!commitAll() || !ops.length) return; // a table still being typed in is applied first
   status("Saving…", "busy");
   try {
     for (let attempt = 0; ; attempt++) {
@@ -251,9 +250,11 @@ function start() {
 }
 
 function stop() {
-  if (ops.length && !confirm(`Discard ${ops.length} unsaved change${ops.length > 1 ? "s" : ""}?`)) return;
+  const n = ops.length + dirtyCount();
+  if (n && !confirm(`Discard ${n} unsaved change${n > 1 ? "s" : ""}?`)) return;
   ops = [];
   for (const k of Object.keys(drafts)) delete drafts[k];
+  for (const k of Object.keys(notes)) delete notes[k];
   state.edit = false;
   document.body.classList.remove("editing");
   onData(base);
@@ -262,7 +263,7 @@ function stop() {
 function status(text, kind = "") {
   const el = $("#ed-status");
   if (!el) return;
-  const n = ops.length;
+  const n = ops.length + dirtyCount();
   el.textContent = text || (n ? `${n} unsaved change${n > 1 ? "s" : ""}` : "Edit mode · all saved");
   el.className = `ed-status ${kind}`;
   $('#ed-bar [data-ed="save"]').disabled = !n || kind === "busy";
@@ -280,148 +281,159 @@ export function pickChooser(d, p, w) {
   </div>`;
 }
 
-// ── Scores (Episodes) ───────────────────────────────────────────────────────
+// ── Episodes: edited in place ───────────────────────────────────────────────
+// In edit mode the episode page itself is the form: the title is an input set
+// like the heading, and the task table's names and scores are inputs (a task's
+// type icon cycles Prize → Filmed → Team → Live). What's typed is kept in a
+// draft and applied when you leave the table, so moving between boxes never
+// redraws the page under the keyboard; Save applies any draft first. A
+// "Get from the wiki" button under the title fills in the scores (or, before
+// an episode airs, its title).
 
 const draftKey = (ep) => `${state.key}/${ep}`;
+const notes = {}; // the wiki button's last message, by "series/ep"
+const TYPE_ORDER = ["P", "F", "T", "L"];
 
-/** In edit mode, each aired episode starts with a card to enter its scores. */
-export function scoresCard(d, e, order) {
-  const dr = drafts[draftKey(e.ep)];
-  const pending = ops.some((o) => o.kind === "scores" && o.s === state.key && o.ep === e.ep);
-  const head = (right) => `<div class="card-head"><span>Scores</span><span class="legend">${right}</span></div>`;
-  if (!dr) {
-    return `<div class="card ed-card" data-ep="${e.ep}" data-order="${esc(order.join("|"))}">${head(pending ? "changed, not saved yet" : e.ep <= d.weeksScored ? "entered" : "not entered yet")}
-      <div class="ed-actions ed-pad">
-        <button type="button" class="ed-btn gold" data-ed="wiki">Get from the wiki</button>
-        <button type="button" class="ed-btn" data-ed="hand">${e.ep <= d.weeksScored ? "Edit" : "Enter by hand"}</button>
-      </div></div>`;
-  }
-  if (dr.loading) return `<div class="card ed-card" data-ep="${e.ep}" data-order="${esc(order.join("|"))}">${head("Taskmaster Wiki")}<p class="ed-note">Asking the wiki…</p></div>`;
-  const opt = (v, label, on) => `<option value="${esc(v)}"${on ? " selected" : ""}>${esc(label)}</option>`;
-  const heads = `<div class="ed-scores ed-heads">${order.map((n) => `<span style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</span>`).join("")}</div>`;
-  const tasks = dr.tasks.map((t, i) => `
-    <div class="ed-task" data-i="${i}">
-      <div class="ed-line">
-        <span class="ed-no">${i + 1}</span>
-        <select data-f="t" aria-label="Task ${i + 1} type">${Object.entries(TYPES).map(([k, v]) => opt(k, v, t.t === k)).join("")}</select>
-        <input data-f="name" value="${esc(t.name)}" aria-label="Task ${i + 1} name" placeholder="Task name">
-        <button type="button" class="ed-x" data-ed="del" aria-label="Remove task ${i + 1}">×</button>
-      </div>
-      <div class="ed-scores">${order.map((n) => `<input data-f="s" data-who="${esc(n)}" value="${esc(t.scores[n] ?? "")}" maxlength="2" autocapitalize="characters" autocomplete="off" aria-label="${esc(n)}, task ${i + 1}">`).join("")}</div>
-    </div>`).join("");
-  return `<div class="card ed-card open" data-ep="${e.ep}" data-order="${esc(order.join("|"))}">${head(dr.src ? "from the Taskmaster Wiki" : "by hand")}
-    <div class="ed-form">
-      ${dr.error ? `<p class="ed-msg bad">${esc(dr.error)}</p>` : ""}
-      ${dr.warnings?.length ? dr.warnings.map((w) => `<p class="ed-msg">${esc(w)}</p>`).join("") : ""}
-      <label class="ed-field"><span>Title</span><input data-f="title" value="${esc(dr.title)}" placeholder="Episode ${e.ep}"></label>
-      ${heads}${tasks}
-      <div class="ed-actions"><button type="button" class="ed-btn" data-ed="add">+ Task</button><span></span><button type="button" class="ed-btn" data-ed="wiki">Get from the wiki</button></div>
-      <label class="ed-field"><span>Tiebreak</span><select data-f="tb">${opt("", "None", !dr.tb)}${order.map((n) => opt(n, n, dr.tb === n)).join("")}</select></label>
-      <p class="ed-hint">Scores are whole numbers, or DQ for a disqualification.</p>
-      <div class="ed-actions">
-        <span></span>
-        <button type="button" class="ed-btn" data-ed="cancel">Cancel</button>
-        <button type="button" class="ed-btn gold" data-ed="use">Use these</button>
-      </div>
-    </div></div>`;
-}
-
-/** The episode's scores as they are now, for the grid. */
+/** The episode's scores as they are now, as a draft. */
 function current(d, ep) {
   const e = d.episodes[ep - 1];
   return {
-    title: e.title || "", tb: e.tb || "",
+    tb: e.tb || "",
     tasks: d.epTasks(ep).map((t) => ({ t: t.t, name: t.n, scores: Object.fromEntries(d.names.map((n, i) => [n, t.dq?.[i] ? "DQ" : t.s[i]])) })),
   };
 }
+const blankTask = (d) => ({ t: "F", name: "", scores: Object.fromEntries(d.names.map((n) => [n, ""])) });
+/** The draft, made on first use from the data (five blank tasks for an episode with no scores yet). */
+function draftFor(d, ep) {
+  const k = draftKey(ep);
+  if (!drafts[k]) {
+    drafts[k] = current(d, ep);
+    if (!drafts[k].tasks.length) drafts[k].tasks = Array.from({ length: 5 }, () => blankTask(d));
+  }
+  return drafts[k];
+}
+const dirtyCount = () => Object.values(drafts).filter((x) => x.dirty).length;
 
-/** Read the grid back into its draft (so a re-render keeps what was typed). */
-function readGrid(card) {
-  const dr = drafts[draftKey(+card.dataset.ep)];
-  if (!dr?.tasks) return dr;
-  dr.title = card.querySelector('[data-f="title"]')?.value.trim() ?? dr.title;
-  dr.tb = card.querySelector('[data-f="tb"]')?.value ?? dr.tb;
-  card.querySelectorAll(".ed-task").forEach((el) => {
-    const t = dr.tasks[+el.dataset.i];
-    t.t = el.querySelector('[data-f="t"]').value;
-    t.name = el.querySelector('[data-f="name"]').value.trim();
-    for (const inp of el.querySelectorAll('[data-f="s"]')) t.scores[inp.dataset.who] = inp.value.trim().toUpperCase();
+/** The title, as an input set like the heading. */
+export function edTitle(e) {
+  return `<input class="ep-title ed-title" data-f="title" data-ep="${e.ep}" data-fk="t${e.ep}" value="${esc(e.title || "")}" placeholder="Episode ${e.ep}" aria-label="Episode ${e.ep} title" enterkeyhint="done" autocomplete="off">`;
+}
+
+/** Under the title: fill in from the wiki. */
+export function edStrip(d, e) {
+  const aired = e.ep <= Math.max(d.weeksAired, d.weeksScored), note = notes[draftKey(e.ep)];
+  return `<div class="ed-strip" data-ep="${e.ep}">
+    <button type="button" class="ed-btn" data-ed="wiki">${aired ? "Get scores from the wiki" : "Get title from the wiki"}</button>
+    ${note ? `<p class="ed-note${note.bad ? " bad" : ""}">${esc(note.text)}</p>` : ""}
+  </div>`;
+}
+
+/** The task table with inputs, for an aired episode. */
+export function edTable(d, e, order) {
+  const dr = drafts[draftKey(e.ep)] || (e.ep <= d.weeksScored ? current(d, e.ep) : draftFor(d, e.ep));
+  const num = (v) => (/^\d+$/.test(String(v).trim()) ? +v : 0);
+  const rows = dr.tasks.map((t, i) => `<tr data-i="${i}">
+      <td><span class="tn"><button type="button" class="ed-type" data-ed="type" aria-label="${TASK_NAME[t.t]} task: tap to change">${icon(t.t)}</button><input class="ed-tname" data-f="name" data-fk="n${e.ep}-${i}" value="${esc(t.name)}" placeholder="Task name" aria-label="Task ${i + 1} name" autocomplete="off"></span></td>
+      ${order.map((n) => `<td class="sc"><input class="ed-sc" data-f="s" data-who="${esc(n)}" data-fk="c${e.ep}-${i}-${esc(n)}" value="${esc(t.scores[n] ?? "")}" maxlength="2" autocapitalize="characters" autocomplete="off" aria-label="${esc(n)}, task ${i + 1}"></td>`).join("")}
+    </tr>`).join("");
+  const tot = order.map((n) => `<td data-tot="${esc(n)}">${dr.tasks.reduce((a, t) => a + num(t.scores[n] ?? ""), 0)}</td>`).join("");
+  const opt = (v, label) => `<option value="${esc(v)}"${dr.tb === v ? " selected" : ""}>${esc(label)}</option>`;
+  return `
+    <div class="card tt-wrap ed-tt" data-ep="${e.ep}" data-order="${esc(order.join("|"))}">
+      <table class="tt">
+        <thead><tr><th>Task</th>${order.map((n) => `<th style="color:${d.cast[n].color}">${esc(n.slice(0, 3))}</th>`).join("")}</tr></thead>
+        <tbody>${rows}<tr class="tot"><td>Total</td>${tot}</tr></tbody>
+      </table>
+      <div class="ed-tfoot">
+        <button type="button" class="ed-btn" data-ed="add">+ Task</button>
+        <label class="ed-tb"><span>Tiebreak</span><select data-f="tb" data-fk="b${e.ep}">${opt("", "None")}${order.map((n) => opt(n, n)).join("")}</select></label>
+      </div>
+      <p class="ed-hint">Scores are whole numbers, or DQ for a disqualification. Clear a task's name and scores to remove it.</p>
+    </div>`;
+}
+
+/** Read the table into its draft and update the totals, without redrawing. */
+function readTable(card) {
+  const d = state.d, ep = +card.dataset.ep, dr = draftFor(d, ep);
+  card.querySelectorAll("tbody tr[data-i]").forEach((tr) => {
+    const t = dr.tasks[+tr.dataset.i];
+    t.name = tr.querySelector('[data-f="name"]').value;
+    for (const inp of tr.querySelectorAll('[data-f="s"]')) t.scores[inp.dataset.who] = inp.value.trim().toUpperCase();
   });
+  dr.tb = card.querySelector('[data-f="tb"]').value;
+  dr.dirty = true;
+  for (const td of card.querySelectorAll("[data-tot]")) {
+    td.textContent = dr.tasks.reduce((a, t) => a + (/^\d+$/.test(t.scores[td.dataset.tot] ?? "") ? +t.scores[td.dataset.tot] : 0), 0);
+  }
+  status();
   return dr;
 }
 
-async function fromWiki(card, d, ep, redraw) {
-  const k = draftKey(ep), was = drafts[k]?.tasks ? readGrid(card) : null;
-  drafts[k] = { loading: true };
-  redraw();
-  try {
-    const { fetchEpisode } = await import("./wiki.js");
-    const cast = d.names.map((n) => ({ key: n, full: d.cast[n].full }));
-    const w = await fetchEpisode(state.key, ep, cast);
-    const now = current(d, ep);
-    drafts[k] = {
-      src: w.page, warnings: w.warnings,
-      title: now.title && !/^Episode \d+$/.test(now.title) ? now.title : w.title,
-      tb: w.tiebreak,
-      tasks: w.tasks.map((t, i) => {
-        // Keep the names already in the data file, and its DQs (the wiki often shows a DQ as 0).
-        const had = now.tasks[i];
-        const scores = Object.fromEntries(d.names.map((n, j) => [n, t.scores[j] === 0 && had?.scores[n] === "DQ" ? "DQ" : t.scores[j] ?? ""]));
-        return { t: t.t, name: had && had.t === t.t ? had.name : t.name, scores };
-      }),
-    };
-  } catch (e) {
-    drafts[k] = was ? { ...was, error: e.message } : { ...current(d, ep), error: `${e.message}. You can enter them by hand.` };
-  }
-  redraw();
-}
-
-function useGrid(card, d, ep) {
-  const dr = readGrid(card);
+/**
+ * Apply a table's draft as a change (the page redraws with it). Empty tasks
+ * are dropped; if a task has no name or a score isn't 0–10 or DQ, the boxes
+ * are marked and nothing is applied. Returns false then.
+ */
+function commit(ep) {
+  const k = draftKey(ep), dr = drafts[k], d = state.d;
+  if (!dr?.dirty) return true;
+  const card = $(`#ep-body .ed-tt[data-ep="${ep}"]`);
+  card?.querySelectorAll(".bad").forEach((x) => x.classList.remove("bad"));
+  const filled = (t) => t.name.trim() || d.names.some((n) => String(t.scores[n] ?? "").trim());
+  const ok = (v) => /^(\d{1,2}|DQ)$/i.test(String(v ?? "").trim()) && !(+v > 10);
   let bad = 0;
-  card.querySelectorAll(".bad").forEach((x) => x.classList.remove("bad"));
-  card.querySelectorAll(".ed-task").forEach((el) => {
-    const name = el.querySelector('[data-f="name"]');
-    if (!name.value.trim()) { name.classList.add("bad"); bad++; }
-    for (const inp of el.querySelectorAll('[data-f="s"]')) if (!/^(\d{1,2}|DQ)$/i.test(inp.value.trim()) || +inp.value > 10) { inp.classList.add("bad"); bad++; }
+  dr.tasks.forEach((t, i) => {
+    if (!filled(t)) return;
+    const tr = card?.querySelector(`tr[data-i="${i}"]`);
+    if (!t.name.trim()) { tr?.querySelector('[data-f="name"]').classList.add("bad"); bad++; }
+    for (const n of d.names) if (!ok(t.scores[n])) { tr?.querySelector(`[data-who="${CSS.escape(n)}"]`)?.classList.add("bad"); bad++; }
   });
-  if (!dr.tasks.length) bad++;
-  if (bad) { dr.error = dr.tasks.length ? "Fill in the marked boxes: every score is 0–10 or DQ." : "Add at least one task."; return false; }
+  if (bad) { status("Fix the marked boxes: every task needs a name, and every score is 0–10 or DQ.", "bad"); return false; }
+  const tasks = dr.tasks.filter(filled);
+  delete drafts[k];
+  if (!tasks.length && !d.epTasks(ep).length) { status(); return true; } // nothing entered
   addOp({
-    kind: "scores", s: state.key, ep, cast: d.names, tb: dr.tb, title: dr.title, src: dr.src ? "Taskmaster Wiki" : "",
-    tasks: dr.tasks.map((t) => ({ t: t.t, name: t.name, scores: d.names.map((n) => t.scores[n]) })),
+    kind: "scores", s: state.key, ep, cast: d.names, tb: dr.tb, src: dr.src || "",
+    tasks: tasks.map((t) => ({ t: t.t, name: t.name.trim(), scores: d.names.map((n) => String(t.scores[n]).trim().toUpperCase()) })),
   });
-  delete drafts[draftKey(ep)];
   return true;
 }
+const commitAll = () => Object.keys(drafts).filter((k) => drafts[k].dirty && k.startsWith(`${state.key}/`)).every((k) => commit(+k.split("/")[1]));
 
-// ── Titles (Episodes, before an episode airs) ───────────────────────────────
-
-/** In edit mode, an episode that hasn't aired starts with a card for its title. */
-export function titleCard(d, e) {
-  const pending = ops.some((o) => o.kind === "title" && o.s === state.key && o.ep === e.ep);
-  return `<div class="card ed-card ed-tcard" data-ep="${e.ep}">
-    <div class="card-head"><span>Title</span><span class="legend">${pending ? "changed, not saved yet" : e.title ? "entered" : "not entered yet"}</span></div>
-    <div class="ed-form">
-      <input data-f="title" value="${esc(e.title || "")}" placeholder="Episode ${e.ep}" aria-label="Episode ${e.ep} title">
-      <p class="ed-msg" hidden></p>
-      <div class="ed-actions"><button type="button" class="ed-btn" data-ed="title-wiki">Get from the wiki</button><span></span><button type="button" class="ed-btn gold" data-ed="title-use">Use</button></div>
-    </div></div>`;
+function setTitle(ep, value) {
+  const title = value.trim() || `Episode ${ep}`;
+  if (title === (state.d.episodes[ep - 1].title || `Episode ${ep}`)) return;
+  addOp({ kind: "title", s: state.key, ep, title });
 }
 
-async function titleAction(card, ep, what) {
-  const inp = card.querySelector('[data-f="title"]'), msg = card.querySelector(".ed-msg");
-  const say = (t, bad = false) => { msg.hidden = !t; msg.textContent = t; msg.classList.toggle("bad", bad); };
-  if (what === "title-use") {
-    const title = inp.value.trim() || `Episode ${ep}`;
-    if (title === (state.d.episodes[ep - 1].title || `Episode ${ep}`)) return say("That's already the title.");
-    return addOp({ kind: "title", s: state.key, ep, title }); // the page redraws with it
-  }
+async function fromWiki(ep) {
+  const d = state.d, k = draftKey(ep), aired = ep <= Math.max(d.weeksAired, d.weeksScored);
+  const say = (text, bad = false) => { notes[k] = text ? { text, bad } : null; const el = $(`#ep-body .ed-strip[data-ep="${ep}"]`); if (el) el.outerHTML = edStrip(d, d.episodes[ep - 1]); };
   say("Asking the wiki…");
   try {
-    const { fetchTitle } = await import("./wiki.js");
-    inp.value = await fetchTitle(state.key, ep);
-    say("From the wiki. Tap Use to keep it.");
+    const wiki = await import("./wiki.js");
+    if (!aired) {
+      const title = await wiki.fetchTitle(state.key, ep);
+      say(`Title from the wiki: ${title}`);
+      return setTitle(ep, title);
+    }
+    const w = await wiki.fetchEpisode(state.key, ep, d.names.map((n) => ({ key: n, full: d.cast[n].full })));
+    const now = current(d, ep);
+    // Keep the names already in the data file, and its DQs (the wiki often shows a DQ as 0).
+    drafts[k] = {
+      src: "Taskmaster Wiki", tb: w.tiebreak, dirty: true,
+      tasks: w.tasks.map((t, i) => {
+        const had = now.tasks[i];
+        return { t: t.t, name: had && had.t === t.t ? had.name : t.name,
+          scores: Object.fromEntries(d.names.map((n, j) => [n, t.scores[j] === 0 && had?.scores[n] === "DQ" ? "DQ" : t.scores[j] ?? ""])) };
+      }),
+    };
+    say(["Scores from the wiki. Check them and mark any DQs.", ...w.warnings].join(" "));
+    const cur = d.episodes[ep - 1].title;
+    if (!cur || /^Episode \d+$/.test(cur)) setTitle(ep, w.title);
+    const card = $(`#ep-body .ed-tt[data-ep="${ep}"]`);
+    if (card) card.outerHTML = edTable(d, d.episodes[ep - 1], card.dataset.order.split("|"));
+    commit(ep);
   } catch (err) { say(err.message, true); }
 }
 
@@ -445,38 +457,38 @@ export function initEdit(text, onChange) {
     addOp({ kind: "pick", s: state.key, ep: +box.dataset.week, player: box.dataset.player, c: b.dataset.pick || null });
   });
 
-  // Episodes: the scores card, or the title card before an episode airs.
+  // Episodes: edited in place.
   const eps = $("#ep-body");
-  eps.addEventListener("input", (e) => { const card = e.target.closest(".ed-card.open"); if (card) readGrid(card); });
+  eps.addEventListener("input", (e) => { const card = e.target.closest(".ed-tt"); if (card && state.edit) readTable(card); });
+  // Leaving the table applies it (after focus has moved, so the page can put it back).
+  eps.addEventListener("focusout", (e) => {
+    const card = e.target.closest(".ed-tt");
+    if (!card || !state.edit) return;
+    setTimeout(() => { if (!card.isConnected || !card.contains(document.activeElement)) commit(+card.dataset.ep); });
+  });
+  eps.addEventListener("change", (e) => {
+    if (!state.edit) return;
+    if (e.target.matches(".ed-title")) setTitle(+e.target.dataset.ep, e.target.value);
+    if (e.target.matches('.ed-tt [data-f="tb"]')) { readTable(e.target.closest(".ed-tt")); commit(+e.target.closest(".ed-tt").dataset.ep); }
+  });
+  eps.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches(".ed-title")) e.target.blur(); });
   eps.addEventListener("click", (e) => {
-    const b = e.target.closest(".ed-card [data-ed]");
+    const b = e.target.closest("[data-ed]");
     if (!b || !state.edit) return;
-    const card = b.closest(".ed-card"), ep = +card.dataset.ep, k = draftKey(ep), d = state.d;
-    const redraw = () => {
-      const el = eps.querySelector(`.ed-card[data-ep="${ep}"]`);
-      if (el) el.outerHTML = scoresCard(d, d.episodes[ep - 1], el.dataset.order.split("|"));
-    };
-    const what = b.dataset.ed;
-    if (what.startsWith("title-")) return titleAction(card, ep, what);
-    if (what === "wiki") return fromWiki(card, d, ep, redraw);
-    if (what === "hand") { drafts[k] = current(d, ep); if (!drafts[k].tasks.length) drafts[k].tasks = [blankTask(d)]; }
-    if (what === "cancel") delete drafts[k];
-    if (what === "add") readGrid(card).tasks.push(blankTask(d));
-    if (what === "del") readGrid(card).tasks.splice(+b.closest(".ed-task").dataset.i, 1);
-    if (what === "use") {
-      // Invalid boxes are outlined in place; a redraw would lose that.
-      if (!useGrid(card, d, ep)) {
-        const form = card.querySelector(".ed-form");
-        let msg = form.querySelector(".ed-msg.bad");
-        if (!msg) form.insertAdjacentHTML("afterbegin", `<p class="ed-msg bad"></p>`), msg = form.querySelector(".ed-msg.bad");
-        msg.textContent = drafts[k].error;
-        delete drafts[k].error;
-        card.querySelector(".bad:not(.ed-msg)")?.focus();
-      }
+    const ep = +b.closest("[data-ep]").dataset.ep, d = state.d;
+    if (b.dataset.ed === "wiki") return fromWiki(ep);
+    const card = b.closest(".ed-tt"), dr = readTable(card);
+    if (b.dataset.ed === "type") {
+      const t = dr.tasks[+b.closest("tr").dataset.i];
+      t.t = TYPE_ORDER[(TYPE_ORDER.indexOf(t.t) + 1) % 4];
+      b.innerHTML = icon(t.t);
+      b.setAttribute("aria-label", `${TASK_NAME[t.t]} task: tap to change`);
       return;
     }
-    redraw();
+    if (b.dataset.ed === "add") {
+      dr.tasks.push(blankTask(d));
+      card.outerHTML = edTable(d, d.episodes[ep - 1], card.dataset.order.split("|"));
+      $(`#ep-body [data-fk="n${ep}-${dr.tasks.length - 1}"]`)?.focus();
+    }
   });
 }
-
-const blankTask = (d) => ({ t: "F", name: "", scores: Object.fromEntries(d.names.map((n) => [n, ""])) });

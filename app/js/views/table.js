@@ -33,8 +33,8 @@ function leaders(rows, key) {
 
 /** Tap "Show" or "League" in the leaders line to open a line explaining it. */
 const TERMS = {
-  show: "Show points are the points your pick scores in each episode. They add up over the series. A big win earns you more, so it pays to back whoever is scoring well.",
-  league: "League points go by where your pick finishes in each episode. First place earns 5 and last place earns 1. They add up over the series. Every episode is worth the same, so one bad week won't sink you.",
+  show: ["The player with the most task points at the end of the series wins, regardless of episode placements.", "The broad scoring range (0–25 pts per episode) rewards blowouts."],
+  league: ["The player with the highest average episode placement wins, regardless of points.", "The narrow scoring range (1–5 pts per episode) rewards consistency."],
 };
 const term = (key, label) => `<button class="st-term" data-term="${key}" aria-expanded="false">${label}</button>`;
 
@@ -56,7 +56,7 @@ export function standingsHero(d) {
   const w = stWeek(d);
   if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>`;
   return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>
-    <div class="st-explain"><div>${Object.entries(TERMS).map(([k, t]) => `<p data-for="${k}">${t}</p>`).join("")}</div></div>`;
+    <div class="st-explain"><div>${Object.entries(TERMS).map(([k, t]) => `<p data-for="${k}">${t.map((l) => `<span>${esc(l)}</span>`).join("")}</p>`).join("")}</div></div>`;
 }
 
 /** Series with a group photo show the week's pick as each row's backdrop. */

@@ -68,6 +68,8 @@ function renderSlides(d) {
  * and Cast slides are rebuilt on the same slide.
  */
 function refresh(text) {
+  // Edit mode may redraw while a box has focus: put focus back on its new copy.
+  const fk = document.activeElement?.dataset?.fk;
   SERIES = buildSeries(parseCSV(text));
   const d = state.d = derive(SERIES[state.key], new Date());
   patchRows(() => {
@@ -79,6 +81,7 @@ function refresh(text) {
   renderSlides(d);
   for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get());
   else mark(sw, sw.get(), false);
+  if (fk) $(`[data-fk="${CSS.escape(fk)}"]`)?.focus({ preventScroll: true });
 }
 
 function renderRows() {

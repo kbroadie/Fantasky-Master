@@ -146,6 +146,7 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
 .st-explain p { display: none; max-width: 34em; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: balance; }
+.st-explain p span { display: block; text-wrap: balance; } /* each sentence on its own lines, balanced */
 .st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
@@ -566,8 +567,8 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 .ed-btn:disabled { opacity: .4; }
 .ed-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .ed-actions > span { flex: 1; }
-.ed-pad { padding: 4px 12px 12px; }
-.ed-note { padding: 4px 12px 14px; font-size: 13px; color: var(--t3); }
+.ed-note { font-size: 13px; line-height: 1.4; color: var(--t3); text-align: center; }
+.ed-note.bad { color: #ff8a7a; }
 .ed-msg { font-size: 13px; line-height: 1.4; color: var(--t2); }
 .ed-hint { font-size: 12px; color: var(--t4); }
 
@@ -584,24 +585,31 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 .ed-dialog .ed-msg { min-height: 1.4em; margin: 8px 0 12px; }
 
 /* Inputs are 16px so iOS doesn't zoom in on them */
-.ed-dialog input, .ed-form input, .ed-form select {
+.ed-dialog input, .ed-tt input, .ed-tt select {
   width: 100%; min-width: 0; font: 400 16px var(--ff); color: var(--t1);
   background: var(--s2); border: 1px solid var(--b-dim); border-radius: 6px; padding: 7px 8px;
 }
-.ed-form select { padding-inline: 4px; }
-.ed-form input:focus, .ed-form select:focus, .ed-dialog input:focus { outline: none; border-color: var(--gold2); }
-.ed-form .bad { border-color: #ff8a7a; box-shadow: 0 0 0 1px #ff8a7a; }
-.ed-form { display: grid; gap: 10px; padding: 4px 12px 12px; }
-.ed-field { display: flex; align-items: center; gap: 10px; }
-.ed-field > span, .ed-heads span { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
-.ed-field > span { width: 64px; flex: none; }
-.ed-task { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--b-dim); }
-.ed-line { display: grid; grid-template-columns: 16px 88px minmax(0, 1fr) 28px; gap: 6px; align-items: center; }
-.ed-no { font-family: var(--fm); font-size: 11px; color: var(--t4); text-align: center; }
-.ed-x { height: 32px; border: 0; background: none; color: var(--t3); font-size: 20px; line-height: 1; }
-.ed-scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
-.ed-scores input { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
-.ed-heads span { text-align: center; }
+.ed-tt input:focus, .ed-tt select:focus, .ed-dialog input:focus, .ed-title:focus { outline: none; border-color: var(--gold2); }
+.ed-tt .bad { border-color: #ff8a7a; box-shadow: 0 0 0 1px #ff8a7a; }
+
+/* Episodes, edited in place: the title is an input set like the heading,
+   with a dashed underline; the task table's names and scores are inputs. */
+.ed-title {
+  display: block; width: 100%; padding: 2px 0 3px; color: var(--t1); text-align: center;
+  background: none; border: 0; border-bottom: 1px dashed var(--b-gold); border-radius: 0;
+}
+.ed-title::placeholder { color: var(--t4); }
+.ed-strip { display: grid; justify-items: center; gap: 6px; margin: 12px var(--px) 0; }
+.ed-tt td { padding: 4px 2px; }
+.ed-tt td:first-child { padding-left: 8px; }
+.ed-tt .tn { gap: 4px; }
+.ed-type { flex: none; display: flex; padding: 6px 4px; margin: -6px 0; border: 0; background: none; -webkit-tap-highlight-color: transparent; }
+.ed-tt .ed-tname { padding: 5px 6px; }
+.ed-tt .ed-sc { height: 34px; padding: 0; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ed-tfoot { display: flex; align-items: center; gap: 10px; padding: 10px 12px 6px; }
+.ed-tb { display: flex; align-items: center; gap: 8px; margin-left: auto; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
+.ed-tt .ed-tb select { width: auto; padding: 6px 4px; }
+.ed-tt .ed-hint { padding: 0 12px 12px; }
 
 /* Picks: an opened row offers the five contestants and None */
 .pk-edit { padding: 2px 12px 14px; }
