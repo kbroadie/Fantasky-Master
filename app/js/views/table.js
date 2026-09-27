@@ -89,8 +89,8 @@ export function standingsHead(d) {
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
     <div class="card board" data-board="${state.sort}">
       <div class="st-head">
-        <span class="st-rank">Rank</span>
-        <button class="st-name" data-sort="name"><span>Player<i class="arr"></i></span></button>
+        <span class="st-rank" title="Rank">#</span>
+        <button class="st-name" data-sort="name"><span>Player<i class="arr" aria-hidden="true"></i></span></button>
         <button class="st-num" data-sort="show"><span>${stIcon("crown")}Show</span></button>
         <button class="st-num" data-sort="league"><span>${stIcon("trophy")}League</span></button>
         <span></span>

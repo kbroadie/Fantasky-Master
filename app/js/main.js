@@ -89,7 +89,7 @@ function renderRows() {
   markSort();
 }
 
-/** The sort buttons: the active one shows ▼/▲ (highest first / A to Z is the default). */
+/** The sort buttons: Player's chevron points up for A to Z, down for Z to A. */
 function markSort() {
   // The table takes on the board it's sorted by (red Show, blue League, neutral Player).
   const board = $(".card.board");
@@ -99,7 +99,7 @@ function markSort() {
     b.classList.toggle("on", on);
     b.setAttribute("aria-pressed", on);
     if (name) {
-      b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
+      b.dataset.dir = state.dir;
       b.setAttribute("aria-label", `Sort by player${on ? `, now ${state.dir > 0 ? "A to Z" : "Z to A"}` : ""}`);
     } else b.setAttribute("aria-label", `Show the ${b.dataset.sort} standings, highest first`);
   }
