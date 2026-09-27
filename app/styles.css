@@ -522,12 +522,87 @@ button.hs-slot.on { box-shadow: 0 0 0 1.5px var(--t1); position: relative; z-ind
 /* ── Wider screens ─────────────────────────────────────────────────── */
 /* ── Footer: a row of rubber ducks as the closing rule ─────────────────── */
 .foot { padding: 8px var(--px) 0; text-align: center; }
-.ducks { display: flex; align-items: center; justify-content: center; gap: 7px; }
+.ducks { display: flex; align-items: center; justify-content: center; }
+/* Each duck's span is its tap target (edit mode opens when all seven are lit);
+   its side padding makes the same 7px gaps as before. */
+.dk { display: flex; padding: 10px 3.5px; cursor: default; -webkit-tap-highlight-color: transparent; }
 /* Hairlines run out from the ducks to the page edges and fade */
 .ducks::before, .ducks::after { content: ""; flex: 1; height: 1px; max-width: 120px; }
-.ducks::before { background: linear-gradient(90deg, transparent, var(--b-gold)); margin-right: 4px; }
-.ducks::after { background: linear-gradient(90deg, var(--b-gold), transparent); margin-left: 4px; }
+.ducks::before { background: linear-gradient(90deg, transparent, var(--b-gold)); margin-right: 7.5px; }
+.ducks::after { background: linear-gradient(90deg, var(--b-gold), transparent); margin-left: 7.5px; }
 .duck { width: 18px; height: 14px; fill: var(--gold2); opacity: .8; }
+.dk.lit .duck, .editing .duck { fill: var(--gold3); opacity: 1; filter: drop-shadow(0 0 4px var(--gold-glow)); }
+.dk .duck { transition: transform .15s var(--ease); }
+.dk.lit .duck { transform: scale(1.18); }
+@media (prefers-reduced-motion: reduce) { .dk .duck { transition: none; } .dk.lit .duck { transform: none; } }
+
+/* ── Edit mode (edit.js): the bar, the key dialog, picks and scores ─────── */
+.editing { padding-bottom: calc(24px + 64px + env(safe-area-inset-bottom)); }
+.ed-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px var(--px) calc(10px + env(safe-area-inset-bottom));
+  background: linear-gradient(180deg, rgba(7, 5, 7, .6), rgba(7, 5, 7, .85));
+  -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
+  border-top: 1px solid var(--b-gold);
+}
+.ed-status { flex: 1; min-width: 0; font-size: 13px; line-height: 1.3; color: var(--t2); }
+.ed-status.ok { color: var(--gold3); }
+.ed-status.bad, .ed-msg.bad { color: #ff8a7a; }
+.ed-btn {
+  font: 500 12px var(--fm); letter-spacing: .06em; text-transform: uppercase; color: var(--t1);
+  padding: 9px 12px; border-radius: 8px; border: 1px solid var(--b-gold); background: rgba(255, 255, 255, .03);
+  white-space: nowrap; -webkit-tap-highlight-color: transparent;
+}
+.ed-btn.gold { background: linear-gradient(180deg, var(--gold3), var(--gold2)); border-color: var(--gold3); color: #241400; }
+.ed-btn:disabled { opacity: .4; }
+.ed-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.ed-actions > span { flex: 1; }
+.ed-pad { padding: 4px 12px 12px; }
+.ed-note { padding: 4px 12px 14px; font-size: 13px; color: var(--t3); }
+.ed-msg { font-size: 13px; line-height: 1.4; color: var(--t2); }
+.ed-hint { font-size: 12px; color: var(--t4); }
+
+.ed-dialog {
+  width: min(420px, calc(100% - 32px)); margin: auto; padding: 20px;
+  color: var(--t1); background: var(--s1); border: 1px solid var(--b-gold); border-radius: 16px;
+}
+.ed-dialog::backdrop { background: rgba(0, 0, 0, .6); -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.ed-dialog h2 { font: 400 20px var(--ff-head); color: var(--gold3); margin-bottom: 8px; }
+.ed-dialog p, .ed-dialog li { font-size: 14px; line-height: 1.45; color: var(--t2); }
+.ed-dialog ol { margin: 10px 0 14px 20px; display: grid; gap: 4px; }
+.ed-dialog a { color: var(--gold3); }
+.ed-dialog b { color: var(--t1); font-weight: 600; }
+.ed-dialog .ed-msg { min-height: 1.4em; margin: 8px 0 12px; }
+
+/* Inputs are 16px so iOS doesn't zoom in on them */
+.ed-dialog input, .ed-form input, .ed-form select {
+  width: 100%; min-width: 0; font: 400 16px var(--ff); color: var(--t1);
+  background: var(--s2); border: 1px solid var(--b-dim); border-radius: 6px; padding: 7px 8px;
+}
+.ed-form select { padding-inline: 4px; }
+.ed-form input:focus, .ed-form select:focus, .ed-dialog input:focus { outline: none; border-color: var(--gold2); }
+.ed-form .bad { border-color: #ff8a7a; box-shadow: 0 0 0 1px #ff8a7a; }
+.ed-form { display: grid; gap: 10px; padding: 4px 12px 12px; }
+.ed-field { display: flex; align-items: center; gap: 10px; }
+.ed-field > span, .ed-heads span { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--t3); }
+.ed-field > span { width: 64px; flex: none; }
+.ed-task { display: grid; gap: 6px; padding-top: 10px; border-top: 1px solid var(--b-dim); }
+.ed-line { display: grid; grid-template-columns: 16px 88px minmax(0, 1fr) 28px; gap: 6px; align-items: center; }
+.ed-no { font-family: var(--fm); font-size: 11px; color: var(--t4); text-align: center; }
+.ed-x { height: 32px; border: 0; background: none; color: var(--t3); font-size: 20px; line-height: 1; }
+.ed-scores { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.ed-scores input { text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ed-heads span { text-align: center; }
+
+/* Picks: an opened row offers the five contestants and None */
+.pk-edit { padding: 2px 12px 14px; }
+.pk-edit-h { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); margin: 2px 2px 6px; }
+.pk-choose { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
+.pk-choose .pk { border: 0; background: none; color: inherit; padding: 4px 3px 5px; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+.pk-choose .pk b { font: 600 12px var(--ff-name); color: var(--t2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-choose .pk.on { background: var(--gold-t); box-shadow: inset 0 0 0 1.5px var(--gold3); }
+.pk-choose .pk-none b { color: var(--t3); }
 
 @media (min-width: 600px) {
   :root { --px: 20px; }

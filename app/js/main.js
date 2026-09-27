@@ -1,10 +1,11 @@
 // Wiring: loads the CSV, renders all three pages up front (so switching tabs
 // is instant), and handles the tabs, swipers, sorting, series toggle and the
 // countdown. Routes look like #/22/episodes/4 and #/22/cast/Nina.
-import { loadData } from "./csv.js";
+import { loadText, parseCSV, buildSeries } from "./csv.js";
+import { initEdit } from "./edit.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsHead, standingsRows, standingsHero, stWeek } from "./views/table.js";
+import { standingsHead, standingsRows, standingsHero, stWeek, weekTabs } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -46,15 +47,38 @@ function loadSeries(key) {
   $("#p-standings").innerHTML = standingsHead(d);
   renderRows();
   markWeek(false);
+  renderSlides(d);
+  if (!$("#foot").children.length) $("#foot").innerHTML = footer();
+  countdown();
+}
+
+function renderSlides(d) {
   $("#ep-tabs").innerHTML = epTabs(d);
   $("#ep-body").innerHTML = epSlides(d);
   mountPodiumFx($("#ep-body"));
   $("#cast-tabs").innerHTML = castTabs(d);
   $("#cast-body").innerHTML = castSlides(d);
   mountPodiumFx($("#cast-body"));
-  $("#foot").innerHTML = footer();
   for (const id of ["#ep-body", "#cast-body"]) for (const s of $(id).children) sizes.observe(s);
-  countdown();
+}
+
+/**
+ * Edit mode (edit.js): re-render from the data file's new text, in place. The
+ * Standings rows are patched (they slide if the order changes); the Episodes
+ * and Cast slides are rebuilt on the same slide.
+ */
+function refresh(text) {
+  SERIES = buildSeries(parseCSV(text));
+  const d = state.d = derive(SERIES[state.key], new Date());
+  patchRows(() => {
+    $("#st-tabs").innerHTML = weekTabs(d);
+    $(".st-hero").innerHTML = standingsHero(d);
+    $(".st-hero").classList.remove("explain");
+    markWeek(false);
+  });
+  renderSlides(d);
+  for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get());
+  else mark(sw, sw.get(), false);
 }
 
 function renderRows() {
@@ -246,7 +270,24 @@ function setWeek(w) {
   w = Math.max(1, Math.min(d.episodes.length, w));
   if (w === stWeek(d)) return;
   state.wk = w;
+  patchRows(() => {
+    $(".st-hero").innerHTML = standingsHero(d);
+    $(".st-hero").classList.remove("explain");
+    markWeek();
+    writeHash();
+  });
+}
+
+/**
+ * Brings the rows up to date without rebuilding the table: each row keeps its
+ * element (and whether it's open), its numbers, backdrop and picks are
+ * patched, and the rows slide from their old places to their new ones (FLIP).
+ * before() runs once the old places are measured (it may change the hero).
+ */
+function patchRows(before) {
+  const d = state.d;
   const rows = $("#rows"), first = new Map([...rows.children].map((r) => [r.dataset.p, r.getBoundingClientRect().top]));
+  before?.();
   // Patch each row in place from freshly rendered markup, then reorder.
   const fresh = document.createElement("div");
   fresh.innerHTML = standingsRows(d);
@@ -256,6 +297,7 @@ function setWeek(w) {
     if (!old) { order.push(n); continue; }
     old.classList.toggle("lead", n.classList.contains("lead"));
     old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
+    old.querySelector(".pc-more > div").innerHTML = n.querySelector(".pc-more > div").innerHTML;
     // The backdrop is patched, not replaced: a new crop of the same photo
     // (every S22 face) just moves, with no reload or blank frame.
     const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
@@ -267,11 +309,9 @@ function setWeek(w) {
     else if (ob) ob.remove();
     order.push(old);
   }
+  const keep = new Set(order);
+  for (const r of [...rows.children]) if (!keep.has(r)) r.remove();
   rows.append(...order);
-  $(".st-hero").innerHTML = standingsHero(d);
-  $(".st-hero").classList.remove("explain");
-  markWeek();
-  writeHash();
   queueParallax();
   if (reducedMotion) return;
   for (const r of rows.children) {
@@ -388,8 +428,8 @@ addEventListener("hashchange", () => {
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
 try {
-  const [series, allTime] = await Promise.all([loadData(), loadStats()]);
-  SERIES = series;
+  const [text, allTime] = await Promise.all([loadText(), loadStats()]);
+  SERIES = buildSeries(parseCSV(text));
   CURRENT = currentSeriesKey(SERIES, new Date());
   // The radar compares against every contestant in Taskmaster history when
   // the all-time stats are available, otherwise against the league's series.
@@ -399,6 +439,7 @@ try {
   loadSeries(h.key);
   applyArg(h.page, h.arg);
   show(h.page);
+  initEdit(text, refresh);
 } catch (err) {
   console.error(err);
   $("#p-standings").innerHTML = `<p class="err">Couldn't load the league data. ${esc(err.message)}</p>`;

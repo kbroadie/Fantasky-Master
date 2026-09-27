@@ -3,9 +3,12 @@
 
 export const CSV_URL = "../data/fantasky_master_data.csv";
 
-/** RFC 4180 CSV → array of objects keyed by the header row. */
-export function parseCSV(text) {
-  text = text.replace(/^﻿/, "");
+/**
+ * RFC 4180 CSV → rows of raw fields (nothing trimmed; blank lines dropped).
+ * toCSV() writes them back byte for byte, so the editor can change a few rows
+ * of the data file without touching the rest.
+ */
+export function parseRows(text) {
   const rows = [];
   let row = [], field = "", q = false;
   for (let i = 0; i < text.length; i++) {
@@ -25,7 +28,15 @@ export function parseCSV(text) {
   }
   row.push(field);
   if (row.some((f) => f !== "")) rows.push(row);
-  const [head, ...body] = rows;
+  return rows;
+}
+
+/** Rows → CSV text, quoting only the fields that need it (as the data file does). */
+export const toCSV = (rows) => rows.map((r) => r.map((f) => (/[",\r\n]/.test(f) ? `"${f.replace(/"/g, '""')}"` : f)).join(",")).join("\n") + "\n";
+
+/** RFC 4180 CSV → array of objects keyed by the header row. */
+export function parseCSV(text) {
+  const [head, ...body] = parseRows(text.replace(/^\uFEFF/, ""));
   return body.map((r) => Object.fromEntries(head.map((h, i) => [h.trim(), (r[i] ?? "").trim()])));
 }
 
@@ -106,8 +117,17 @@ export function buildSeries(records) {
   return out;
 }
 
-export async function loadData() {
-  const res = await fetch(CSV_URL);
+/**
+ * The data file as text. "no-cache" revalidates with the server every time
+ * (a quick 304 when nothing changed), so a pick saved from edit mode shows for
+ * everyone as soon as the site redeploys, not when a cached copy expires.
+ */
+export async function loadText() {
+  const res = await fetch(CSV_URL, { cache: "no-cache" });
   if (!res.ok) throw new Error(`Couldn't load league data (${res.status})`);
-  return buildSeries(parseCSV(await res.text()));
+  return res.text();
+}
+
+export async function loadData() {
+  return buildSeries(parseCSV(await loadText()));
 }

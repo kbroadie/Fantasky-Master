@@ -28,7 +28,7 @@ Each row has a `record` type that says which columns it uses. Leave the other co
 
 ## Weekly update (after an episode airs)
 
-For episode *N* of the current series:
+The easy way is the app's edit mode (tap all seven rubber ducks at the bottom of any tab; see [`app/README.md`](../app/README.md#edit-mode)): it fetches the scores from the Taskmaster Wiki, takes picks with a tap, and writes the rows below for you. By hand, for episode *N* of the current series:
 
 1. **Scores.** Add a `score` row for every contestant on every task; that's 5 rows per task, so usually 25 rows. The five rows of a task share `task_no`, `task_type` and `task_name`.
 2. **Picks.** Add a `pick` row for each player who voted, with their final vote from the WhatsApp poll.
