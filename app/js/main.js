@@ -263,6 +263,7 @@ $("#p-standings").addEventListener("click", (e) => {
   }
   const head = e.target.closest(".pc-head");
   if (head) {
+    sizeOpen(head.parentElement);
     head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
     // Rows below slide as this one opens; keep their parallax in step.
     const until = performance.now() + 400;
@@ -333,6 +334,7 @@ function patchRows(before) {
     if (ghost) fadeGhost(ghost, old.querySelector(".pc-bg"));
     order.push(old);
   }
+  for (const r of order) if (r.classList.contains("open")) sizeOpen(r); // its picks may have changed height
   const keep = new Set(order);
   for (const r of [...rows.children]) if (!keep.has(r)) r.remove();
   rows.append(...order);
@@ -353,6 +355,12 @@ function patchRows(before) {
     const done = (e) => { if (e.target === r && e.propertyName === "transform") { r.style.transition = ""; r.removeEventListener("transitionend", done); } };
     r.addEventListener("transitionend", done);
   }
+}
+
+/** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
+function sizeOpen(row) {
+  const more = row.querySelector(".pc-more > div");
+  if (more) row.style.setProperty("--open-h", `${more.scrollHeight}px`);
 }
 
 /**
