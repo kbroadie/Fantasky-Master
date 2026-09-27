@@ -151,14 +151,19 @@ strong { color: var(--t1); font-weight: 700; }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
-/* A label in the app's label style, then two paragraphs on one measure
-   (about 42 characters), each balanced so no line is left short. */
-.st-explain p { max-width: 21.5rem; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.5; color: var(--t2); }
-.st-explain p b { display: block; margin-bottom: 5px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); } /* muted like a card head; gold is for the button */
-.st-explain p span { display: block; text-wrap: balance; hanging-punctuation: first; }
-.st-explain p span + span { margin-top: .5em; }
-.st-explain p + p { padding-top: 16px; }
-.st-explain > div > :last-child { padding-bottom: 4px; }
+/* The two systems side by side, one card each, to compare at a glance.
+   Four levels: a muted label, the range as the big figure (gold, like the
+   leaders' points), the takeaway, then the rule in smaller, quieter type. */
+/* The cards share the grid's rows (subgrid), so each level lines up across
+   both even when one takeaway wraps to more lines. */
+.how-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, auto); gap: 0 10px; max-width: 30rem; margin: 10px auto 4px; text-align: left; }
+.how-card { display: grid; grid-row: span 4; grid-template-rows: subgrid; align-content: start; padding: 14px 12px 14px; border: 1px solid var(--b-gold); border-radius: 12px; background: linear-gradient(170deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .015)); }
+.how-label { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); }
+.how-range { display: flex; flex-direction: column; margin: 10px 0 12px; }
+.how-range span { font-size: 34px; font-weight: 800; line-height: 1; letter-spacing: -.02em; font-variant-numeric: tabular-nums; color: var(--gold2); text-shadow: 0 0 14px var(--gold-glow); }
+.how-range small { margin-top: 5px; font-family: var(--fm); font-size: 11px; letter-spacing: .06em; color: var(--t3); }
+.how-lead { font-size: 15px; font-weight: 700; line-height: 1.3; color: var(--t1); text-wrap: balance; }
+.how-rule { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--b-dim); font-size: 13px; line-height: 1.5; color: var(--t2); text-wrap: pretty; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:

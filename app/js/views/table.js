@@ -32,13 +32,20 @@ function leaders(rows, key) {
 }
 
 /** "How scoring works", under the leaders line, opens both of these. */
-const TERMS = {
-  // A label, then two paragraphs. The ranges are held together (no-break
-  // spaces, and word joiners around the dash, a break point otherwise), so
-  // "(0–25 pts per episode)" is never split across lines.
-  show: ["Show score", "The player with the most task points at the end of the series wins, regardless of episode placements.", "The broad scoring range (0\u2060–\u206025\u00a0pts\u00a0per\u00a0episode) rewards blowouts."],
-  league: ["League score", "The player with the highest average episode placement wins, regardless of task points.", "The narrow scoring range (1\u2060–\u20605\u00a0pts\u00a0per\u00a0episode) rewards consistency."],
-};
+// The league's own phrases, rearranged into a hierarchy (not reworded): a
+// label, the range as the big figure, the takeaway, then the rule.
+const TERMS = [
+  { label: "Show score", range: "0–25", unit: "pts per episode", lead: "The broad scoring range rewards blowouts.",
+    rule: "The player with the most task points at the end of the series wins, regardless of episode placements." },
+  { label: "League score", range: "1–5", unit: "pts per episode", lead: "The narrow scoring range rewards consistency.",
+    rule: "The player with the highest average episode placement wins, regardless of task points." },
+];
+const howCard = (t) => `<div class="how-card">
+    <b class="how-label">${esc(t.label)}</b>
+    <p class="how-range"><span>${esc(t.range)}</span><small>${esc(t.unit)}</small></p>
+    <p class="how-lead">${esc(t.lead)}</p>
+    <p class="how-rule">${esc(t.rule)}</p>
+  </div>`;
 
 /** "Riley leads the Show   Jamie leads the League" ("wins" once the series is over). */
 function leaderLine(d, rows, w) {
@@ -57,7 +64,7 @@ function leaderLine(d, rows, w) {
 export function standingsHero(d) {
   const w = stWeek(d);
   const how = `<button type="button" class="st-how" aria-expanded="${state.how}" aria-controls="st-explain">How scoring works<i class="st-how-chev" aria-hidden="true"></i></button>
-    <div class="st-explain" id="st-explain"><div>${Object.values(TERMS).map((t) => `<p><b>${esc(t[0])}</b><span>${esc(t[1])}</span><span>${esc(t[2])}</span></p>`).join("")}</div></div>`;
+    <div class="st-explain" id="st-explain"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
   if (!d.weeksScored) return `<h2 class="ep-title">Week ${w} Picks</h2><div class="ep-sub">Series ${state.key} starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
   return `<h2 class="ep-title">Week ${w} ${w > d.weeksScored ? "Picks" : "Standings"}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
