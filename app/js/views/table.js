@@ -43,11 +43,13 @@ const TERMS = [
   { icon: "crown", name: "Show", rule: "The player with the most points at the end of the series wins, regardless of episode placements.", range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: "The player with the best episode placements throughout the series wins, regardless of points.", range: "1–5", unit: "pts per episode" },
 ];
-const howCard = (t) => `<div class="how-card">
-    <span class="how-medal"><svg class="how-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[t.icon]}"/></svg></span>
-    <h3 class="how-title"><span class="how-the">The</span><span class="how-name">${esc(t.name)}</span></h3>
+// The icon is solid metal too: the metal is painted through the icon's shape (a mask).
+const maskOf = (d) => `url('data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path d="${d}" fill="none" stroke="#000" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>`)}')`;
+const howCard = (t) => `<div class="how-card ${t.name.toLowerCase()}">
+    <span class="how-icon" aria-hidden="true"><i class="metal" style="--mask:${maskOf(HOW_ICONS[t.icon])}"></i><i class="how-glint"></i></span>
+    <h3 class="how-title"><span class="how-the">The</span><span class="how-name metal">${esc(t.name)}</span></h3>
     <p class="how-rule">${esc(t.rule)}</p>
-    <p class="how-plate"><b>${esc(t.range)}</b> <span>${esc(t.unit)}</span></p>
+    <p class="how-range"><b class="metal">${esc(t.range)}</b><span>${esc(t.unit)}</span></p>
   </div>`;
 
 /** "Riley leads the Show   Jamie leads the League" ("wins" once the series is over). */

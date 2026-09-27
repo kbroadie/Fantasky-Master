@@ -249,6 +249,7 @@ $("#p-standings").addEventListener("click", (e) => {
     state.how = !state.how;
     how.closest(".st-hero").classList.toggle("explain", state.how);
     how.setAttribute("aria-expanded", state.how);
+    queueParallax();
     return;
   }
   const head = e.target.closest(".pc-head");
@@ -418,6 +419,11 @@ function parallax() {
     const r = img.closest(".pc").getBoundingClientRect();
     if (r.bottom < -100 || r.top > innerHeight + 100) continue;
     img.style.setProperty("--py", `${((mid - (r.top + 29)) * PARALLAX).toFixed(1)}px`);
+  }
+  // The scoring plaques' metal: its reflection moves as the plaque moves up the screen.
+  for (const c of $$(".st-hero.explain .how-card")) {
+    const r = c.getBoundingClientRect();
+    c.style.setProperty("--lx", Math.max(-1, Math.min(1, (r.top + r.height / 2 - mid) / mid)).toFixed(3));
   }
 }
 const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };

@@ -151,62 +151,89 @@ strong { color: var(--t1); font-weight: 700; }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
-/* The two systems as a matched pair of award plaques, equally grand, side by
-   side. The league's words, unchanged, in their order of importance:
-   the title ("The" set small above the name, in gold foil), the rule under an
-   ornamental divider, then the range on an engraved plate at the foot. A
-   crown (Show) and a trophy (League) sit in a medallion at the top. The cards
-   share rows (subgrid), so every level lines up across both. */
+/* The two systems as a pair of cast-metal plaques: gold for the Show, sterling
+   silver for the League. Each is a dark card with one fine metallic edge; the
+   icon, the name and the range figure are solid metal (a polished-metal
+   gradient clipped to the shape: bright above, a dark horizon, bright below).
+   The light is alive, as on a real plaque:
+   - scrolling moves the reflection's horizon (--lx, set in main.js from the
+     card's place on screen), as if the plaque were tilting under a fixed light;
+   - every few seconds a highlight sweeps across the metal (--sweep, animated),
+     reaching the icon, then the name, then the figure, and a glint flares on
+     the icon as it passes; the League plaque's sweep is offset from the Show's.
+   Reduced motion: still, with the light straight on. The league's words,
+   unchanged, in their order: the title, the rule, the range. The cards share
+   rows (subgrid), so each level lines up across both. */
+@property --sweep { syntax: "<percentage>"; inherits: true; initial-value: 130%; }
 .how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(4, auto); gap: 0 10px; max-width: 30rem; margin: 14px auto 4px; }
 .how-card {
-  position: relative; display: grid; grid-row: span 4; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr); justify-items: center; align-content: start;
-  padding: 18px 12px 16px; text-align: center; border-radius: 14px;
+  --lx: 0; position: relative; display: grid; grid-row: span 4; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);
+  justify-items: center; align-content: start; padding: 20px 12px 18px; text-align: center;
+  border: 1px solid transparent; border-radius: 14px;
   background:
-    radial-gradient(120% 70% at 50% 0%, rgba(236, 192, 64, .16), transparent 60%),
-    linear-gradient(180deg, #1c1410, #0e0a0b);
-  /* A double gold frame: the outer rule, a gap, then a fine inner rule */
-  border: 1px solid rgba(236, 192, 64, .55);
-  box-shadow: inset 0 0 0 4px #120d0d, inset 0 0 0 5px rgba(236, 192, 64, .28), 0 0 22px rgba(212, 160, 40, .12), 0 8px 24px rgba(0, 0, 0, .45);
+    radial-gradient(120% 70% at 50% -8%, var(--tint), transparent 62%) padding-box,
+    linear-gradient(180deg, #151113, #0b090a) padding-box,
+    linear-gradient(160deg, var(--edge), var(--edge-dim) 38%, var(--edge) 72%, var(--edge-dim)) border-box;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, .5);
+  animation: how-sweep 9s cubic-bezier(.45, 0, .25, 1) var(--delay, 0s) infinite;
 }
-.how-medal {
-  display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #3a2a12, #140e0a 70%);
-  box-shadow: 0 0 0 1.5px #ecc040, 0 0 0 4px #140e0a, 0 0 0 5px rgba(236, 192, 64, .4), 0 0 18px rgba(236, 192, 64, .35);
+.how-card.show {
+  --m0: #4a300a; --m1: #8c6219; --m2: #cf9d37; --m3: #f1d27a; --spec: #fff8e0;
+  --tint: rgba(236, 192, 64, .13); --edge: rgba(241, 210, 122, .6); --edge-dim: rgba(140, 98, 25, .3);
 }
-.how-ico { width: 28px; height: 28px; fill: none; stroke: #f5d774; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px rgba(236, 192, 64, .7)); }
+.how-card.league {
+  --m0: #353b43; --m1: #6f7984; --m2: #aeb8c2; --m3: #e2e8ee; --spec: #ffffff;
+  --tint: rgba(190, 210, 230, .10); --edge: rgba(226, 232, 238, .55); --edge-dim: rgba(111, 121, 132, .3);
+  --delay: -4.5s; /* half a cycle out of step with the Show */
+}
+/* 130% → -40%: from off the left edge to off the right, even with the offsets */
+@keyframes how-sweep { 0%, 76% { --sweep: 130%; } 100% { --sweep: -40%; } }
+.metal {
+  background-image:
+    linear-gradient(105deg, transparent 44%, rgba(255, 255, 255, .92) 50%, transparent 56%),
+    linear-gradient(180deg, var(--spec) 0%, var(--m3) 20%, var(--m2) 40%, var(--m0) 50%, var(--m1) 58%, var(--m2) 76%, var(--m3) 100%);
+  background-size: 300% 100%, 100% 240%;
+  background-repeat: no-repeat;
+  /* The sweep reaches lower parts of the plaque a moment later (--o) */
+  background-position: calc(var(--sweep) + var(--o, 0%)) 0, 0 calc(50% - var(--lx) * 45%);
+}
+.how-icon { position: relative; width: 44px; height: 44px; }
+.how-icon .metal { position: absolute; inset: 0; -webkit-mask: var(--mask) center / contain no-repeat; mask: var(--mask) center / contain no-repeat; filter: drop-shadow(0 0 6px var(--tint)); }
+.how-glint {
+  position: absolute; top: -3px; right: -5px; width: 16px; height: 16px; opacity: 0;
+  background:
+    radial-gradient(circle, #fff 0 1.2px, transparent 2.4px),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, .95), transparent) center / 100% 1px no-repeat,
+    linear-gradient(0deg, transparent, rgba(255, 255, 255, .95), transparent) center / 1px 100% no-repeat;
+  filter: drop-shadow(0 0 3px var(--spec));
+  animation: how-glint 9s ease-out var(--delay, 0s) infinite;
+}
+@keyframes how-glint {
+  0%, 80% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  84% { opacity: 1; transform: scale(1) rotate(40deg); }
+  92%, 100% { opacity: 0; transform: scale(.35) rotate(90deg); }
+}
 .how-title { margin-top: 14px; }
-.how-the {
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: #d9b45a;
-}
-.how-the::before, .how-the::after { content: ""; width: 16px; height: 1px; background: linear-gradient(90deg, transparent, #d9b45a); }
-.how-the::after { transform: scaleX(-1); }
+.how-the { display: block; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--m2); opacity: .8; }
 .how-name {
-  display: block; margin-top: 4px; font-family: var(--ff-head); font-weight: 400; font-size: clamp(22px, 6.4vw, 30px); line-height: 1; letter-spacing: .02em; text-transform: uppercase;
-  /* Gold foil: bright top, a darker band through the middle, warm again below */
-  background: linear-gradient(180deg, #fff6d0 0%, #f5d774 30%, #b8862b 52%, #ecc040 70%, #fff0b8 100%);
+  --o: 10%; display: block; margin-top: 3px; font-family: var(--ff-head); font-weight: 400; font-size: clamp(21px, 6.8vw, 31px); line-height: 1.05; letter-spacing: .01em; text-transform: uppercase;
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .6)) drop-shadow(0 0 10px rgba(236, 192, 64, .35));
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .7));
 }
-.how-rule {
-  position: relative; margin-top: 14px; padding-top: 16px;
-  font-size: 13px; line-height: 1.5; color: var(--t1); text-wrap: balance;
+.how-title::after { content: ""; display: block; width: 28px; height: 1px; margin: 12px auto 0; background: linear-gradient(90deg, transparent, var(--m2), transparent); }
+.how-rule { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--t2); text-wrap: balance; }
+.how-range { align-self: end; display: flex; flex-direction: column; align-items: center; margin-top: 16px; }
+.how-range b {
+  --o: 25%; font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
+  -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .7));
 }
-/* The divider: gold hairlines out from a small diamond */
-.how-rule::before {
-  content: ""; position: absolute; top: 0; left: 10%; right: 10%; height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(236, 192, 64, .6) 30%, transparent 44%, transparent 56%, rgba(236, 192, 64, .6) 70%, transparent);
+.how-range span { margin-top: 6px; font-family: var(--fm); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--m2); opacity: .8; }
+/* Closed, or reduced motion: no animation */
+.st-hero:not(.explain) .how-card, .st-hero:not(.explain) .how-glint { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .how-card { animation: none; --sweep: 130%; }
+  .how-glint { display: none; }
 }
-.how-rule::after { content: ""; position: absolute; top: -3px; left: calc(50% - 3.5px); width: 7px; height: 7px; transform: rotate(45deg); background: #ecc040; box-shadow: 0 0 6px rgba(236, 192, 64, .7); }
-/* The engraved plate */
-.how-plate {
-  align-self: end; display: flex; flex-direction: column; align-items: center; gap: 3px;
-  max-width: 100%; margin-top: 16px; padding: 7px 10px 7px; border-radius: 6px;
-  font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; text-align: center; color: #d9b45a;
-  background: linear-gradient(180deg, rgba(236, 192, 64, .16), rgba(236, 192, 64, .06));
-  box-shadow: inset 0 0 0 1px rgba(236, 192, 64, .45), inset 0 1px 0 rgba(255, 240, 184, .15);
-}
-.how-plate b { font-family: var(--ff); font-size: 20px; font-weight: 800; line-height: 1; letter-spacing: 0; font-variant-numeric: tabular-nums; color: #f5d774; text-shadow: 0 0 10px rgba(236, 192, 64, .45); }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:
