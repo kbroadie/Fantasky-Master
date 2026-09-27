@@ -366,15 +366,14 @@ strong { color: var(--t1); font-weight: 700; }
    separate layers, iOS Safari could draw the photo unshaded for a frame
    while the top bar resized, flashing the white pillars. */
 .pc-bg { isolation: isolate; }
-/* Frosted glass over the photo, the same for every row, clearing as the row
-   opens. The filter is on the whole backdrop, photo and shading together.
-   The backdrop is its own compositing layer for good (will-change), so
-   nothing is promoted when the blur starts or dropped when it ends: that
-   switch between drawing paths is what made the colours jump on iOS. It
-   clips to its bled box (overflow), so the layer is only the row plus the
-   bleed, never the whole oversized photo. */
-.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: filter .35s var(--ease), clip-path .3s var(--ease); }
-.pc.open .pc-bg { filter: blur(0px); }
+/* Frosted glass over the photo, the same for every row, and it stays frosted
+   (an opened half is sharpened by a copy over it, below). The filter is on
+   the whole backdrop, photo and shading together. The backdrop is its own
+   compositing layer for good (will-change), so nothing is promoted or
+   dropped around it: that switch between drawing paths is what made the
+   colours jump on iOS. It clips to its bled box (overflow), so the layer is
+   only the row plus the bleed, never the whole oversized photo. */
+.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: clip-path .3s var(--ease); }
 /* The backdrop trims itself to its row: a clip on its own layer, applied
    after the blur, so the bleed and the part below a closed row never show
    outside it (the row's overflow alone didn't clip it on iOS, which showed as
@@ -382,6 +381,21 @@ strong { color: var(--t1); font-weight: 700; }
    opened height (--open-h, measured in main.js). */
 .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head)) var(--bleed)); }
 .pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 170px)) var(--bleed)); }
+/* Opening a half sharpens an L (on request): that player's half of the row
+   and the picks below, while the other player's half stays frosted. A sharp
+   copy of the backdrop (.sharp, made by sharpen in main.js, only while the
+   row is open) fades in over the frosted one, clipped to the L; switching
+   halves morphs the L across (both polygons have the same six points). Its
+   inside edge is the line between the halves (--X: the backdrop's middle
+   plus half the place column). */
+.pc .pc-bg.sharp {
+  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 170px)); --R: calc(100% - var(--bleed));
+  filter: none; will-change: opacity; opacity: 0;
+  clip-path: polygon(var(--bleed) var(--bleed), var(--X) var(--bleed), var(--X) var(--M), var(--R) var(--M), var(--R) var(--B), var(--bleed) var(--B));
+  transition: opacity .35s var(--ease), clip-path .35s var(--ease);
+}
+.pc .pc-bg.sharp[data-side="league"] { clip-path: polygon(var(--bleed) var(--M), var(--X) var(--M), var(--X) var(--bleed), var(--R) var(--bleed), var(--R) var(--B), var(--bleed) var(--B)); }
+.pc .pc-bg.sharp.on { opacity: 1; }
 .pc-bg::after {
   content: ""; position: absolute; inset: 0;
   /* Stops are placed on the row (--r: a percentage of the row's width, past
