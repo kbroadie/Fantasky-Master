@@ -151,87 +151,74 @@ strong { color: var(--t1); font-weight: 700; }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
-/* The two systems as a pair of cast-metal plaques: gold for the Show, sterling
-   silver for the League. Each is a dark card with one fine metallic edge; the
-   icon, the name and the range figure are solid metal (a polished-metal
-   gradient clipped to the shape: bright above, a dark horizon, bright below).
-   The light is alive, as on a real plaque:
-   - scrolling moves the reflection's horizon (--lx, set in main.js from the
-     card's place on screen), as if the plaque were tilting under a fixed light;
-   - every few seconds a highlight sweeps across the metal (--sweep, animated),
-     reaching the icon, then the name, then the figure, and a glint flares on
-     the icon as it passes; the League plaque's sweep is offset from the Show's.
-   Reduced motion: still, with the light straight on. The league's words,
-   unchanged, in their order: the title, the rule, the range. The cards share
-   rows (subgrid), so each level lines up across both. */
-@property --sweep { syntax: "<percentage>"; inherits: true; initial-value: 130%; }
-.how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(4, auto); gap: 0 10px; max-width: 30rem; margin: 14px auto 4px; }
-.how-card {
-  --lx: 0; position: relative; display: grid; grid-row: span 4; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);
-  justify-items: center; align-content: start; padding: 20px 12px 18px; text-align: center;
-  border: 1px solid transparent; border-radius: 14px;
+/* The two systems as a pair of the app's own cards, themed: red for the Show,
+   blue for the League. The same language as everywhere else (a .card with a
+   hairline edge, the episode head's mono kicker over a Bungee title, Inter
+   body, and a footer like the task table's total row), elevated with texture
+   and light:
+   - a fine film grain over the card (SVG noise, --grain);
+   - a pool of the theme colour glowing from the top, drifting slowly and
+     shifting as the card moves up the screen (--lx, set in main.js);
+   - the icon in a lit tile with a soft glow, and a glint that flares on it
+     every so often, the two cards out of step.
+   Paused while closed; still under reduced motion. The words are the
+   league's, unchanged, in their order: the title, the rule, the range. The
+   cards share rows (subgrid), so each level lines up across both. */
+.how-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(3, auto); gap: 0 10px; max-width: 30rem; margin: 14px auto 4px; text-align: left; }
+.card.how-card {
+  --lx: 0;
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .075 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  position: relative; display: grid; grid-row: span 3; grid-template-rows: subgrid; grid-template-columns: minmax(0, 1fr);
+  margin: 0; border-color: var(--hc-edge);
   background:
-    radial-gradient(120% 70% at 50% -8%, var(--tint), transparent 62%) padding-box,
-    linear-gradient(180deg, #151113, #0b090a) padding-box,
-    linear-gradient(160deg, var(--edge), var(--edge-dim) 38%, var(--edge) 72%, var(--edge-dim)) border-box;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, .5);
-  animation: how-sweep 9s cubic-bezier(.45, 0, .25, 1) var(--delay, 0s) infinite;
+    var(--grain),
+    radial-gradient(90% 60% at calc(35% + var(--lx) * 25%) -6%, var(--hc-glow), transparent 70%),
+    linear-gradient(160deg, var(--hc-deep), var(--s1) 62%);
+  background-size: 140px 140px, 160% 100%, 100% 100%;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, .3), inset 0 1px 0 rgba(255, 255, 255, .06);
+  animation: how-drift 14s ease-in-out infinite alternate;
 }
-.how-card.show {
-  --m0: #4a300a; --m1: #8c6219; --m2: #cf9d37; --m3: #f1d27a; --spec: #fff8e0;
-  --tint: rgba(236, 192, 64, .13); --edge: rgba(241, 210, 122, .6); --edge-dim: rgba(140, 98, 25, .3);
+.card.how-card.show { --hc: #e5484d; --hc-hi: #ff8f86; --hc-glow: rgba(229, 72, 77, .30); --hc-deep: #2a0d10; --hc-edge: rgba(229, 72, 77, .38); }
+.card.how-card.league { --hc: #3e7bfa; --hc-hi: #93b8ff; --hc-glow: rgba(62, 123, 250, .30); --hc-deep: #0c1428; --hc-edge: rgba(90, 140, 250, .38); animation-duration: 17s; animation-delay: -6s; }
+/* The glow drifts across the top: its layer is wider than the card */
+@keyframes how-drift { from { background-position: 0 0, 0% 0, 0 0; } to { background-position: 0 0, 100% 0, 0 0; } }
+.how-head { padding: 14px 12px 0; }
+.how-icon {
+  position: relative; display: grid; place-items: center; width: 38px; height: 38px; margin-bottom: 12px; border-radius: 10px;
+  background: radial-gradient(circle at 50% 30%, color-mix(in srgb, var(--hc) 30%, transparent), color-mix(in srgb, var(--hc) 8%, transparent) 70%);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--hc) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, .08), 0 0 16px color-mix(in srgb, var(--hc) 22%, transparent);
 }
-.how-card.league {
-  --m0: #353b43; --m1: #6f7984; --m2: #aeb8c2; --m3: #e2e8ee; --spec: #ffffff;
-  --tint: rgba(190, 210, 230, .10); --edge: rgba(226, 232, 238, .55); --edge-dim: rgba(111, 121, 132, .3);
-  --delay: -4.5s; /* half a cycle out of step with the Show */
-}
-/* 130% → -40%: from off the left edge to off the right, even with the offsets */
-@keyframes how-sweep { 0%, 76% { --sweep: 130%; } 100% { --sweep: -40%; } }
-.metal {
-  background-image:
-    linear-gradient(105deg, transparent 44%, rgba(255, 255, 255, .92) 50%, transparent 56%),
-    linear-gradient(180deg, var(--spec) 0%, var(--m3) 20%, var(--m2) 40%, var(--m0) 50%, var(--m1) 58%, var(--m2) 76%, var(--m3) 100%);
-  background-size: 300% 100%, 100% 240%;
-  background-repeat: no-repeat;
-  /* The sweep reaches lower parts of the plaque a moment later (--o) */
-  background-position: calc(var(--sweep) + var(--o, 0%)) 0, 0 calc(50% - var(--lx) * 45%);
-}
-.how-icon { position: relative; width: 44px; height: 44px; }
-.how-icon .metal { position: absolute; inset: 0; -webkit-mask: var(--mask) center / contain no-repeat; mask: var(--mask) center / contain no-repeat; filter: drop-shadow(0 0 6px var(--tint)); }
+.how-ico { width: 22px; height: 22px; fill: none; stroke: var(--hc-hi); stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--hc)); }
 .how-glint {
-  position: absolute; top: -3px; right: -5px; width: 16px; height: 16px; opacity: 0;
+  position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; opacity: 0;
   background:
-    radial-gradient(circle, #fff 0 1.2px, transparent 2.4px),
-    linear-gradient(90deg, transparent, rgba(255, 255, 255, .95), transparent) center / 100% 1px no-repeat,
-    linear-gradient(0deg, transparent, rgba(255, 255, 255, .95), transparent) center / 1px 100% no-repeat;
-  filter: drop-shadow(0 0 3px var(--spec));
-  animation: how-glint 9s ease-out var(--delay, 0s) infinite;
+    radial-gradient(circle, #fff 0 1px, transparent 2.2px),
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, .9), transparent) center / 100% 1px no-repeat,
+    linear-gradient(0deg, transparent, rgba(255, 255, 255, .9), transparent) center / 1px 100% no-repeat;
+  filter: drop-shadow(0 0 3px var(--hc-hi));
+  animation: how-glint 11s ease-out infinite;
 }
+.league .how-glint { animation-delay: -5.5s; }
 @keyframes how-glint {
-  0%, 80% { opacity: 0; transform: scale(.2) rotate(0deg); }
-  84% { opacity: 1; transform: scale(1) rotate(40deg); }
-  92%, 100% { opacity: 0; transform: scale(.35) rotate(90deg); }
+  0%, 86% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  90% { opacity: 1; transform: scale(1) rotate(40deg); }
+  97%, 100% { opacity: 0; transform: scale(.35) rotate(90deg); }
 }
-.how-title { margin-top: 14px; }
-.how-the { display: block; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--m2); opacity: .8; }
-.how-name {
-  --o: 10%; display: block; margin-top: 3px; font-family: var(--ff-head); font-weight: 400; font-size: clamp(21px, 6.8vw, 31px); line-height: 1.05; letter-spacing: .01em; text-transform: uppercase;
-  -webkit-background-clip: text; background-clip: text; color: transparent;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .7));
+.how-title { display: block; }
+.how-the { display: block; margin-bottom: 3px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .16em; text-transform: uppercase; color: var(--hc-hi); opacity: .85; }
+.how-name { display: block; font-family: var(--ff-head); font-weight: 400; font-size: clamp(20px, 6.2vw, 27px); line-height: 1.05; letter-spacing: .01em; text-transform: uppercase; color: var(--t1); text-shadow: 0 0 18px color-mix(in srgb, var(--hc) 45%, transparent); }
+.how-rule { padding: 10px 12px 14px; font-size: 13px; line-height: 1.5; color: var(--t2); text-wrap: pretty; }
+/* The footer, like the task table's total row */
+.how-range {
+  align-self: end; display: flex; flex-direction: column; padding: 9px 12px 10px;
+  border-top: 1px solid var(--hc-edge); background: color-mix(in srgb, var(--hc) 9%, rgba(0, 0, 0, .25));
 }
-.how-title::after { content: ""; display: block; width: 28px; height: 1px; margin: 12px auto 0; background: linear-gradient(90deg, transparent, var(--m2), transparent); }
-.how-rule { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--t2); text-wrap: balance; }
-.how-range { align-self: end; display: flex; flex-direction: column; align-items: center; margin-top: 16px; }
-.how-range b {
-  --o: 25%; font-size: 30px; font-weight: 800; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums;
-  -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 1px 0 rgba(0, 0, 0, .7));
-}
-.how-range span { margin-top: 6px; font-family: var(--fm); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--m2); opacity: .8; }
-/* Closed, or reduced motion: no animation */
+.how-range b { font-size: 24px; font-weight: 800; line-height: 1.05; font-variant-numeric: tabular-nums; color: var(--hc-hi); text-shadow: 0 0 12px color-mix(in srgb, var(--hc) 55%, transparent); }
+.how-range span { margin-top: 3px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .06em; white-space: nowrap; text-transform: uppercase; color: var(--t3); }
+/* Closed, or reduced motion: nothing moves */
 .st-hero:not(.explain) .how-card, .st-hero:not(.explain) .how-glint { animation-play-state: paused; }
 @media (prefers-reduced-motion: reduce) {
-  .how-card { animation: none; --sweep: 130%; }
+  .card.how-card { animation: none; background-position: 0 0, 50% 0, 0 0; }
   .how-glint { display: none; }
 }
 
