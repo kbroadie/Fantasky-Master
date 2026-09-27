@@ -102,11 +102,11 @@ export function standingsHead(d) {
 }
 
 /**
- * One row per place: the Show's player at that place on the left (points at
- * the outer edge, name towards the middle, rank by the centre), the League's
- * mirrored on the right. Each half is a button that opens that player's picks
- * (rowMore). Rows are keyed by place; each half by player (data-p), so a
- * week change can slide each player to their new place (patchRows).
+ * One row per place: the place number in a fixed column at the left (it never
+ * moves or changes), then the Show's player at that place (points, name) and
+ * the League's (name, points). Each half is a button that opens that player's
+ * picks (rowMore). Rows are keyed by place; each half by player (data-p), so
+ * a week change can slide each player to their new place (patchRows).
  */
 export function standingsRows(d) {
   const w = stWeek(d), { show, league } = boards(d, w);
@@ -114,8 +114,7 @@ export function standingsRows(d) {
     const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
     const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
     const name = `<span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>`;
-    const rk = `<span class="pc-rank"><b class="${tier(rank)}">${rank}</b></span>`;
-    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${side === "show" ? num + name + rk : rk + name + num}</button>`;
+    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${side === "show" ? num + name : name + num}</button>`;
   };
   return show.map((l, i) => {
     const r = league[i];
@@ -123,7 +122,7 @@ export function standingsRows(d) {
     return `
     <div class="pc${l.showRank === 1 || r.leagueRank === 1 ? " lead" : ""}">
       ${bg}
-      <div class="pc-head">${half(l, "show")}${half(r, "league")}</div>
+      <div class="pc-head"><span class="pc-rank"><b class="${tier(i + 1)}">${i + 1}</b></span>${half(l, "show")}${half(r, "league")}</div>
       <div class="pc-more"><div></div></div>
     </div>`;
   }).join("");

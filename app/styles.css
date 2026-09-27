@@ -242,12 +242,14 @@ strong { color: var(--t1); font-weight: 700; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Both boards side by side, in a rounded card like the cards on the other
-   tabs. Each row is a place: the Show's player at that place on the left, the
-   League's on the right, mirrored (points at the outer edges, names towards
-   the middle, the two ranks either side of the centre line). Nothing sorts:
+   tabs. Each row is a place: its number in a fixed column at the left (1, 2,
+   3… in order, never moving), then the Show's player at that place (points,
+   name) and the League's (name, points at the right edge). Nothing sorts:
    each board is already in its own order. With cast photos (Series 21, 22)
    each half sits over its player's pick that week (.pc-bg). */
 .board { --pe: 8px; --sc: 34px; --rk: 22px; --g: 5px; }
+/* The head lines up with the rows: the Show's half runs from the card's
+   edge over the place numbers and the left half; the League's over the right. */
 .card.board { position: relative; margin: 12px var(--px); }
 /* The Show's red glows from the top of its half, the League's blue from
    the top of its, through the translucent head, with the film grain. */
@@ -261,7 +263,7 @@ strong { color: var(--t1); font-weight: 700; }
    under the scoring cards' crown and trophy, each half tinted from the top in
    its colour with a 2px bar under it. It's a label, not a control. */
 .st-head {
-  position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr;
+  position: relative; z-index: 1; display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr) minmax(0, 1fr) var(--pe);
   border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6));
 }
 .st-side {
@@ -270,8 +272,8 @@ strong { color: var(--t1); font-weight: 700; }
   background: linear-gradient(180deg, color-mix(in srgb, var(--b) 22%, transparent), color-mix(in srgb, var(--b) 5%, transparent));
   box-shadow: inset 0 -2px 0 var(--c);
 }
-.st-side.show { --c: var(--show-hi); --b: var(--show); }
-.st-side.league { --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-dim); }
+.st-side.show { grid-column: 1 / 3; --c: var(--show-hi); --b: var(--show); }
+.st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-dim); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 
 /* Rows are not compositing layers of their own: with one per row (plus each
@@ -281,13 +283,12 @@ strong { color: var(--t1); font-weight: 700; }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 /* Rows don't clip (the backdrop clips itself, below), so a half can slide
    across other rows to its player's new place when the week changes. */
-.pc-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: var(--head); }
+.pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: center; height: var(--head); padding-inline: var(--pe); }
 .sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
-.sd.l { grid-template-columns: var(--sc) minmax(0, 1fr) var(--rk); padding: 0 3px 0 var(--pe); }
-.sd.r { grid-template-columns: var(--rk) minmax(0, 1fr) var(--sc); padding: 0 var(--pe) 0 3px; }
-.sd.l .pc-name { justify-self: end; }
-.sd.r .pc-name { justify-self: start; }
-/* Just the rank: no movement arrows (removed on request) */
+.sd.l { grid-template-columns: var(--sc) minmax(0, 1fr); padding: 0 4px 0 2px; }
+.sd.r { grid-template-columns: minmax(0, 1fr) var(--sc); padding: 0 0 0 8px; }
+.sd .pc-name { justify-self: start; }
+/* The place number: no movement arrows (removed on request) */
 .pc-rank { text-align: center; }
 .pc-rank b { font-size: 17px; font-weight: 800; color: var(--t2); line-height: 1; }
 .pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
@@ -321,16 +322,17 @@ strong { color: var(--t1); font-weight: 700; }
    resized, and so never redrawn, while the row grows. */
 .pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
 /* Two photos: the Show player's pick on the left and the League player's on
-   the right. Each is its own box (a query container) covering 60% of the
-   backdrop, so they overlap across the middle fifth; the right one fades in
-   over that overlap (a mask), so the left photo cross-fades into the right.
-   Each face's eyes sit in the middle of its half of the row (--tx, in its
-   box's own units: the row is its box / .6, less the bleeds). */
-.pf { position: absolute; top: 0; bottom: 0; width: 60%; overflow: hidden; container-type: inline-size; }
-.pf.l { left: 0; --tx: calc(12px + 41.667cqw); }
+   the right. Each is its own box (a query container) reaching a tenth of the
+   backdrop past the line between the halves (the backdrop's middle plus half
+   the place column), so they overlap by a fifth; the right one fades in over
+   that overlap (a mask), so the left photo cross-fades into the right. Each
+   face's eyes sit in the middle of its half (--tx, in its own box's units,
+   worked back from the row's width, the bleeds, --pe and --rk). */
+.pf { position: absolute; top: 0; bottom: 0; overflow: hidden; container-type: inline-size; }
+.pf.l { left: 0; width: calc(60% + var(--rk) / 2); --tx: calc(12px + var(--pe) / 2 + var(--rk) * .5417 + 41.667cqw); }
 .pf.r {
-  right: 0; --tx: calc(58.333cqw - 12px);
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 33.333%); mask-image: linear-gradient(90deg, transparent, #000 33.333%);
+  left: calc(40% + var(--rk) / 2); right: 0; --tx: calc(58.333cqw - 12px - var(--pe) / 2 + var(--rk) * .0417);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 calc(33.333% + var(--rk) / 6)); mask-image: linear-gradient(90deg, transparent, #000 calc(33.333% + var(--rk) / 6));
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
 }
 .pc-bg img, .pc-bg .edge {
@@ -346,8 +348,8 @@ strong { color: var(--t1); font-weight: 700; }
 }
 /* A capped photo that doesn't span the row fades into it at both edges. */
 .pc-bg .edge { top: 0; bottom: 0; background: linear-gradient(90deg, var(--s1), transparent 48px, transparent calc(100% - 48px), var(--s1)); }
-/* Reshade: darker at the edges (points) and down the middle (names and
-   ranks), clear over each half's eyes;
+/* Reshade: darker at the edges (places, points) and down the middle,
+   clear over each half's eyes;
    the dimming behind the picks is on .pc-more, outside this layer.
    The photo and its shade are one compositing layer (.pc-bg is isolated;
    the image has no filter, will-change or 3D transform of its own). As
@@ -377,7 +379,7 @@ strong { color: var(--t1); font-weight: 700; }
   --r: calc(100% - 2 * var(--bleed));
   background:
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
-    linear-gradient(90deg, rgba(16, 13, 16, .8) var(--bleed), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .12), rgba(16, 13, 16, .26) calc(var(--bleed) + var(--r) * .25), rgba(16, 13, 16, .58) calc(var(--bleed) + var(--r) * .4), rgba(16, 13, 16, .72) calc(var(--bleed) + var(--r) * .5), rgba(16, 13, 16, .58) calc(var(--bleed) + var(--r) * .6), rgba(16, 13, 16, .26) calc(var(--bleed) + var(--r) * .75), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .88), rgba(16, 13, 16, .8) calc(var(--bleed) + var(--r)));
+    linear-gradient(90deg, rgba(16, 13, 16, .82) var(--bleed), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .17), rgba(16, 13, 16, .34) calc(var(--bleed) + var(--r) * .31), rgba(16, 13, 16, .6) calc(var(--bleed) + var(--r) * .45), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .53), rgba(16, 13, 16, .56) calc(var(--bleed) + var(--r) * .61), rgba(16, 13, 16, .3) calc(var(--bleed) + var(--r) * .75), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .88), rgba(16, 13, 16, .8) calc(var(--bleed) + var(--r)));
 }
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
