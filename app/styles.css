@@ -273,22 +273,22 @@ strong { color: var(--t1); font-weight: 700; }
 }
 .st-rank { white-space: nowrap; }
 .st-num, .st-name { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
-/* The label is centred over its column; the sort arrow hangs off its left */
+/* Show and League labels are centred over their columns; their icons hang off the left */
 .st-num > span { position: relative; }
-.st-num .arr, .st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
-.st-num.on, .st-name.on { text-decoration: none; }
-.st-num.on .arr, .st-name.on .arr { visibility: visible; }
+.st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
+.st-name.on { text-decoration: none; }
+.st-name.on .arr { visibility: visible; }
 .st-name.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
 /* Show and League wear their colours, with the crown and trophy from the
    scoring cards: muted until sorted by, then full and glowing. */
-/* Slim enough (icon 10px, tighter tracking) that LEAGUE fits its 54px column
-   and the sort arrow has room between the two labels */
-.st-num > span { display: inline-flex; align-items: center; gap: 2px; }
-.st-num { letter-spacing: .02em; }
-.st-ico { flex: none; width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+/* The icon hangs off the label's left, so the word itself (SHOW, LEAGUE) is
+   centred over its numbers. They always sort highest first, so there's no
+   arrow or dotted underline; the colour says which board is showing. */
+.st-num { letter-spacing: .02em; text-decoration: none; }
+.st-ico { position: absolute; right: 100%; top: 50%; margin: -5px 3px 0 0; width: 10px; height: 10px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .st-num[data-sort="show"] { --c: var(--show-hi); --g: var(--show-glow); }
 .st-num[data-sort="league"] { --c: var(--league-hi); --g: var(--league-glow); }
-.st-num { color: color-mix(in srgb, var(--c) 62%, var(--t3)); text-decoration-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.st-num { color: color-mix(in srgb, var(--c) 62%, var(--t3)); }
 .st-num.on { color: var(--c); text-shadow: 0 0 8px var(--g); }
 .st-num.on .st-ico { filter: drop-shadow(0 0 3px var(--g)); }
 /* Player sorts by name; it's left-aligned, so its arrow follows the label */
@@ -311,7 +311,10 @@ strong { color: var(--t1); font-weight: 700; }
 /* A chevron: rows open on tap */
 .chev { justify-self: end; width: 8px; height: 8px; border-right: 2px solid var(--t3); border-bottom: 2px solid var(--t3); transform: rotate(45deg) translate(-2px, -2px); transition: transform .3s var(--ease); }
 .pc.open .chev { transform: rotate(225deg) translate(-2px, -2px); }
-.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; }
+.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; transition: color .6s var(--ease); }
+/* The board not being shown steps back a tone, so the active one reads first
+   (first place stays gold in both). */
+.board[data-board="show"] .pc-head > :nth-child(4), .board[data-board="league"] .pc-head > :nth-child(3) { color: var(--t2); }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
