@@ -175,15 +175,22 @@ strong { color: var(--t1); font-weight: 700; }
   font-family: var(--fm); font-size: 11px; font-weight: 500; color: var(--t3); letter-spacing: .04em; text-transform: uppercase;
 }
 .st-rank { white-space: nowrap; }
-.st-num { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
+.st-num, .st-name { display: flex; justify-content: center; align-items: center; padding: 8px 0; margin-block: -8px; font-weight: 500; letter-spacing: inherit; text-transform: inherit; text-decoration: underline dotted rgba(182, 151, 123, .5); text-underline-offset: 3px; }
 /* The label is centred over its column; the sort arrow hangs off its left */
 .st-num > span { position: relative; }
-.st-num .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
-.st-num.on { text-decoration: none; }
-.st-num.on .arr { visibility: visible; }
-.st-num.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+.st-num .arr, .st-name .arr { position: absolute; right: 100%; margin-right: 2px; font-style: normal; font-size: 11px; visibility: hidden; }
+.st-num.on, .st-name.on { text-decoration: none; }
+.st-num.on .arr, .st-name.on .arr { visibility: visible; }
+.st-num.on, .st-name.on { color: var(--gold2); text-shadow: 0 0 6px var(--gold-glow); }
+/* Player sorts by name; it's left-aligned, so its arrow follows the label */
+.st-name { justify-content: flex-start; }
+.st-name .arr { position: static; margin: 0 0 0 3px; }
 
-.pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
+/* will-change: each row is its own compositing layer, so on iOS its overflow
+   clips the backdrop's layer (and the blur's bleed) to the row. Without it the
+   bleed showed past the row as a dark glow, except mid-slide, when the row's
+   transform promoted it anyway. */
+.pc { --head: 58px; position: relative; overflow: hidden; will-change: transform; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 .pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }

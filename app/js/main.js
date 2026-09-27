@@ -84,11 +84,17 @@ function refresh(text) {
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
   queueParallax();
-  for (const b of $$(".st-num")) {
-    const on = b.dataset.sort === state.sort;
+  markSort();
+}
+
+/** The sort buttons: the active one shows ▼/▲ (highest first / A to Z is the default). */
+function markSort() {
+  for (const b of $$(".st-head [data-sort]")) {
+    const on = b.dataset.sort === state.sort, name = b.dataset.sort === "name";
     b.classList.toggle("on", on);
     b.querySelector(".arr").textContent = state.dir < 0 ? "▼" : "▲";
-    b.setAttribute("aria-label", `Sort by ${b.dataset.sort}${on ? `, now ${state.dir < 0 ? "highest" : "lowest"} first` : ""}`);
+    const order = name ? (state.dir > 0 ? "A to Z" : "Z to A") : `${state.dir < 0 ? "highest" : "lowest"} first`;
+    b.setAttribute("aria-label", `Sort by ${name ? "player" : b.dataset.sort}${on ? `, now ${order}` : ""}`);
   }
 }
 
@@ -227,9 +233,12 @@ $("#series").addEventListener("click", () => {
 $("#p-standings").addEventListener("click", (e) => {
   const s = e.target.closest("[data-sort]");
   if (s) {
-    state.dir = state.sort === s.dataset.sort ? -state.dir : -1;
+    // Points start highest first, names A to Z; tap again to reverse.
+    state.dir = state.sort === s.dataset.sort ? -state.dir : s.dataset.sort === "name" ? 1 : -1;
     state.sort = s.dataset.sort;
-    return renderRows();
+    if (state.sort !== "name") state.board = state.sort;
+    markSort();
+    return patchRows(); // the rows slide to their new places
   }
   // "Show" / "League" in the hero: open a line explaining it; tap again to close.
   const term = e.target.closest(".st-term");
@@ -323,7 +332,7 @@ function patchRows(before) {
   rows.getBoundingClientRect(); // commit the inverted positions before playing
   for (const r of rows.children) {
     if (!r.style.transform) continue;
-    r.style.transition = "transform .5s var(--ease)";
+    r.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each row can be followed
     r.style.transform = "";
     r.addEventListener("transitionend", () => { r.style.transition = ""; }, { once: true });
   }

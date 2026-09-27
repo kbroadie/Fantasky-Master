@@ -33,8 +33,8 @@ function leaders(rows, key) {
 
 /** Tap "Show" or "League" in the leaders line to open a line explaining it. */
 const TERMS = {
-  show: "Show points: what your pick scored that episode.",
-  league: "League points: 5 if your pick wins, down to 1 for last.",
+  show: "Show points are your pick's own score each episode, added up over the series, out of a possible 250.",
+  league: "League points are your pick's finishing place each episode, 5 for 1st down to 1 for 5th, added up over the series, out of a possible 50.",
 };
 const term = (key, label) => `<button class="st-term" data-term="${key}" aria-expanded="false">${label}</button>`;
 
@@ -73,7 +73,7 @@ export function standingsHead(d) {
     <div class="card board">
       <div class="st-head">
         <span class="st-rank">Rank</span>
-        <span class="st-name">Player</span>
+        <button class="st-name" data-sort="name"><span>Player<i class="arr"></i></span></button>
         <button class="st-num" data-sort="show"><span><i class="arr"></i>Show</span></button>
         <button class="st-num" data-sort="league"><span><i class="arr"></i>League</span></button>
         <span></span>
@@ -83,10 +83,12 @@ export function standingsHead(d) {
 }
 
 export function standingsRows(d) {
-  const key = state.sort, w = stWeek(d);
-  const rows = atWeek(d, w).sort((a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
+  // Sorted by name, the rank and movement are still the last board sorted by.
+  const key = state.sort, board = key === "name" ? state.board : key, w = stWeek(d);
+  const rows = atWeek(d, w).sort(key === "name" ? (a, b) => state.dir * a.name.localeCompare(b.name)
+    : (a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
   return rows.map((p) => {
-    const rank = p[`${key}Rank`], delta = p[`${key}Delta`];
+    const rank = p[`${board}Rank`], delta = p[`${board}Delta`];
     const now = p.weeks[w - 1];
     // No pick that week (or none in yet): Patatas stands in.
     const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
@@ -122,7 +124,7 @@ function pickBackdrop(f) {
 const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
 
 function picks(d, p) {
-  const league = state.sort === "league";
+  const league = (state.sort === "name" ? state.board : state.sort) === "league";
   const cells = p.weeks.map((w) => {
     if (!w.pick) return `<div class="pk"><small>${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
     const pts = w.show == null ? "…" : league ? w.league : w.show;
