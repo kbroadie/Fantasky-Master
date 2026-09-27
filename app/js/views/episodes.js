@@ -48,7 +48,7 @@ function slide(d, e) {
 
   const w = d.winners[e.ep], wk = d.weekly[e.ep], pts = (n) => d.EPS[n][e.ep];
   const called = wk.hits.length;
-  const line = `Won by ${named(d.cast[w.winner])} with ${w.top}${w.tiebreak ? " after a tiebreak" : ""}`
+  const line = `Won by ${named(d.cast[w.winner])} with <b>${w.top}</b>${w.tiebreak ? " after a tiebreak" : ""}`
     + ` · ${called ? `${called} of ${wk.voters} called it` : "nobody called it"}`;
 
   const order = seated(d);
