@@ -94,6 +94,7 @@ export function standingsHead(d) {
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
     <div class="card board">
       <div class="st-head">
+        <span class="st-rk" aria-hidden="true"></span>
         <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
         <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
       </div>
@@ -103,8 +104,8 @@ export function standingsHead(d) {
 
 /**
  * One row per place: the place number in a fixed column at the left (it never
- * moves or changes), then the Show's player at that place (points, name) and
- * the League's (name, points). Each half is a button that opens that player's
+ * moves or changes), then the Show's player at that place and
+ * the League's, each as name then points. Each half is a button that opens that player's
  * picks (rowMore). Rows are keyed by place; each half by player (data-p), so
  * a week change can slide each player to their new place (patchRows).
  */
@@ -114,7 +115,7 @@ export function standingsRows(d) {
     const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
     const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
     const name = `<span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>`;
-    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${side === "show" ? num + name : name + num}</button>`;
+    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${name + num}</button>`;
   };
   return show.map((l, i) => {
     const r = league[i];

@@ -243,13 +243,14 @@ strong { color: var(--t1); font-weight: 700; }
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Both boards side by side, in a rounded card like the cards on the other
    tabs. Each row is a place: its number in a fixed column at the left (1, 2,
-   3… in order, never moving), then the Show's player at that place (points,
-   name) and the League's (name, points at the right edge). Nothing sorts:
+   3… in order, never moving), set apart on a darker strip with a gold
+   hairline, then the Show's player at that place and the League's, each as
+   name then points. Nothing sorts:
    each board is already in its own order. With cast photos (Series 21, 22)
    each half sits over its player's pick that week (.pc-bg). */
 .board { --pe: 8px; --sc: 34px; --rk: 22px; --g: 5px; }
-/* The head lines up with the rows: the Show's half runs from the card's
-   edge over the place numbers and the left half; the League's over the right. */
+/* The head lines up with the rows: the place column's strip, then the Show's
+   half over the left half and the League's over the right. */
 .card.board { position: relative; margin: 12px var(--px); }
 /* The Show's red glows from the top of its half, the League's blue from
    the top of its, through the translucent head, with the film grain. */
@@ -272,7 +273,8 @@ strong { color: var(--t1); font-weight: 700; }
   background: linear-gradient(180deg, color-mix(in srgb, var(--b) 22%, transparent), color-mix(in srgb, var(--b) 5%, transparent));
   box-shadow: inset 0 -2px 0 var(--c);
 }
-.st-side.show { grid-column: 1 / 3; --c: var(--show-hi); --b: var(--show); }
+.st-rk { grid-column: 1; background: rgba(10, 8, 10, .45); box-shadow: inset -1px 0 0 var(--b-gold); }
+.st-side.show { grid-column: 2; --c: var(--show-hi); --b: var(--show); }
 .st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-dim); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 
@@ -285,8 +287,16 @@ strong { color: var(--t1); font-weight: 700; }
    across other rows to its player's new place when the week changes. */
 .pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: center; height: var(--head); padding-inline: var(--pe); }
 .sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
-.sd.l { grid-template-columns: var(--sc) minmax(0, 1fr); padding: 0 4px 0 2px; }
-.sd.r { grid-template-columns: minmax(0, 1fr) var(--sc); padding: 0 0 0 8px; }
+.sd { grid-template-columns: minmax(0, 1fr) var(--sc); }
+.sd.l { padding: 0 8px 0 10px; }
+.sd.r { padding: 0 0 0 8px; }
+/* The place column's strip: darker, with a gold hairline on its right, down
+   the row's head (the opened picks run full width under it). It's painted
+   over the row's backdrop and under its text. */
+.pc::after {
+  content: ""; position: absolute; left: 0; top: 0; z-index: 0; width: calc(var(--pe) + var(--rk)); height: var(--head); pointer-events: none;
+  background: rgba(10, 8, 10, .45); box-shadow: inset -1px 0 0 var(--b-gold);
+}
 .sd .pc-name { justify-self: start; }
 /* The place number: no movement arrows (removed on request) */
 .pc-rank { text-align: center; }
