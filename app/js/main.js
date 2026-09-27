@@ -266,9 +266,7 @@ $("#p-standings").addEventListener("click", (e) => {
     sizeOpen(head.parentElement);
     head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
     // Rows below slide as this one opens; keep their parallax in step.
-    const until = performance.now() + 400;
-    const follow = () => { parallax(); if (performance.now() < until) requestAnimationFrame(follow); };
-    requestAnimationFrame(follow);
+    followParallax(400);
   }
 });
 
@@ -355,6 +353,9 @@ function patchRows(before) {
     const done = (e) => { if (e.target === r && e.propertyName === "transform") { r.style.transition = ""; r.removeEventListener("transitionend", done); } };
     r.addEventListener("transitionend", done);
   }
+  // Each photo's parallax follows its row as it slides, so it ends where
+  // scrolling would put it (and doesn't jump when something next re-reads it).
+  followParallax(1100);
 }
 
 /** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
@@ -399,14 +400,16 @@ bindSwiper(CAST, (dir) => {
   if (dir < 0) { state.ep = state.d.episodes.length; show("episodes"); }
 }, { prev: true, next: false });
 
-// Task heat strip (Cast): tap an episode's slot in a row to read its tasks.
+// Task heat strip (Cast): tap an episode's slot in a row to read its tasks;
+// tap it again to deselect it.
 $("#cast-body").addEventListener("click", (e) => {
   const slot = e.target.closest("button.hs-slot");
   if (!slot) return;
-  const card = slot.closest(".heat");
+  const card = slot.closest(".heat"), was = slot.classList.contains("on");
   for (const x of card.querySelectorAll(".hs-slot.on")) x.classList.remove("on");
-  slot.classList.add("on");
-  card.querySelector(".hs-cap").textContent = slot.dataset.say;
+  slot.classList.toggle("on", !was);
+  slot.setAttribute("aria-pressed", !was);
+  card.querySelector(".hs-cap").textContent = was ? "" : slot.dataset.say;
 });
 
 // The race chart (Episodes): tap a line, name or point to follow that
@@ -469,6 +472,15 @@ function parallax() {
   }
 }
 const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };
+/** Keep the parallax in step while rows move for `ms` (opening a row, or sliding to new places). */
+let followUntil = 0;
+function followParallax(ms) {
+  const running = performance.now() < followUntil;
+  followUntil = Math.max(followUntil, performance.now() + ms);
+  if (running) return;
+  const step = () => { parallax(); if (performance.now() < followUntil) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
 addEventListener("scroll", queueParallax, { passive: true });
 
 addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueParallax(); });
