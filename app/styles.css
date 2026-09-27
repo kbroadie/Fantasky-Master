@@ -271,11 +271,11 @@ strong { color: var(--t1); font-weight: 700; }
 .card.board::after { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(62, 123, 250, .42), transparent 80%); }
 .card.board[data-board="show"]::before, .card.board[data-board="league"]::after { opacity: 1; }
 .board #rows { position: relative; z-index: 1; }
-/* Optically balanced inside the card: the rank column's text and the
-   chevron sit the same distance from the card's edges (the chevron's box is
-   visually lighter, so it gets a little more padding); Show and League are
-   close enough to read as a pair. */
-.board .pc-head { grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num) var(--chv); column-gap: var(--cg); padding-inline: var(--pl) var(--pr); }
+/* Four columns: rank, name (with its chevron), Show, League. Optically
+   balanced inside the card: the scores sit out to the right, so League's
+   numbers end about as far from the card's right edge as the ranks start
+   from its left; Show and League are close enough to read as a pair. */
+.board .pc-head { grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num); column-gap: var(--cg); padding-inline: var(--pl) var(--pr); }
 .board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
 /* The table's head is a strip of sort tabs in the week strip's language:
@@ -289,9 +289,9 @@ strong { color: var(--t1); font-weight: 700; }
    between the tabs (left and width from the same track sizes as the rows),
    like the gold panel under the main tabs, and a pressed label shrinks like
    a main tab. */
-.board { --pl: 12px; --pr: 16px; --rk: 32px; --num: 64px; --chv: 10px; --cg: 8px; }
+.board { --pl: 12px; --pr: 4px; --rk: 32px; --num: 64px; --cg: 8px; }
 .st-head {
-  position: relative; z-index: 1; display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num) var(--chv); column-gap: var(--cg);
+  position: relative; z-index: 1; display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num); column-gap: var(--cg);
   padding-inline: var(--pl) var(--pr); border-bottom: 1px solid var(--b-gold);
   background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6)); /* translucent, so the board's glow shows through */
 }
@@ -304,7 +304,7 @@ strong { color: var(--t1); font-weight: 700; }
 }
 .st-tab[data-sort="name"] { grid-column: 1 / 3; justify-content: flex-start; margin-left: calc(-1 * var(--pl)); padding-left: calc(var(--pl) + var(--rk) + var(--cg)); }
 .st-tab[data-sort="show"] { grid-column: 3; --c: var(--show-hi); --tint: color-mix(in srgb, var(--show) 26%, transparent); --tint2: color-mix(in srgb, var(--show) 6%, transparent); }
-.st-tab[data-sort="league"] { grid-column: 4; --c: var(--league-hi); --tint: color-mix(in srgb, var(--league) 26%, transparent); --tint2: color-mix(in srgb, var(--league) 6%, transparent); }
+.st-tab[data-sort="league"] { grid-column: 4; border-right: 0; --c: var(--league-hi); --tint: color-mix(in srgb, var(--league) 26%, transparent); --tint2: color-mix(in srgb, var(--league) 6%, transparent); }
 .st-tab > span { position: relative; display: inline-flex; align-items: center; gap: 4px; transition: transform .12s var(--ease); }
 .st-tab:active > span { transform: scale(.93); }
 .st-tab svg { flex: none; width: 12px; height: 12px; fill: none; stroke: color-mix(in srgb, var(--c) 60%, var(--t4)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s; }
@@ -316,7 +316,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* The sliding bar: under Player from the card's edge to the middle of the
    gap before Show; under Show or League, its column and half of each gap. */
 .st-ind {
-  --right: calc(var(--pr) + var(--chv) + var(--cg) / 2);
+  --right: calc(var(--pr) - var(--cg) / 2); /* from League's right edge to the head's */
   position: absolute; bottom: -1px; height: 2px; left: 0; width: calc(100% - var(--right) - 2 * (var(--num) + var(--cg)));
   background: var(--gold3); box-shadow: 0 0 8px var(--gold-glow); pointer-events: none;
   transition: left .32s var(--ease), width .32s var(--ease), background-color .32s var(--ease), box-shadow .32s var(--ease);
@@ -339,7 +339,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* A chevron: rows open on tap. Drawn like the How scoring works chevron
    and Player's sort arrow (fine 1.5px strokes), a quiet hint that steps
    back behind the numbers; it brightens as it flips on open. */
-.chev { justify-self: end; width: 7px; height: 7px; margin-right: 1px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
+.chev { flex: none; width: 7px; height: 7px; margin-left: 10px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
 .pc.open .chev { color: var(--t2); transform: translateY(2px) rotate(225deg); }
 .pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; transition: color .6s var(--ease); }
 /* The board not being shown steps back a tone, so the active one reads first
@@ -785,7 +785,7 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
-  .board { --pl: 16px; --pr: 22px; --rk: 40px; --num: 72px; --chv: 14px; --cg: 12px; }
+  .board { --pl: 16px; --pr: 8px; --rk: 40px; --num: 72px; --cg: 12px; }
   .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }

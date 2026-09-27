@@ -117,10 +117,9 @@ export function standingsRows(d) {
       ${bg}
       <button class="pc-head" aria-expanded="false">
         <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
-        <span class="pc-name"><span class="nm">${esc(p.name)}</span></span>
+        <span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>
         <span class="pc-num${p.showRank === 1 ? " t1" : ""}">${p.show}</span>
         <span class="pc-num${p.leagueRank === 1 ? " t1" : ""}">${p.league}</span>
-        <span class="chev" aria-hidden="true"></span>
       </button>
       <div class="pc-more"><div>${state.edit ? pickChooser(d, p, w) : picks(d, p)}</div></div>
     </div>`;
