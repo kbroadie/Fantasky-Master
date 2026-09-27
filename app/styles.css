@@ -146,7 +146,10 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
 .st-explain p { display: none; max-width: 34em; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.45; color: var(--t2); text-wrap: balance; }
-.st-explain p span { display: block; text-wrap: balance; } /* each sentence on its own lines, balanced */
+/* Two paragraphs, each balanced; the first opens with "Show score:" */
+.st-explain p span { display: block; text-wrap: balance; }
+.st-explain p span + span { margin-top: .6em; }
+.st-explain p b { font-weight: 600; color: var(--t1); }
 .st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
