@@ -39,11 +39,9 @@ const HOW_ICONS = {
   crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
   trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
 };
-/** The sort tiles over the table: a player, the crown (Show) and the trophy (League). */
+/** The table's head: a tab per sort (a player, the crown for Show, the trophy for League), like the week strip. */
 const PLAYER_ICON = "M8 2.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2z M2.75 13.5c.3-2.8 2.5-4.4 5.25-4.4s4.95 1.6 5.25 4.4";
-const sortTile = (key, path, label, arr = "") => `<button class="st-sort" type="button" data-sort="${key}">
-      <span class="st-tile"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg><i class="st-ring"></i><i class="st-glint"></i></span>
-      <span class="st-lbl">${label}${arr}</span></button>`;
+const sortTab = (key, path, label, arr = "") => `<button class="st-tab" type="button" data-sort="${key}"><span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg>${label}${arr}</span></button>`;
 const TERMS = [
   { icon: "crown", name: "Show", rule: ["The player with the ", "most points", " at the end of the series wins, regardless of episode placements."], range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: ["The player with the ", "best episode placements", " throughout the series wins, regardless of points."], range: "1–5", unit: "pts per episode" },
@@ -92,13 +90,13 @@ export function standingsHead(d) {
   return `
     <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
-    <div class="st-head" role="group" aria-label="Sort the standings">
-      ${sortTile("name", PLAYER_ICON, "Player", `<i class="arr" aria-hidden="true"></i>`)}
-      ${sortTile("show", HOW_ICONS.crown, "Show")}
-      ${sortTile("league", HOW_ICONS.trophy, "League")}
-    </div>
     <div class="card board" data-board="${state.sort}">
-      <div class="st-pad"></div>
+      <div class="st-head" role="group" aria-label="Sort the standings">
+        ${sortTab("name", PLAYER_ICON, "Player", `<i class="arr" aria-hidden="true"></i>`)}
+        ${sortTab("show", HOW_ICONS.crown, "Show")}
+        ${sortTab("league", HOW_ICONS.trophy, "League")}
+        <i class="st-ind" aria-hidden="true"></i>
+      </div>
       <div id="rows"></div>
     </div>`;
 }
