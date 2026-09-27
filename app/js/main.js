@@ -91,6 +91,9 @@ function renderRows() {
 
 /** The sort buttons: the active one shows ▼/▲ (highest first / A to Z is the default). */
 function markSort() {
+  // The table takes on the board it's sorted by (red Show, blue League, neutral Player).
+  const board = $(".card.board");
+  if (board) board.dataset.board = state.sort;
   for (const b of $$(".st-head [data-sort]")) {
     const on = b.dataset.sort === state.sort, name = b.dataset.sort === "name";
     b.classList.toggle("on", on);

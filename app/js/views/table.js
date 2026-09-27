@@ -39,6 +39,8 @@ const HOW_ICONS = {
   crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
   trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
 };
+/** The crown or trophy, small, for the table's Show and League heads. */
+const stIcon = (k) => `<svg class="st-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[k]}"/></svg>`;
 const TERMS = [
   { icon: "crown", name: "Show", rule: "The player with the most points at the end of the series wins, regardless of episode placements.", range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: "The player with the best episode placements throughout the series wins, regardless of points.", range: "1–5", unit: "pts per episode" },
@@ -57,7 +59,7 @@ function leaderLine(d, rows, w) {
   const show = leaders(rows, "show"), league = leaders(rows, "league"), final = d.complete && w === d.episodes.length;
   const verb = (names) => (final ? (names.length > 1 ? "win" : "wins") : (names.length > 1 ? "lead" : "leads"));
   const who = (names) => `<b>${esc(listing(names))}</b>`;
-  const S = "Show", L = "League";
+  const S = `<span class="st-show">Show</span>`, L = `<span class="st-league">League</span>`;
   if (listing(show) === listing(league)) return `<span>${who(show)} ${verb(show)} the ${S} and the ${L}</span>`;
   return `<span>${who(show)} ${verb(show)} the ${S}</span><span>${who(league)} ${verb(league)} the ${L}</span>`;
 }
@@ -85,12 +87,12 @@ export function standingsHead(d) {
   return `
     <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
-    <div class="card board">
+    <div class="card board" data-board="${state.sort}">
       <div class="st-head">
         <span class="st-rank">Rank</span>
         <button class="st-name" data-sort="name"><span>Player<i class="arr"></i></span></button>
-        <button class="st-num" data-sort="show"><span><i class="arr"></i>Show</span></button>
-        <button class="st-num" data-sort="league"><span><i class="arr"></i>League</span></button>
+        <button class="st-num" data-sort="show"><span><i class="arr"></i>${stIcon("crown")}Show</span></button>
+        <button class="st-num" data-sort="league"><span><i class="arr"></i>${stIcon("trophy")}League</span></button>
         <span></span>
       </div>
       <div id="rows"></div>
