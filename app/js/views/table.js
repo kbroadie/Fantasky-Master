@@ -41,7 +41,7 @@ const HOW_ICONS = {
 };
 const TERMS = [
   { icon: "crown", name: "Show", rule: "The player with the most points at the end of the series wins, regardless of episode placements.", range: "0–25", unit: "pts per episode" },
-  { icon: "trophy", name: "League", rule: "The player with the best episode placements wins, regardless of points.", range: "1–5", unit: "pts per episode" },
+  { icon: "trophy", name: "League", rule: "The player with the best episode placements throughout the series wins, regardless of points.", range: "1–5", unit: "pts per episode" },
 ];
 const howCard = (t) => `<div class="how-card">
     <span class="how-medal"><svg class="how-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[t.icon]}"/></svg></span>
