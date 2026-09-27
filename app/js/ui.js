@@ -40,7 +40,7 @@ export const framed = (c) => `<img class="fp" src="${c.img}" alt="${esc(c.key)}"
 /** A contestant's first name in their accent colour. */
 export const named = (c) => `<b class="cn" style="color:${c.color}">${esc(c.key)}</b>`;
 
-export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, wk: 0, ep: 1, cast: 0, stats: null, allTime: [] };
+export const state = { key: null, d: null, page: "standings", sort: "show", dir: -1, wk: 0, ep: 1, cast: 0, stats: null, allTime: [], edit: false };
 
 /**
  * Mean and standard deviation of points per episode, over every contestant
@@ -66,12 +66,13 @@ export function perEpisodeStats(series) {
 
 // ── Footer ──────────────────────────────────────────────────────────────────
 // A row of rubber ducks as the closing rule on every tab, nothing else.
-// One duck is drawn once (a <symbol>) and reused.
+// One duck is drawn once (a <symbol>) and reused. Tapping all seven opens
+// edit mode (edit.js); each is wrapped in a span for a bigger tap target.
 
 const DUCK = `<symbol id="duck" viewBox="0 0 20 16"><path d="M1.8 7.6Q3 9.4 6.5 9.4H11A3.6 3.6 0 1 1 15.6 6L19.2 5.7Q19.6 8.2 15.3 8.1A3.6 3.6 0 0 1 14.2 9.5Q16.6 10.2 16.6 12.2Q16.6 15 12 15H6Q2.6 15 2 11.9Q1.6 9.8 1.8 7.6Z M13.6 4.4A.75 .75 0 1 0 13.61 4.4Z" fill-rule="evenodd"/></symbol>`;
 
 export function footer() {
-  const ducks = Array.from({ length: 7 }, () => `<svg class="duck"><use href="#duck"/></svg>`).join("");
+  const ducks = Array.from({ length: 7 }, () => `<span class="dk"><svg class="duck"><use href="#duck"/></svg></span>`).join("");
   return `<svg width="0" height="0" aria-hidden="true" style="position:absolute">${DUCK}</svg>
     <div class="ducks" aria-hidden="true">${ducks}</div>`;
 }

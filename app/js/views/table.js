@@ -4,6 +4,7 @@
 // behind that week's pick. Tapping a row opens that player's ten weekly picks.
 import { esc, listing, tier, framed, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
+import { pickChooser } from "../edit.js";
 
 /** The week on show: state.wk, or the latest scored week. */
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
@@ -100,7 +101,7 @@ export function standingsRows(d) {
         <span class="pc-num${p.leagueRank === 1 ? " t1" : ""}">${p.league}</span>
         <span class="chev" aria-hidden="true"></span>
       </button>
-      <div class="pc-more"><div>${picks(d, p)}</div></div>
+      <div class="pc-more"><div>${state.edit ? pickChooser(d, p, w) : picks(d, p)}</div></div>
     </div>`;
   }).join("");
 }
