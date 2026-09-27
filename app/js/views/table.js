@@ -32,16 +32,21 @@ function leaders(rows, key) {
 }
 
 /** "How scoring works", under the leaders line, opens both of these. */
-// The league's own phrases, rearranged into a hierarchy (not reworded): a
-// label, the range as the big figure, the takeaway, then the rule.
+// The league's rules, in a hierarchy: an icon and label, the range as the big
+// figure, the takeaway, then the rule. The crown and trophy are drawn in the
+// same gold line style as the task icons (16px grid), not emoji.
+const HOW_ICONS = {
+  crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
+  trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
+};
 const TERMS = [
-  { label: "Show score", range: "0–25", unit: "pts per episode", lead: "The broad scoring range rewards blowouts.",
-    rule: "The player with the most task points at the end of the series wins, regardless of episode placements." },
-  { label: "League score", range: "1–5", unit: "pts per episode", lead: "The narrow scoring range rewards consistency.",
-    rule: "The player with the highest average episode placement wins, regardless of task points." },
+  { icon: "crown", label: "Show score", range: "0–25", unit: "points per episode", lead: "A wide range, so blowouts pay big.",
+    rule: "The player whose picks earn the most task points over the series wins, however those picks placed." },
+  { icon: "trophy", label: "League score", range: "1–5", unit: "points per episode", lead: "A narrow range, so consistency wins out.",
+    rule: "The player whose picks place best on average wins, however many task points they scored." },
 ];
 const howCard = (t) => `<div class="how-card">
-    <b class="how-label">${esc(t.label)}</b>
+    <b class="how-label"><svg class="how-ico" viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[t.icon]}"/></svg>${esc(t.label)}</b>
     <p class="how-range"><span>${esc(t.range)}</span><small>${esc(t.unit)}</small></p>
     <p class="how-lead">${esc(t.lead)}</p>
     <p class="how-rule">${esc(t.rule)}</p>
