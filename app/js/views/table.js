@@ -33,8 +33,8 @@ function leaders(rows, key) {
 
 /** Tap "Show" or "League" in the leaders line to open a line explaining it. */
 const TERMS = {
-  show: "Show points are your pick's own score each episode, added up over the series, out of a possible 250.",
-  league: "League points are your pick's finishing place each episode, 5 for 1st down to 1 for 5th, added up over the series, out of a possible 50.",
+  show: "Show points reward backing a big scorer. You bank every point your pick earns in the episode, so a landslide pays more than a narrow win, and your running total rewards spotting who's on form.",
+  league: "League points reward calling the finishing order. Your pick earns 5 for 1st down to 1 for last, however close the scores, so every episode counts the same and one wild week can't decide the series.",
 };
 const term = (key, label) => `<button class="st-term" data-term="${key}" aria-expanded="false">${label}</button>`;
 
