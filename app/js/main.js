@@ -318,14 +318,19 @@ function patchRows(before) {
     old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
     old.querySelector(".pc-more > div").innerHTML = n.querySelector(".pc-more > div").innerHTML;
     // The backdrop is patched, not replaced: a new crop of the same photo
-    // (every S22 face) just moves, with no reload or blank frame.
+    // (every S22 face) just moves, with no reload or blank frame. A copy of
+    // the old one stays on top and fades out while the row slides, so the
+    // photos blend (ghostOf).
     const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
+    const ghost = !reducedMotion && ob && nb && (ob.getAttribute("style") !== nb.getAttribute("style")
+      || ob.querySelector("img").getAttribute("src") !== nb.querySelector("img").getAttribute("src")) ? ob.cloneNode(true) : null;
     if (ob && nb && ob.querySelector(".edge") == null === (nb.querySelector(".edge") == null)) {
       ob.setAttribute("style", nb.getAttribute("style"));
       const oi = ob.querySelector("img"), ni = nb.querySelector("img");
       if (oi.src !== ni.src) oi.src = ni.src;
     } else if (nb) { if (ob) ob.replaceWith(nb); else old.prepend(nb); }
     else if (ob) ob.remove();
+    if (ghost) fadeGhost(ghost, old.querySelector(".pc-bg"));
     order.push(old);
   }
   const keep = new Set(order);
@@ -344,8 +349,28 @@ function patchRows(before) {
     if (!r.style.transform) continue;
     r.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each row can be followed
     r.style.transform = "";
-    r.addEventListener("transitionend", () => { r.style.transition = ""; }, { once: true });
+    // Only the row's own slide ends it (a backdrop fading inside bubbles up too)
+    const done = (e) => { if (e.target === r && e.propertyName === "transform") { r.style.transition = ""; r.removeEventListener("transitionend", done); } };
+    r.addEventListener("transitionend", done);
   }
+}
+
+/**
+ * Blend a row's backdrop into its new photo: the old one (a copy, `ghost`)
+ * sits on top of the new one and fades out over the same second as the row's
+ * slide, once the new photo is decoded, so there's never a blank frame. The
+ * backdrop is already its own compositing layer, so fading a copy is cheap.
+ */
+function fadeGhost(ghost, bg) {
+  ghost.classList.add("pc-ghost");
+  bg.after(ghost);
+  const img = bg.querySelector("img");
+  const ready = img?.decode ? img.decode().catch(() => {}) : Promise.resolve();
+  // An explicit animation (not a CSS transition, which can miss its start if
+  // the copy is inserted and changed in the same frame) that always finishes
+  ready.then(() => ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1000, easing: "cubic-bezier(.65, 0, .35, 1)", fill: "forwards" })
+    .finished.then(() => ghost.remove(), () => ghost.remove()));
+  setTimeout(() => ghost.remove(), 3000); // in case it never runs (a hidden tab)
 }
 
 $("#p-standings").addEventListener("click", (e) => {
