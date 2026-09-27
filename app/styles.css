@@ -138,20 +138,27 @@ strong { color: var(--t1); font-weight: 700; }
 .st-hero .ep-sub { margin-top: 5px; }
 .st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 8px; font-size: 14px; color: var(--t2); }
 .st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
-/* "Show" and "League" are dotted-underlined buttons; each opens one line
-   below explaining it (the hero grows by that line; tap again to close). */
-.st-term { color: inherit; text-decoration: underline dotted rgba(182, 151, 123, .7); text-underline-offset: 3px; }
-.st-term[aria-expanded="true"] { color: var(--t1); text-decoration-color: var(--gold2); }
+/* "How scoring works" under the leaders line opens both explanations below
+   it (the hero grows; tap again to close). A gold label with a chevron, so
+   it reads as something to tap. */
+.st-how {
+  display: inline-flex; align-items: center; gap: 7px; margin-top: 8px; padding: 6px 8px;
+  font: 500 11px var(--fm); letter-spacing: .12em; text-transform: uppercase; color: var(--gold2);
+  -webkit-tap-highlight-color: transparent;
+}
+.st-how-chev { width: 6px; height: 6px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease); }
+.st-how[aria-expanded="true"] .st-how-chev { transform: translateY(1px) rotate(225deg); }
 .st-explain { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .st-hero.explain .st-explain { grid-template-rows: 1fr; }
 .st-explain > div { overflow: hidden; min-height: 0; }
 /* A label in the app's label style, then two paragraphs on one measure
    (about 42 characters), each balanced so no line is left short. */
-.st-explain p { display: none; max-width: 21.5rem; margin: 0 auto; padding-top: 12px; font-size: 13px; line-height: 1.5; color: var(--t2); }
-.st-explain p b { display: block; margin-bottom: 5px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--gold2); }
+.st-explain p { max-width: 21.5rem; margin: 0 auto; padding-top: 6px; font-size: 13px; line-height: 1.5; color: var(--t2); }
+.st-explain p b { display: block; margin-bottom: 5px; font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); } /* muted like a card head; gold is for the button */
 .st-explain p span { display: block; text-wrap: balance; hanging-punctuation: first; }
 .st-explain p span + span { margin-top: .5em; }
-.st-hero[data-term="show"] .st-explain [data-for="show"], .st-hero[data-term="league"] .st-explain [data-for="league"] { display: block; }
+.st-explain p + p { padding-top: 16px; }
+.st-explain > div > :last-child { padding-bottom: 4px; }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
 /* Five columns shared by the header and every row, each with one alignment:

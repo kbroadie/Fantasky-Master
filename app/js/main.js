@@ -75,7 +75,6 @@ function refresh(text) {
   patchRows(() => {
     $("#st-tabs").innerHTML = weekTabs(d);
     $(".st-hero").innerHTML = standingsHero(d);
-    $(".st-hero").classList.remove("explain");
     markWeek(false);
   });
   renderSlides(d);
@@ -243,14 +242,13 @@ $("#p-standings").addEventListener("click", (e) => {
     markSort();
     return patchRows(); // the rows slide to their new places
   }
-  // "Show" / "League" in the hero: open a line explaining it; tap again to close.
-  const term = e.target.closest(".st-term");
-  if (term) {
-    const hero = term.closest(".st-hero"), t = term.dataset.term;
-    const open = !(hero.classList.contains("explain") && hero.dataset.term === t);
-    hero.dataset.term = t;
-    hero.classList.toggle("explain", open);
-    for (const b of hero.querySelectorAll(".st-term")) b.setAttribute("aria-expanded", open && b.dataset.term === t);
+  // "How scoring works": open both explanations; tap again to close. It stays
+  // open as the week changes (state.how).
+  const how = e.target.closest(".st-how");
+  if (how) {
+    state.how = !state.how;
+    how.closest(".st-hero").classList.toggle("explain", state.how);
+    how.setAttribute("aria-expanded", state.how);
     return;
   }
   const head = e.target.closest(".pc-head");
@@ -284,7 +282,6 @@ function setWeek(w) {
   state.wk = w;
   patchRows(() => {
     $(".st-hero").innerHTML = standingsHero(d);
-    $(".st-hero").classList.remove("explain");
     markWeek();
     writeHash();
   });
