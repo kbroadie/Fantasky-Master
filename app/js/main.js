@@ -5,7 +5,7 @@ import { loadText, parseCSV, buildSeries } from "./csv.js";
 import { initEdit } from "./edit.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsHead, standingsRows, standingsHero, stWeek, weekTabs } from "./views/table.js";
+import { standingsHead, standingsRows, standingsHero, stWeek, weekTabs, rowMore } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -86,23 +86,6 @@ function refresh(text) {
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
   queueParallax();
-  markSort();
-}
-
-/** The sort buttons: Player's chevron points up for A to Z, down for Z to A. */
-function markSort() {
-  // The table takes on the board it's sorted by (red Show, blue League, neutral Player).
-  const board = $(".card.board");
-  if (board) board.dataset.board = state.sort;
-  for (const b of $$(".st-head [data-sort]")) {
-    const on = b.dataset.sort === state.sort, name = b.dataset.sort === "name";
-    b.classList.toggle("on", on);
-    b.setAttribute("aria-pressed", on);
-    if (name) {
-      b.dataset.dir = state.dir;
-      b.setAttribute("aria-label", `Sort by player${on ? `, now ${state.dir > 0 ? "A to Z" : "Z to A"}` : ""}`);
-    } else b.setAttribute("aria-label", `Show the ${b.dataset.sort} standings, highest first`);
-  }
 }
 
 function show(page) {
@@ -238,19 +221,6 @@ $("#series").addEventListener("click", () => {
 });
 
 $("#p-standings").addEventListener("click", (e) => {
-  const s = e.target.closest("[data-sort]");
-  if (s) {
-    // Show and League always sort highest first (tapping the active one does
-    // nothing); Player sorts A to Z, and tapping it again reverses.
-    const k = s.dataset.sort;
-    if (k === "name") state.dir = state.sort === "name" ? -state.dir : 1;
-    else if (state.sort === k) return;
-    else state.dir = -1;
-    state.sort = k;
-    if (state.sort !== "name") state.board = state.sort;
-    markSort();
-    return patchRows(); // the rows slide to their new places
-  }
   // "How scoring works": open both explanations; tap again to close. It stays
   // open as the week changes (state.how).
   const how = e.target.closest(".st-how");
@@ -261,12 +231,14 @@ $("#p-standings").addEventListener("click", (e) => {
     queueParallax();
     return;
   }
-  const head = e.target.closest(".pc-head");
-  if (head) {
-    sizeOpen(head.parentElement);
-    head.setAttribute("aria-expanded", head.parentElement.classList.toggle("open"));
+  // A half of a row opens that player's picks under the row; tapping the
+  // same half closes it, and the other half switches to their player.
+  const sd = e.target.closest(".pc .sd");
+  if (sd) {
+    const row = sd.closest(".pc"), side = sd.dataset.side;
+    openRow(row, row.classList.contains("open") && row.dataset.open === side ? null : side);
     // Rows below slide as this one opens; keep their parallax in step.
-    followParallax(settled([head.parentElement.querySelector(".pc-more")]));
+    followParallax(settled([row.querySelector(".pc-more")]));
   }
 });
 
@@ -296,67 +268,91 @@ function setWeek(w) {
   });
 }
 
+/** Open a row on one side (its player's picks), or close it (side null). */
+function openRow(row, side) {
+  if (side) {
+    const name = row.querySelector(`.sd[data-side="${side}"]`)?.dataset.p;
+    row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side);
+    sizeOpen(row);
+    row.dataset.open = side;
+  } else delete row.dataset.open;
+  row.classList.toggle("open", !!side);
+  for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
+}
+
 /**
- * Brings the rows up to date without rebuilding the table: each row keeps its
- * element (and whether it's open), its numbers, backdrop and picks are
- * patched, and the rows slide from their old places to their new ones (FLIP).
- * before() runs once the old places are measured (it may change the hero).
+ * Brings the rows up to date without rebuilding the table. Rows are places,
+ * so they stay put; each row's halves, backdrop and picks are patched, and
+ * each player's half slides from their old place to their new one on its
+ * board (FLIP), the Show's and the League's independently. An opened half
+ * follows its player to their new place. before() runs once the old places
+ * are measured (it may change the hero).
  */
 function patchRows(before) {
-  const d = state.d;
-  const rows = $("#rows"), first = new Map([...rows.children].map((r) => [r.dataset.p, r.getBoundingClientRect().top]));
+  const d = state.d, rows = $("#rows");
+  const first = new Map([...rows.querySelectorAll(".sd")].map((b) => [`${b.dataset.side}|${b.dataset.p}`, b.getBoundingClientRect().top]));
+  const opened = [...rows.children].filter((r) => r.classList.contains("open"))
+    .map((r) => ({ side: r.dataset.open, p: r.querySelector(`.sd[data-side="${r.dataset.open}"]`)?.dataset.p }));
   before?.();
-  // Patch each row in place from freshly rendered markup, then reorder.
   const fresh = document.createElement("div");
   fresh.innerHTML = standingsRows(d);
-  const order = [];
-  for (const n of fresh.children) {
-    const old = rows.querySelector(`.pc[data-p="${CSS.escape(n.dataset.p)}"]`);
-    if (!old) { order.push(n); continue; }
+  [...fresh.children].forEach((n, i) => {
+    const old = rows.children[i];
+    if (!old) return rows.append(n.cloneNode(true));
     old.classList.toggle("lead", n.classList.contains("lead"));
     old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
-    old.querySelector(".pc-more > div").innerHTML = n.querySelector(".pc-more > div").innerHTML;
-    // The backdrop is patched, not replaced: a new crop of the same photo
-    // (every S22 face) just moves, with no reload or blank frame. A copy of
-    // the old one stays on top and fades out while the row slides, so the
-    // photos blend (ghostOf).
-    const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
-    const ghost = !reducedMotion && ob && nb && (ob.getAttribute("style") !== nb.getAttribute("style")
-      || ob.querySelector("img").getAttribute("src") !== nb.querySelector("img").getAttribute("src")) ? ob.cloneNode(true) : null;
-    if (ob && nb && ob.querySelector(".edge") == null === (nb.querySelector(".edge") == null)) {
-      ob.setAttribute("style", nb.getAttribute("style"));
-      const oi = ob.querySelector("img"), ni = nb.querySelector("img");
-      if (oi.src !== ni.src) oi.src = ni.src;
-    } else if (nb) { if (ob) ob.replaceWith(nb); else old.prepend(nb); }
-    else if (ob) ob.remove();
-    if (ghost) fadeGhost(ghost, old.querySelector(".pc-bg"));
-    order.push(old);
+    patchBackdrop(old, n);
+  });
+  while (rows.children.length > fresh.children.length) rows.lastElementChild.remove();
+  // Opened halves follow their players.
+  const want = new Map();
+  for (const o of opened) {
+    const b = [...rows.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((x) => x.dataset.p === o.p);
+    if (b && !want.has(b.closest(".pc"))) want.set(b.closest(".pc"), o.side);
   }
-  for (const r of order) if (r.classList.contains("open")) sizeOpen(r); // its picks may have changed height
-  const keep = new Set(order);
-  for (const r of [...rows.children]) if (!keep.has(r)) r.remove();
-  rows.append(...order);
+  for (const r of rows.children) if (want.has(r) || r.classList.contains("open")) openRow(r, want.get(r) || null);
   queueParallax();
   if (reducedMotion) return;
-  for (const r of rows.children) {
-    const dy = (first.get(r.dataset.p) ?? r.getBoundingClientRect().top) - r.getBoundingClientRect().top;
+  const moving = [];
+  for (const b of rows.querySelectorAll(".sd")) {
+    const was = first.get(`${b.dataset.side}|${b.dataset.p}`);
+    const dy = was == null ? 0 : was - b.getBoundingClientRect().top;
     if (!dy) continue;
-    r.style.transition = "none";
-    r.style.transform = `translateY(${dy}px)`;
+    b.style.transition = "none";
+    b.style.transform = `translateY(${dy}px)`;
+    moving.push(b);
   }
   rows.getBoundingClientRect(); // commit the inverted positions before playing
-  for (const r of rows.children) {
-    if (!r.style.transform) continue;
-    r.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each row can be followed
-    r.style.transform = "";
-    // Only the row's own slide ends it (a backdrop fading inside bubbles up too)
-    const done = (e) => { if (e.target === r && e.propertyName === "transform") { r.style.transition = ""; r.removeEventListener("transitionend", done); } };
-    r.addEventListener("transitionend", done);
+  for (const b of moving) {
+    b.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each player can be followed
+    b.style.transform = "";
+    b.addEventListener("transitionend", () => { b.style.transition = ""; }, { once: true });
   }
-  // Each photo's parallax follows its row as it slides, until the slide has
-  // really finished (it can start late while new photos decode), so it ends
-  // where scrolling would put it.
-  followParallax(settled([...rows.children]));
+  followParallax(settled([...rows.querySelectorAll(".pc-more")]));
+}
+
+/**
+ * A row's backdrop, patched rather than replaced: each photo's crop (its
+ * inline vars) and src are updated in place, so a new crop of the same photo
+ * (every S22 face) just moves, with no reload or blank frame. A copy of the
+ * old backdrop stays on top and fades out, so the photos blend (fadeGhost).
+ */
+function patchBackdrop(old, n) {
+  const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
+  if (!ob || !nb) { ob?.remove(); if (nb) old.prepend(nb.cloneNode(true)); return; }
+  const ofs = ob.querySelectorAll(".pf"), nfs = nb.querySelectorAll(".pf");
+  const same = [...ofs].every((f, k) => f.getAttribute("style") === nfs[k].getAttribute("style")
+    && f.querySelector("img").getAttribute("src") === nfs[k].querySelector("img").getAttribute("src"));
+  if (same) return;
+  const ghost = reducedMotion ? null : ob.cloneNode(true);
+  ofs.forEach((f, k) => {
+    const nf = nfs[k];
+    if (!f.querySelector(".edge") !== !nf.querySelector(".edge")) return f.replaceWith(nf.cloneNode(true));
+    f.setAttribute("style", nf.getAttribute("style"));
+    const oi = f.querySelector("img"), src = nf.querySelector("img").getAttribute("src");
+    if (oi.getAttribute("src") !== src) oi.src = src;
+  });
+  if (ghost) fadeGhost(ghost, ob);
 }
 
 /** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
@@ -374,8 +370,7 @@ function sizeOpen(row) {
 function fadeGhost(ghost, bg) {
   ghost.classList.add("pc-ghost");
   bg.after(ghost);
-  const img = bg.querySelector("img");
-  const ready = img?.decode ? img.decode().catch(() => {}) : Promise.resolve();
+  const ready = Promise.all([...bg.querySelectorAll("img")].map((img) => img.decode ? img.decode().catch(() => {}) : null));
   // An explicit animation (not a CSS transition, which can miss its start if
   // the copy is inserted and changed in the same frame) that always finishes
   ready.then(() => ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1000, easing: "cubic-bezier(.65, 0, .35, 1)", fill: "forwards" })

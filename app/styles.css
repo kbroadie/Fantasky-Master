@@ -243,111 +243,64 @@ strong { color: var(--t1); font-weight: 700; }
 }
 
 /* ── Standings ─────────────────────────────────────────────────────── */
-/* Five columns shared by the header and every row, each with one alignment:
-   rank (centre) · player (left) · Show and League (centre, under their headers)
-   · chevron (centre). With a group photo (Series 22) the week's pick is the
-   row's backdrop (.pc-bg); without them (Series 21) it isn't shown. */
-.pc-head { display: grid; grid-template-columns: 36px minmax(0, 1fr) 56px 56px 14px; align-items: center; column-gap: 8px; padding-inline: var(--px); }
-.pc-head > :nth-child(1) { justify-self: center; }
-.pc-head > :nth-child(2) { justify-self: start; }
-.pc-head > :nth-child(3),
-.pc-head > :nth-child(4) { justify-self: stretch; text-align: center; }
-.pc-head > :nth-child(5) { justify-self: center; }
-/* The table sits in a rounded card, like the cards on the other tabs.
-   The sort buttons' tap area reaches past the slim header row. */
-.card.board { position: relative; margin: 12px var(--px); transition: border-color .6s var(--ease); }
-/* The table takes on the board it's sorted by: a red edge and a soft red glow
-   through the header for the Show, blue for the League, neutral for Player.
-   Each glow is its own layer (with the film grain), so re-sorting cross-fades
-   between them while the rows slide. The header's own background is
-   translucent so the glow shows through; the rows (photos) sit above it. */
-.card.board[data-board="show"] { border-color: var(--show-edge); }
-.card.board[data-board="league"] { border-color: var(--league-edge); }
-.card.board::before, .card.board::after {
-  content: ""; position: absolute; inset: 0 0 auto; height: 90px; z-index: 0; pointer-events: none; opacity: 0;
-  transition: opacity .6s var(--ease);
-}
-.card.board::before { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(229, 72, 77, .42), transparent 80%); }
-.card.board::after { background: var(--grain), radial-gradient(75% 110% at 50% 0%, rgba(62, 123, 250, .42), transparent 80%); }
-.card.board[data-board="show"]::before, .card.board[data-board="league"]::after { opacity: 1; }
+/* Both boards side by side, in a rounded card like the cards on the other
+   tabs. Each row is a place: the Show's player at that place on the left, the
+   League's on the right, mirrored (points at the outer edges, names towards
+   the middle, the two ranks either side of the centre line). Nothing sorts:
+   each board is already in its own order. With cast photos (Series 21, 22)
+   each half sits over its player's pick that week (.pc-bg). */
+.board { --pe: 8px; --sc: 34px; --rk: 22px; --g: 5px; }
+.card.board { position: relative; margin: 12px var(--px); }
+/* The Show's red glows from the top of its half, the League's blue from
+   the top of its, through the translucent head, with the film grain. */
+.card.board::before, .card.board::after { content: ""; position: absolute; inset: 0 0 auto; height: 90px; z-index: 0; pointer-events: none; }
+.card.board::before { background: var(--grain), radial-gradient(55% 110% at 22% 0%, rgba(229, 72, 77, .36), transparent 80%); }
+.card.board::after { background: radial-gradient(55% 110% at 78% 0%, rgba(62, 123, 250, .36), transparent 80%); }
 .board #rows { position: relative; z-index: 1; }
-/* Four columns: rank, name (with its chevron), Show, League. Optically
-   balanced inside the card: the scores sit out to the right, so League's
-   numbers end about as far from the card's right edge as the ranks start
-   from its left; Show and League are close enough to read as a pair. */
-.board .pc-head { grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num); column-gap: var(--cg); padding-inline: var(--pl) var(--pr); }
 .board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
-/* The table's head is a strip of sort tabs in the week strip's language:
-   DM Mono caps, a divider after each tab, and the active one pressed in,
-   tinted from the top with a 2px bar under it. Each tab stands over its
-   column (Player over rank and name, its word where the names start; Show
-   and League centred over their numbers, reaching into the gaps), so the
-   head still names the columns. The tint and bar take the board's colour:
-   red for the Show, blue for the League, and the strip's own gold for
-   Player; the icons carry their colour even when idle. One bar slides
-   between the tabs (left and width from the same track sizes as the rows),
-   like the gold panel under the main tabs, and a pressed label shrinks like
-   a main tab. */
-.board { --pl: 12px; --pr: 4px; --rk: 32px; --num: 64px; --cg: 8px; }
+/* The head names the two halves in the week strip's language: DM Mono caps
+   under the scoring cards' crown and trophy, each half tinted from the top in
+   its colour with a 2px bar under it. It's a label, not a control. */
 .st-head {
-  position: relative; z-index: 1; display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) var(--num) var(--num); column-gap: var(--cg);
-  padding-inline: var(--pl) var(--pr); border-bottom: 1px solid var(--b-gold);
-  background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6)); /* translucent, so the board's glow shows through */
+  position: relative; z-index: 1; display: grid; grid-template-columns: 1fr 1fr;
+  border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6));
 }
-.st-tab {
-  --c: var(--gold3); --tint: rgba(212, 160, 40, .2); --tint2: rgba(212, 160, 40, .05);
-  position: relative; display: flex; align-items: center; justify-content: center; min-height: 54px; margin-inline: calc(var(--cg) / -2);
-  border-right: 1px solid var(--b-dim);
-  font: 500 11px/13px var(--fm); color: var(--t3); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
-  -webkit-tap-highlight-color: transparent; transition: color .15s, background .15s, box-shadow .15s;
+.st-side {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; min-height: 48px;
+  font: 500 11px/13px var(--fm); letter-spacing: .1em; text-transform: uppercase; color: var(--c);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--b) 22%, transparent), color-mix(in srgb, var(--b) 5%, transparent));
+  box-shadow: inset 0 -2px 0 var(--c);
 }
-.st-tab[data-sort="name"] { grid-column: 1 / 3; justify-content: flex-start; margin-left: calc(-1 * var(--pl)); padding-left: calc(var(--pl) + var(--rk) + var(--cg)); }
-.st-tab[data-sort="show"] { grid-column: 3; --c: var(--show-hi); --tint: color-mix(in srgb, var(--show) 26%, transparent); --tint2: color-mix(in srgb, var(--show) 6%, transparent); }
-.st-tab[data-sort="league"] { grid-column: 4; border-right: 0; --c: var(--league-hi); --tint: color-mix(in srgb, var(--league) 26%, transparent); --tint2: color-mix(in srgb, var(--league) 6%, transparent); }
-/* Icon over label, like the main tabs: narrow enough for League beside the
-   card's edge, and a taller target (the whole 72 × 54px tab) */
-.st-tab > span { display: inline-flex; flex-direction: column; align-items: center; gap: 5px; transition: transform .12s var(--ease); }
-.st-tab em { position: relative; font-style: normal; }
-.st-tab:active > span { transform: scale(.93); }
-.st-tab svg { flex: none; width: 15px; height: 15px; fill: none; stroke: color-mix(in srgb, var(--c) 60%, var(--t4)); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; transition: stroke .15s; }
-.st-tab.on { color: var(--t1); background: linear-gradient(180deg, var(--tint), var(--tint2)); box-shadow: inset 0 2px 5px rgba(0, 0, 0, .4); }
-.st-tab.on svg { stroke: var(--c); }
-.st-tab .arr { position: absolute; left: 100%; top: 50%; margin: -4px 0 0 5px; display: none; width: 5px; height: 5px; border-right: 1.5px solid; border-bottom: 1.5px solid; transform: translateY(1.5px) rotate(225deg); transition: transform .3s var(--ease); }
-.st-tab.on .arr { display: block; }
-.st-tab[data-dir="-1"] .arr { transform: translateY(-1px) rotate(45deg); }
-/* The sliding bar: under Player from the card's edge to the middle of the
-   gap before Show; under Show or League, its column and half of each gap. */
-.st-ind {
-  --right: calc(var(--pr) - var(--cg) / 2); /* from League's right edge to the head's */
-  position: absolute; bottom: -1px; height: 2px; left: 0; width: calc(100% - var(--right) - 2 * (var(--num) + var(--cg)));
-  background: var(--gold3); box-shadow: 0 0 8px var(--gold-glow); pointer-events: none;
-  transition: left .32s var(--ease), width .32s var(--ease), background-color .32s var(--ease), box-shadow .32s var(--ease);
-}
-.board[data-board="show"] .st-ind { left: calc(100% - var(--right) - 2 * (var(--num) + var(--cg))); width: calc(var(--num) + var(--cg)); background: var(--show-hi); box-shadow: 0 0 8px var(--show-glow); }
-.board[data-board="league"] .st-ind { left: calc(100% - var(--right) - var(--num) - var(--cg)); width: calc(var(--num) + var(--cg)); background: var(--league-hi); box-shadow: 0 0 8px var(--league-glow); }
+.st-side.show { --c: var(--show-hi); --b: var(--show); }
+.st-side.league { --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-dim); }
+.st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 
 /* Rows are not compositing layers of their own: with one per row (plus each
    backdrop's), iOS ran short of layer memory and dropped rows' text after
    scrolling. The backdrop clips itself to the row instead (below). */
-.pc { --head: 58px; position: relative; overflow: hidden; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
+.pc { --head: 58px; position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
-.pc-head { width: 100%; height: var(--head); padding-block: 8px; text-align: left; }
+/* Rows don't clip (the backdrop clips itself, below), so a half can slide
+   across other rows to its player's new place when the week changes. */
+.pc-head { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); height: var(--head); }
+.sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
+.sd.l { grid-template-columns: var(--sc) minmax(0, 1fr) var(--rk); padding: 0 3px 0 var(--pe); }
+.sd.r { grid-template-columns: var(--rk) minmax(0, 1fr) var(--sc); padding: 0 var(--pe) 0 3px; }
+.sd.l .pc-name { justify-self: end; }
+.sd.r .pc-name { justify-self: start; }
 .pc-rank { display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.pc-rank b { font-size: 18px; font-weight: 800; color: var(--t2); line-height: 1; }
+.pc-rank b { font-size: 16px; font-weight: 800; color: var(--t2); line-height: 1; }
 .pc-rank i { font-style: normal; font-size: 11px; font-weight: 700; line-height: 1; }
 .up { color: var(--up); } .dn { color: #ff5a4a; } .flat { color: var(--t4); }
-.pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(17px, 4.6vw, 20px); font-weight: 700; }
+.pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
 .pc-name .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* A chevron: rows open on tap. Drawn like the How scoring works chevron
    and Player's sort arrow (fine 1.5px strokes), a quiet hint that steps
    back behind the numbers; it brightens as it flips on open. */
-.chev { flex: none; width: 7px; height: 7px; margin-left: 10px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
-.pc.open .chev { color: var(--t2); transform: translateY(2px) rotate(225deg); }
-.pc-num { text-align: center; font-size: clamp(18px, 5vw, 21px); font-weight: 800; letter-spacing: -.02em; transition: color .6s var(--ease); }
-/* The board not being shown steps back a tone, so the active one reads first
-   (first place stays gold in both). */
-.board[data-board="show"] .pc-head > :nth-child(4), .board[data-board="league"] .pc-head > :nth-child(3) { color: var(--t2); }
+.chev { flex: none; width: 7px; height: 7px; margin-left: 6px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
+.pc[data-open="show"] .sd.l .chev, .pc[data-open="league"] .sd.r .chev { color: var(--t2); transform: translateY(2px) rotate(225deg); }
+.pc-num { text-align: center; font-size: clamp(18px, 4.9vw, 21px); font-weight: 800; letter-spacing: -.02em; }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
@@ -369,11 +322,24 @@ strong { color: var(--t1); font-weight: 700; }
 /* Its height is fixed (taller than any opened row, which is at most ~200px),
    so opening a row only uncovers more of it: the backdrop's layer is never
    resized, and so never redrawn, while the row grows. */
-.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; container-type: inline-size; --tx: calc(50cqw - 16px); --face: 83px; }
+.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
+/* Two photos: the Show player's pick on the left and the League player's on
+   the right. Each is its own box (a query container) covering 60% of the
+   backdrop, so they overlap across the middle fifth; the right one fades in
+   over that overlap (a mask), so the left photo cross-fades into the right.
+   Each face's eyes sit in the middle of its half of the row (--tx, in its
+   box's own units: the row is its box / .6, less the bleeds). */
+.pf { position: absolute; top: 0; bottom: 0; width: 60%; overflow: hidden; container-type: inline-size; }
+.pf.l { left: 0; --tx: calc(12px + 41.667cqw); }
+.pf.r {
+  right: 0; --tx: calc(58.333cqw - 12px);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 33.333%); mask-image: linear-gradient(90deg, transparent, #000 33.333%);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+}
 .pc-bg img, .pc-bg .edge {
   /* Head --face across, and at least wide enough to span the row, unless
      --cap limits how far that can enlarge the head (Patatas: a narrow photo
-     with an off-centre face). The face's --ex/--ey/--size/--ar are on .pc-bg. */
+     with an off-centre face). The face's --ex/--ey/--size/--ar are on its .pf. */
   --W: max(var(--face) / var(--size), min(max(var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px), var(--cap, 99) * var(--face) / var(--size)));
   position: absolute; left: calc(var(--tx) - var(--ex) * var(--W)); width: var(--W);
 }
@@ -383,7 +349,8 @@ strong { color: var(--t1); font-weight: 700; }
 }
 /* A capped photo that doesn't span the row fades into it at both edges. */
 .pc-bg .edge { top: 0; bottom: 0; background: linear-gradient(90deg, var(--s1), transparent 48px, transparent calc(100% - 48px), var(--s1)); }
-/* Reshade: darker behind the name and the numbers, clear over the eyes;
+/* Reshade: darker at the edges (points) and down the middle (names and
+   ranks), clear over each half's eyes;
    the dimming behind the picks is on .pc-more, outside this layer.
    The photo and its shade are one compositing layer (.pc-bg is isolated;
    the image has no filter, will-change or 3D transform of its own). As
@@ -413,7 +380,7 @@ strong { color: var(--t1); font-weight: 700; }
   --r: calc(100% - 2 * var(--bleed));
   background:
     linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
-    linear-gradient(90deg, rgba(16, 13, 16, .82) var(--bleed), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .22), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .4), rgba(16, 13, 16, .22) calc(var(--bleed) + var(--r) * .54), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .66), rgba(16, 13, 16, .84) calc(var(--bleed) + var(--r) * .8));
+    linear-gradient(90deg, rgba(16, 13, 16, .8) var(--bleed), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .12), rgba(16, 13, 16, .26) calc(var(--bleed) + var(--r) * .25), rgba(16, 13, 16, .58) calc(var(--bleed) + var(--r) * .4), rgba(16, 13, 16, .72) calc(var(--bleed) + var(--r) * .5), rgba(16, 13, 16, .58) calc(var(--bleed) + var(--r) * .6), rgba(16, 13, 16, .26) calc(var(--bleed) + var(--r) * .75), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .88), rgba(16, 13, 16, .8) calc(var(--bleed) + var(--r)));
 }
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
@@ -787,12 +754,11 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 
 @media (min-width: 600px) {
   :root { --px: 20px; }
-  .pc-head { grid-template-columns: 44px minmax(0, 1fr) 80px 80px 16px; column-gap: 14px; }
-  .board { --pl: 16px; --pr: 8px; --rk: 40px; --num: 72px; --cg: 12px; }
+  .board { --pe: 16px; --sc: 48px; --rk: 30px; --g: 10px; }
   .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }
-  .pc-bg { --tx: calc(50cqw - 42px); --face: 106px; }
+  .pc-bg { --face: 106px; }
   .bars { --plot: 126px; }
 }
 @media (min-width: 760px) {
