@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, framed, smooth, fmtDay, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, ord, framed, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -157,11 +157,30 @@ function pickBackdrop(lf, rf) {
 
 
 /**
+ * A flowing Bézier through every point (Catmull-Rom, as cubic Béziers), for
+ * the journey's lines: curvier than the race chart's monotone curve, which
+ * runs nearly straight through steadily rising totals. Each control point's
+ * height is kept between its two points', so a flat week never dips.
+ */
+function curve(pts) {
+  const f = (v) => v.toFixed(2), clamp = (v, a, b) => Math.min(Math.max(v, Math.min(a, b)), Math.max(a, b));
+  let path = `M${f(pts[0][0])},${f(pts[0][1])}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const [x0, y0] = pts[i - 1] || pts[i], [x1, y1] = pts[i], [x2, y2] = pts[i + 1], [x3, y3] = pts[i + 2] || pts[i + 1];
+    const c1 = [x1 + (x2 - x0) / 6, clamp(y1 + (y2 - y0) / 6, y1, y2)], c2 = [x2 - (x3 - x1) / 6, clamp(y2 - (y3 - y1) / 6, y1, y2)];
+    path += `C${f(c1[0])},${f(c1[1])} ${f(c2[0])},${f(c2[1])} ${f(x2)},${f(y2)}`;
+  }
+  return path;
+}
+
+/**
  * An opened half: the player's journey on that board. Their running total
  * after each episode as a line in the board's colour, against the league's
  * running median (the dotted line, keyed "median 60" at the top, on the side away
- * from their latest point, so it never meets its place chip), on one
- * scale from 0 to the leader's total. Each week's pick sits on their line as
+ * from their latest point, so it never meets its place chip), both flowing
+ * Bézier curves from 0 at the left edge, over five gridlines at tidy values
+ * (labelled in a gutter on the left), the top one at or above the leader's
+ * total. Each week's pick sits on their line as
  * a little framed portrait with the points it scored (gold glow if it won the
  * episode), the latest has their place in a chip above, and picks already in
  * for later weeks wait, faint. All through the week on show.
@@ -173,13 +192,18 @@ function journey(d, p, side, w) {
     const v = d.players.map((q) => total(q, e)).sort((a, b) => a - b), m = v.length >> 1;
     return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
   };
-  const top = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 1;
+  // Five gridlines at tidy whole values (0 to 4 steps of 1, 2 or 5 × 10ⁿ),
+  // the top one at or above the leader's total.
+  const lead = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 4;
+  const raw = lead / 4, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 5, 10].map((m) => Math.max(1, m * mag)).find((v) => v >= raw), top = step * 4;
   const X = (e) => ((e - .5) / d.episodes.length) * 100, Y = (v) => 100 - (v / top) * 100;
-  const pts = [], med = [];
+  const grid = [0, 1, 2, 3, 4].map((i) => `<i class="jr-grid" style="--y:${Y(i * step)}%"><em>${i * step}</em></i>`).join("");
+  const pts = [[0, 100]], med = [[0, 100]]; // both start from 0 at the left edge
   const cells = p.weeks.map((x) => {
     const e = x.ep, done = e <= upTo;
     if (done) { pts.push([X(e), Y(total(p, e))]); med.push([X(e), Y(median(e))]); }
-    const y = done ? pts.at(-1)[1] : (pts.length ? pts.at(-1)[1] : 100);
+    const y = pts.at(-1)[1];
     const face = x.pick ? framed(d.cast[x.pick]) : `<span class="pk-blank">–</span>`;
     const got = done ? (x.pick ? x[k] : 0) : "";
     const cls = `jr-pt${done ? "" : " later"}${done && x.won ? " won" : ""}${e === upTo ? " now" : ""}`;
@@ -189,9 +213,10 @@ function journey(d, p, side, w) {
   const eps = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep < upTo ? "" : "later"}" style="--x:${X(ep).toFixed(2)}%">${ep}</span>`).join("");
   const mv = upTo ? median(upTo) : null;
   const svg = pts.length > 1 ? `<svg class="jr-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-        <path class="med" d="${smooth(med)}"/><path class="glow" d="${smooth(pts)}"/><path d="${smooth(pts)}"/></svg>` : "";
+        <path class="med" d="${curve(med)}"/><path class="glow" d="${curve(pts)}"/><path d="${curve(pts)}"/></svg>` : "";
   return `<div class="jr ${k}">
     <div class="jr-plot">
+      ${grid}
       ${mv == null ? "" : `<span class="jr-key${X(upTo) < 50 ? " end" : ""}"><i aria-hidden="true"></i>median ${Number.isInteger(mv) ? mv : mv.toFixed(1)}</span>`}
       ${svg}
       ${cells}

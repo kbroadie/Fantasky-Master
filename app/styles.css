@@ -454,7 +454,9 @@ strong { color: var(--t1); font-weight: 700; }
 /* An opened half: the player's journey on that board (journey in table.js).
    Their running total after each episode as a line in the board's colour,
    against the league's running median (gold dotted, keyed at the top like
-   the Cast bars' median, on the side away from their latest point), from 0 to the leader's total; each week's pick
+   the Cast bars' median, on the side away from their latest point), both
+   flowing Bézier curves from 0 at the left edge, over five hairline
+   gridlines at tidy values labelled in a gutter on the left, from 0 to the leader's total; each week's pick
    sits on their line as a little framed portrait with the points it scored; a
    pick that won glows gold, the latest has their place in a chip above, and
    picks already in for later weeks wait, faint. The plot's side margins keep
@@ -463,7 +465,11 @@ strong { color: var(--t1); font-weight: 700; }
    them (not under reduced motion). */
 .jr { --c: var(--show-hi); --cb: var(--show); padding: 0 12px 10px; }
 .jr.league { --c: var(--league-hi); --cb: var(--league); }
-.jr-plot { position: relative; height: 96px; margin: 34px 4px 30px; }
+/* The plot leaves a gutter on the left for the gridlines' labels; the episode
+   numbers below share its margins, so they stay under their columns. */
+.jr-plot { position: relative; height: 96px; margin: 34px 4px 27px 26px; }
+.jr-grid { position: absolute; left: 0; right: 0; top: var(--y); border-top: 1px solid rgba(255, 255, 255, .08); }
+.jr-grid em { position: absolute; right: calc(100% + 6px); top: -7px; font: 500 11px/13px var(--fm); font-style: normal; color: var(--t4); font-variant-numeric: tabular-nums; }
 .jr-key { position: absolute; left: 0; top: -30px; display: flex; align-items: center; gap: 6px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: color-mix(in srgb, var(--gold2) 80%, transparent); white-space: nowrap; }
 .jr-key.end { left: auto; right: 0; }
 .jr-key i { width: 16px; border-top: 1.5px dotted currentColor; }
@@ -479,7 +485,7 @@ strong { color: var(--t1); font-weight: 700; }
 .jr-pt.now:not(.won) .fp { filter: drop-shadow(0 0 4px var(--cb)); }
 .jr-pt.later { opacity: .35; }
 .jr-rk { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 3px; padding: 1px 6px; border-radius: 999px; font: 500 11px/13px var(--fm); font-style: normal; letter-spacing: .04em; color: #fff; white-space: nowrap; background: color-mix(in srgb, var(--cb) 75%, transparent); box-shadow: 0 0 8px color-mix(in srgb, var(--cb) 50%, transparent); }
-.jr-eps { position: relative; height: 13px; margin: 0 8px; }
+.jr-eps { position: relative; height: 13px; margin: 0 4px 0 26px; }
 .jr-eps span { position: absolute; left: var(--x); transform: translateX(-50%); font: 500 11px/13px var(--fm); color: var(--t3); }
 .jr-eps span.later { color: var(--t4); opacity: .6; }
 .jr-eps span.now { color: var(--c); }
