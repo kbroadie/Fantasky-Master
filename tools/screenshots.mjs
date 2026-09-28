@@ -28,7 +28,7 @@ const BASE = `http://127.0.0.1:${server.address().port}/app/`;
 // [name, width, height, hash, action?]
 const SHOTS = [
   ["phone-standings", 390, 844, "#/"],
-  ["phone-standings-open", 390, 844, "#/", (p) => p.click(".pc-head")],
+  ["phone-standings-open", 390, 844, "#/", (p) => p.click(".pc .sd")],
   ["phone-episode", 390, 844, "#/{S}/episodes"],
   ["phone-episode-table", 390, 844, "#/{S}/episodes", (p) => p.evaluate(() => scrollTo(0, 800))],
   ["phone-cast", 390, 844, "#/{S}/cast"],

@@ -1,8 +1,9 @@
 // Standings: a strip of weeks (Ep 1–10), an "Episode 4 Standings" headline and the
-// leaders, then one sortable table (Show or League) as it stood after that week.
-// A week not yet scored is "Episode 5 Picks": the table as it stands now, each row
-// behind that week's pick. Tapping a row opens that player's ten weekly picks.
-import { esc, listing, tier, framed, fmtDay, fmtWhen, state } from "../ui.js";
+// leaders, then both boards side by side as they stood after that week: each
+// row is a place, the Show's player on the left and the League's on the right,
+// each over their pick that week. A week not yet scored is "Episode 5 Picks":
+// the boards as they stand now. Tapping a player opens their ten weekly picks.
+import { esc, listing, tier, ord, framed, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -10,19 +11,23 @@ import { pickChooser } from "../edit.js";
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
 
 /**
- * Each player as the table stood after week w: totals, ranks and movement
- * since the week before (from league.js's per-week history).
+ * Each player as the table stood after week w: totals and ranks (from
+ * league.js's per-week history).
  */
 export function atWeek(d, w) {
-  // Weeks not yet scored: the table as it stands now, with no movement.
-  if (w > d.weeksScored) return d.weeksScored ? atWeek(d, d.weeksScored).map((p) => ({ ...p, showDelta: 0, leagueDelta: 0 })) : d.players;
+  // Weeks not yet scored: the table as it stands now.
+  if (w > d.weeksScored) return d.weeksScored ? atWeek(d, d.weeksScored) : d.players;
   return d.players.map((p) => {
-    const h = p.history[w - 1], was = p.history[w - 2] || h;
-    return {
-      ...p, show: h.show, league: h.league, showRank: h.showRank, leagueRank: h.leagueRank,
-      showDelta: was.showRank - h.showRank, leagueDelta: was.leagueRank - h.leagueRank,
-    };
+    const h = p.history[w - 1];
+    return { ...p, show: h.show, league: h.league, showRank: h.showRank, leagueRank: h.leagueRank };
   });
+}
+
+/** Both boards at week w, each highest first (then by rank and name). */
+export function boards(d, w) {
+  const rows = atWeek(d, w);
+  const by = (k) => [...rows].sort((a, b) => b[k] - a[k] || a[`${k}Rank`] - b[`${k}Rank`] || a.name.localeCompare(b.name));
+  return { show: by("show"), league: by("league") };
 }
 
 /** Everyone on the top score of a board (ties share the lead). */
@@ -39,9 +44,6 @@ const HOW_ICONS = {
   crown: "M3.5 11 2.5 5l3 3L8 3l2.5 5 3-3-1 6z M3.5 13.5h9",
   trophy: "M5 2.5h6v4a3 3 0 0 1-6 0z M5 3.75H3.25a1.9 1.9 0 0 0 2.1 3.1 M11 3.75h1.75a1.9 1.9 0 0 1-2.1 3.1 M8 9.5V12 M5.5 13.5h5 M6.5 12h3",
 };
-/** The table's head: a tab per sort (a player, the crown for Show, the trophy for League), like the week strip. */
-const PLAYER_ICON = "M8 2.5a2.6 2.6 0 1 1 0 5.2a2.6 2.6 0 1 1 0-5.2z M2.75 13.5c.3-2.8 2.5-4.4 5.25-4.4s4.95 1.6 5.25 4.4";
-const sortTab = (key, path, label, arr = "") => `<button class="st-tab" type="button" data-sort="${key}"><span><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${path}"/></svg><em>${label}${arr}</em></span></button>`;
 const TERMS = [
   { icon: "crown", name: "Show", rule: ["The player with the ", "most points", " at the end of the series wins, regardless of episode placements."], range: "0–25", unit: "pts per episode" },
   { icon: "trophy", name: "League", rule: ["The player with the ", "best episode placements", " throughout the series wins, regardless of points."], range: "1–5", unit: "pts per episode" },
@@ -90,59 +92,72 @@ export function standingsHead(d) {
   return `
     <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
     <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
-    <div class="card board" data-board="${state.sort}">
-      <div class="st-head" role="group" aria-label="Sort the standings">
-        ${sortTab("name", PLAYER_ICON, "Player", `<i class="arr" aria-hidden="true"></i>`)}
-        ${sortTab("show", HOW_ICONS.crown, "Show")}
-        ${sortTab("league", HOW_ICONS.trophy, "League")}
-        <i class="st-ind" aria-hidden="true"></i>
+    <div class="card board">
+      <div class="st-head">
+        <span class="st-rk" aria-hidden="true"></span>
+        <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
+        <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
       </div>
       <div id="rows"></div>
     </div>`;
 }
 
+/**
+ * One row per place: the place number in a fixed column at the left (it never
+ * moves or changes), then the Show's player at that place and
+ * the League's, each as name then points. Each half is a button that opens that player's
+ * picks (rowMore). Rows are keyed by place; each half by player (data-p), so
+ * a week change can slide each player to their new place (patchRows).
+ */
 export function standingsRows(d) {
-  // Sorted by name, the rank and movement are still the last board sorted by.
-  const key = state.sort, board = key === "name" ? state.board : key, w = stWeek(d);
-  const rows = atWeek(d, w).sort(key === "name" ? (a, b) => state.dir * a.name.localeCompare(b.name)
-    : (a, b) => state.dir * (a[key] - b[key]) || a[`${key}Rank`] - b[`${key}Rank`] || a.name.localeCompare(b.name));
-  return rows.map((p) => {
-    const rank = p[`${board}Rank`], delta = p[`${board}Delta`];
-    const now = p.weeks[w - 1];
-    // No pick that week (or none in yet): Patatas stands in.
-    const face = !heroRows() ? null : now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
-    const bg = face ? pickBackdrop(face) : "";
+  const w = stWeek(d), { show, league } = boards(d, w);
+  const half = (p, side) => {
+    const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
+    const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
+    const name = `<span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>`;
+    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" aria-expanded="false" aria-label="${esc(`${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`)}">${name + num}</button>`;
+  };
+  return show.map((l, i) => {
+    const r = league[i];
+    const bg = heroRows() ? pickBackdrop(faceOf(l, w), faceOf(r, w)) : "";
     return `
-    <div class="pc${rank === 1 ? " lead" : ""}" data-p="${esc(p.name)}">
+    <div class="pc${l.showRank === 1 || r.leagueRank === 1 ? " lead" : ""}">
       ${bg}
-      <button class="pc-head" aria-expanded="false">
-        <span class="pc-rank"><b class="${tier(rank)}">${rank}</b>${deltaTag(delta)}</span>
-        <span class="pc-name"><span class="nm">${esc(p.name)}</span><span class="chev" aria-hidden="true"></span></span>
-        <span class="pc-num${p.showRank === 1 ? " t1" : ""}">${p.show}</span>
-        <span class="pc-num${p.leagueRank === 1 ? " t1" : ""}">${p.league}</span>
-      </button>
-      <div class="pc-more"><div>${state.edit ? pickChooser(d, p, w) : picks(d, p)}</div></div>
+      <div class="pc-head"><span class="pc-rank"><b class="${tier(i + 1)}">${i + 1}</b></span>${half(l, "show")}${half(r, "league")}</div>
+      <div class="pc-more"><div></div></div>
     </div>`;
   }).join("");
 }
 
-/**
- * The row's backdrop: the contestant the player picked this week (or
- * Patatas if they didn't pick), cropped from their photo, scaled so every head is the same size and
- * the photo spans the row edge to edge, with the eyes on the centre line of
- * the row's top line and in the gap between the name and the Show column.
- * It covers the whole row, so opening the row just uncovers more of the
- * photo below; nothing moves. Frosted (.pc-bg) until the row opens.
- */
-function pickBackdrop(f) {
-  const vars = `--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}`;
-  return `<span class="pc-bg" aria-hidden="true" style="${vars}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
+/** A player's pick that week, or Patatas if they didn't pick (or it isn't in yet). */
+function faceOf(p, w) {
+  const now = p.weeks[w - 1];
+  return now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
 }
 
-const deltaTag = (n) => n > 0 ? `<i class="up">↑${n}</i>` : n < 0 ? `<i class="dn">↓${-n}</i>` : `<i class="flat">–</i>`;
+/** What an opened half shows: the player's ten picks (their chooser in edit mode). */
+export function rowMore(d, name, side) {
+  const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
+  return !p ? "" : state.edit ? pickChooser(d, p, w) : picks(d, p, side);
+}
 
-function picks(d, p) {
-  const league = (state.sort === "name" ? state.board : state.sort) === "league";
+/**
+ * The row's backdrop: both players' picks, the Show's on the left and the
+ * League's on the right, each cropped from their photo and scaled so every
+ * head is the same size, with the eyes on the centre line of the row's top
+ * line and in the middle of their half. The left photo cross-fades into the
+ * right one across the middle of the row (.pf.r's mask). It covers the whole
+ * row, so opening the row just uncovers more of the photos below; nothing
+ * moves. Frosted (.pc-bg) until the row opens.
+ */
+function pickBackdrop(lf, rf) {
+  const face = (f, side) => `<span class="pf ${side}" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
+  return `<span class="pc-bg" aria-hidden="true">${face(lf, "l")}${face(rf, "r")}</span>`;
+}
+
+
+function picks(d, p, side) {
+  const league = side === "league";
   const cells = p.weeks.map((w) => {
     if (!w.pick) return `<div class="pk"><small>${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
     const pts = w.show == null ? "…" : league ? w.league : w.show;
