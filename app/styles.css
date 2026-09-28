@@ -327,11 +327,19 @@ strong { color: var(--t1); font-weight: 700; }
 .pc-rank b { font-size: 15px; font-weight: 700; color: var(--t3); }
 .pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
 .pc-name .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* A chevron: rows open on tap. Drawn like the How scoring works chevron
-   and Player's sort arrow (fine 1.5px strokes), a quiet hint that steps
-   back behind the numbers; it brightens as it flips on open. */
-.chev { flex: none; width: 7px; height: 7px; margin-left: 5px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
-.pc[data-open="show"] .sd.l .chev, .pc[data-open="league"] .sd.r .chev { color: var(--t2); transform: translateY(2px) rotate(225deg); }
+/* The chevron after each name: the only sign a cell opens, so it stays, but
+   quiet (refined on request): a drawn chevron with round caps and joins, 9 ×
+   5.5px on a 1.5px stroke, in --t4, centred on the lowercase letters rather
+   than the line box (1px down). Opened, it turns over and takes its board's
+   colour, red for the Show and blue for the League, so the open state reads
+   at a glance. */
+.chev {
+  flex: none; width: 9px; height: 5.5px; margin-left: 6px; overflow: visible;
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  color: var(--t4); transform: translateY(1px); transition: transform .3s var(--ease), color .3s var(--ease);
+}
+.pc[data-open="show"] .sd.l .chev { color: var(--show-hi); transform: translateY(1px) rotate(180deg); }
+.pc[data-open="league"] .sd.r .chev { color: var(--league-hi); transform: translateY(1px) rotate(180deg); }
 .pc-num { text-align: right; font-size: clamp(18px, 4.9vw, 21px); font-weight: 800; letter-spacing: -.02em; }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
