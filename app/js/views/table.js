@@ -175,16 +175,14 @@ function curve(pts) {
 
 /**
  * An opened half: the player's journey on that board, drawn like the race
- * chart on the Episodes tab. Their running total after each episode as a 2px
- * line in the board's colour, against the league's running median (a dotted
- * gold line), both flowing Bézier curves from 0 at the left edge, over five
- * hairline gridlines at tidy values (labelled in DM Mono in a gutter on the
- * left), the top one at or above the leader's total. The x axis runs 1 to 10
- * (this week in gold, later ones faint), tightening only when the end labels
- * need the room. Each line ends with a race-style label: the player's first
- * three letters (MED for the median) then the total, right-aligned in a
- * column, kept at least 15 apart with a hairline when moved. All through the
- * week on show.
+ * chart on the Episodes tab but with no numbers, only lines, so it shows how
+ * they're doing against everyone else at a glance. Their running total after
+ * each episode as a 2px line in the board's colour, over every other player's
+ * as a thin, faint line, and the league's running median (dotted gold), all
+ * flowing Bézier curves from 0 at the left edge, over five evenly spaced
+ * hairline gridlines, the top one at the leader's total. The x axis runs
+ * 0 to 10 episodes. A legend above names the three kinds of line. All through
+ * the week on show.
  */
 function journey(d, p, side, w) {
   const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored);
@@ -193,42 +191,19 @@ function journey(d, p, side, w) {
     const v = d.players.map((q) => total(q, e)).sort((a, b) => a - b), m = v.length >> 1;
     return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
   };
-  // Five gridlines at tidy whole values (0 to 4 steps of 1, 2 or 5 × 10ⁿ),
-  // the top one at or above the leader's total.
-  const lead = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 4;
-  const raw = lead / 4, mag = 10 ** Math.floor(Math.log10(raw));
-  const step = [1, 2, 5, 10].map((m) => Math.max(1, m * mag)).find((v) => v >= raw), top = step * 4;
-  const W = 340, L = 26, R = 332, T = 10, B = 128, H = B + 22;
-  const fmt = (v) => (Number.isInteger(v) ? `${v}` : v.toFixed(1));
-  const ends = upTo ? [
-    { tag: p.name.slice(0, 3), v: total(p, upTo), cls: "", c: "var(--c)" },
-    { tag: "Med", v: median(upTo), cls: " med", c: "var(--gold2)" },
-  ] : [];
-  // Room for the end labels right of this week's point (as the race chart).
-  const NAME = 26, DIG = 7.4, numW = Math.max(1, ...ends.map((x) => fmt(x.v).length)) * DIG;
-  const last = d.episodes.length, LBL = 14 + NAME + 6 + numW + 4;
-  const xEnd = upTo ? Math.min(R, L + (W - LBL - L) * last / upTo) : R;
-  const x = (e) => L + (e / last) * (xEnd - L), y = (v) => B - (v / top) * (B - T), f1 = (v) => v.toFixed(1);
-  const grid = [0, 1, 2, 3, 4].map((i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(i * step))}" y2="${f1(y(i * step))}"/>`
-    + `<text class="rc-axis" x="${L - 6}" y="${f1(y(i * step) + 4)}" text-anchor="end">${i * step}</text>`).join("");
-  const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === upTo ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 4}" text-anchor="middle">${e}</text>`).join("");
-  const run = (fn) => [[L, B], ...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(fn(i + 1))])];
-  const line = upTo ? `<path class="jr-med" d="${curve(run(median))}"/><path class="jr-me" pathLength="1" d="${curve(run((e) => total(p, e)))}"/>` : "";
-  // End labels, kept at least 15 apart: the lower pushed down (capped at the
-  // plot's bottom), then the upper pushed up only if they still crowd.
-  ends.sort((a, b) => b.v - a.v).forEach((m, i) => { m.y = Math.max(y(m.v), i ? ends[i - 1].ty + 15 : -Infinity); m.ty = m.y; });
-  if (ends.length) {
-    ends.at(-1).ty = Math.min(ends.at(-1).ty, B);
-    ends[0].ty = Math.min(ends[0].ty, ends[1].ty - 15);
-  }
-  const lx = x(upTo), labels = ends.map((m) => {
-    const ly = y(m.v), moved = Math.abs(m.ty - ly) > 3;
-    return (moved ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(m.ty)}" style="stroke:${m.c}"/>` : "")
-      + `<text class="rc-name${m.cls}" x="${f1(lx + 14)}" y="${f1(m.ty + 4)}" style="fill:${m.c}">${esc(m.tag)}</text>`
-      + `<text class="rc-name rc-total" x="${f1(lx + 14 + NAME + 6 + numW)}" y="${f1(m.ty + 4)}" text-anchor="end">${fmt(m.v)}</text>`;
-  }).join("");
-  const say = upTo ? `${p.name}: ${fmt(total(p, upTo))} ${k === "show" ? "Show" : "League"} points after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}; league median ${fmt(median(upTo))}` : `${p.name}: no episodes scored yet`;
+  // No numbers, so the plot tops out at the leader's total, with five
+  // evenly spaced gridlines from 0.
+  const top = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 4, step = top / 4;
+  const W = 340, L = 2, R = 338, T = 4, B = 124, H = B + 4;
+  const x = (e) => L + (e / d.episodes.length) * (R - L), y = (v) => B - (v / top) * (B - T), f1 = (v) => v.toFixed(1);
+  const grid = [0, 1, 2, 3, 4].map((i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(i * step))}" y2="${f1(y(i * step))}"/>`).join("");
+  const run = (fn) => curve([[L, B], ...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(fn(i + 1))])]);
+  const lines = upTo ? `<g class="jr-others">${d.players.filter((q) => q.name !== p.name).map((q) => `<path d="${run((e) => total(q, e))}"/>`).join("")}</g>`
+    + `<path class="jr-med" d="${run(median)}"/><path class="jr-me" pathLength="1" d="${run((e) => total(p, e))}"/>` : "";
+  const board = k === "show" ? "Show" : "League";
+  const say = upTo ? `${p.name}'s ${board} points after each episode, ${ord(p.history[upTo - 1][`${k}Rank`])} after episode ${upTo}, against the other players and the league median` : `${p.name}: no episodes scored yet`;
   return `<div class="jr ${k}">
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${xAxis}${line}<g class="jr-lbl">${labels}</g></svg>
+    <p class="jr-key" aria-hidden="true"><span><i class="me"></i>${esc(p.name)}</span><span><i class="med"></i>Median</span><span><i></i>Others</span></p>
+    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${lines}</svg>
   </div>`;
 }
