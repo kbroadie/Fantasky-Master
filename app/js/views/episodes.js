@@ -2,7 +2,7 @@
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
 // columns (each under its portrait) and the ballot.
-import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, state } from "../ui.js";
+import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, smooth, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
 import { edTitle, edStrip, edTable } from "../edit.js";
@@ -93,22 +93,6 @@ function slide(d, e) {
 // end with the first three letters of their name, like the task table's
 // columns, and their gap (the leader's total). Tap a line to bring it
 // forward and fade the rest; tap a point to read it in the caption.
-
-/** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
-function smooth(pts) {
-  const n = pts.length, f1 = (v) => v.toFixed(1);
-  if (n < 3) return `M${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join("L")}`;
-  const dx = [], m = [], t = [];
-  for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
-  t[0] = m[0]; t[n - 1] = m[n - 2];
-  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (3 * (dx[i - 1] + dx[i])) / ((2 * dx[i] + dx[i - 1]) / m[i - 1] + (dx[i] + 2 * dx[i - 1]) / m[i]);
-  let d = `M${f1(pts[0][0])},${f1(pts[0][1])}`;
-  for (let i = 0; i < n - 1; i++) {
-    const [x0, y0] = pts[i], [x1, y1] = pts[i + 1], h = dx[i] / 3;
-    d += `C${f1(x0 + h)},${f1(y0 + t[i] * h)} ${f1(x1 - h)},${f1(y1 - t[i + 1] * h)} ${f1(x1)},${f1(y1)}`;
-  }
-  return d;
-}
 
 /** A tidy axis step (1, 2, 2.5 or 5 × 10ⁿ) giving at most five gridlines. */
 function niceStep(max) {

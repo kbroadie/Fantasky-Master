@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, framed, fmtDay, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, ord, framed, smooth, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -138,7 +138,7 @@ function faceOf(p, w) {
 /** What an opened half shows: the player's ten picks (their chooser in edit mode). */
 export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
-  return !p ? "" : state.edit ? pickChooser(d, p, w) : picks(d, p, side);
+  return !p ? "" : state.edit ? pickChooser(d, p, w) : journey(d, p, side, w);
 }
 
 /**
@@ -156,12 +156,52 @@ function pickBackdrop(lf, rf) {
 }
 
 
-function picks(d, p, side) {
-  const league = side === "league";
-  const cells = p.weeks.map((w) => {
-    if (!w.pick) return `<div class="pk"><small>${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
-    const pts = w.show == null ? "…" : league ? w.league : w.show;
-    return `<div class="pk${w.won ? " won" : ""}"><small>${w.ep}</small>${framed(d.cast[w.pick])}<b>${pts}</b></div>`;
+/**
+ * An opened half: the player's journey on that board. Their place after each
+ * episode as a line in the board's colour, each week's pick sitting on it as a
+ * little framed portrait with the points it scored (gold glow if it won the
+ * episode), the latest place in a chip above, a gold dashed "1st" summit line,
+ * and three facts above: winners called and the best pick or podiums, then
+ * points missed against each episode's winner (Show) or the average finish
+ * (League). All through
+ * the week on show; picks already in for later weeks wait, faint, beyond it.
+ */
+function journey(d, p, side, w) {
+  const k = side === "show" ? "show" : "league", n = d.players.length, upTo = Math.min(w, d.weeksScored);
+  const played = p.weeks.filter((x) => x.ep <= upTo && x.show != null);
+  const called = played.filter((x) => x.won).length;
+  const fact = (label, value) => `<div class="jr-fact"><small>${label}</small><b>${value}</b></div>`;
+  const best = [...played].sort((a, b) => b[k] - a[k] || b.show - a.show)[0];
+  const facts = [fact("Called", played.length ? `${called}<i> of ${played.length}</i>` : "–")];
+  if (k === "show") {
+    facts.push(fact("Best pick", best ? `${esc(best.pick)} <i>${best.show}</i>` : "–"));
+    facts.push(fact("Missed", played.length ? `${played.reduce((a, x) => a + (x.missed || 0), 0)}<i> pts</i>` : "–"));
+  } else {
+    const podiums = played.filter((x) => x.place <= 3).length;
+    facts.push(fact("Podiums", played.length ? `${podiums}<i> of ${played.length}</i>` : "–"));
+    facts.push(fact("Avg finish", played.length ? (played.reduce((a, x) => a + x.place, 0) / played.length).toFixed(1) : "–"));
+  }
+  // The plot: column i (episode i + 1) across, place down (1st at the top).
+  const X = (e) => ((e - .5) / d.episodes.length) * 100, Y = (r) => (n > 1 ? ((r - 1) / (n - 1)) * 100 : 50);
+  const pts = [];
+  const cells = p.weeks.map((x) => {
+    const e = x.ep, done = e <= upTo, r = done ? p.history[e - 1][`${k}Rank`] : null;
+    if (done) pts.push([X(e), Y(r)]);
+    const y = done ? Y(r) : (pts.length ? pts.at(-1)[1] : 50);
+    const face = x.pick ? framed(d.cast[x.pick]) : `<span class="pk-blank">–</span>`;
+    const got = done ? (x.pick ? x[k] : 0) : "";
+    const cls = `jr-pt${done ? "" : " later"}${done && x.won ? " won" : ""}${e === upTo ? " now" : ""}`;
+    const chip = e === upTo ? `<i class="jr-rk">${ord(r)}</i>` : "";
+    return (x.pick || done) ? `<span class="${cls}" style="--x:${X(e).toFixed(2)}%;--y:${y.toFixed(2)}%;--i:${e}">${chip}${face}<b>${done ? `+${got}` : ""}</b></span>` : "";
   }).join("");
-  return `<div class="pk-grid">${cells}</div>`;
+  const eps = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep < upTo ? "" : "later"}" style="--x:${X(ep).toFixed(2)}%">${ep}</span>`).join("");
+  return `<div class="jr ${k}">
+    <div class="jr-facts">${facts.join("")}</div>
+    <div class="jr-plot">
+      <i class="jr-top" aria-hidden="true"><em>1st</em></i>
+      ${pts.length > 1 ? `<svg class="jr-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="glow" d="${smooth(pts)}" pathLength="1"/><path d="${smooth(pts)}" pathLength="1"/></svg>` : ""}
+      ${cells}
+    </div>
+    <div class="jr-eps" aria-hidden="true">${eps}</div>
+  </div>`;
 }

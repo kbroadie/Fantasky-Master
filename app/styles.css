@@ -264,7 +264,6 @@ strong { color: var(--t1); font-weight: 700; }
 .card.board::before { background: var(--grain), radial-gradient(55% 110% at 22% 0%, rgba(229, 72, 77, .36), transparent 80%); }
 .card.board::after { background: radial-gradient(55% 110% at 78% 0%, rgba(62, 123, 250, .36), transparent 80%); }
 .board #rows { position: relative; z-index: 1; }
-.board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
 /* The head names the two halves in the week strip's language: DM Mono caps
    under the scoring cards' crown and trophy, each half tinted from the top in
@@ -362,7 +361,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* Its height is fixed (taller than any opened row, which is at most ~200px),
    so opening a row only uncovers more of it: the backdrop's layer is never
    resized, and so never redrawn, while the row grows. */
-.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
+.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 200px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
 /* Two photos: the Show player's pick on the left and the League player's on
    the right, not blended (on request): each is its own box (a query
    container) that ends at the line between the halves (the backdrop's middle
@@ -408,7 +407,7 @@ strong { color: var(--t1); font-weight: 700; }
    a dark glow). Opening the row lowers the clip with the expand, to the
    opened height (--open-h, measured in main.js). */
 .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head)) var(--bleed)); }
-.pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 170px)) var(--bleed)); }
+.pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 200px)) var(--bleed)); }
 /* Opening a half sharpens an L (on request): that player's half of the row
    and the picks below, while the other player's half stays frosted. A sharp
    copy of the backdrop (.sharp, made by sharpen in main.js, only while the
@@ -419,7 +418,7 @@ strong { color: var(--t1); font-weight: 700; }
    their half, so it comes into focus without moving, but free to run on
    across the row, its edges fading into the row's colour where it ends. */
 .pc .pc-bg.sharp {
-  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 170px)); --R: calc(100% - var(--bleed));
+  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 200px)); --R: calc(100% - var(--bleed));
   filter: none; will-change: opacity; opacity: 0;
   clip-path: polygon(var(--bleed) var(--bleed), var(--X) var(--bleed), var(--X) var(--M), var(--R) var(--M), var(--R) var(--B), var(--bleed) var(--B));
   transition: opacity .35s var(--ease), clip-path .35s var(--ease);
@@ -452,7 +451,43 @@ strong { color: var(--t1); font-weight: 700; }
    picks strip, not inside the blurred backdrop layer, so opening a row
    doesn't redraw that layer. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
-.pk-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; padding: 4px var(--px) 14px; }
+/* An opened half: the player's journey on that board (journey in table.js).
+   Three facts in small tiles, then their place after each episode as a line
+   in the board's colour (1st at the top, under a gold dashed summit line),
+   each week's pick sitting on it as a little framed portrait with the points
+   it scored; a pick that won glows gold, the latest has its place in a chip
+   above, and picks already in for later weeks wait, faint. Opening draws the
+   line in and pops the portraits along it (not under reduced motion). */
+.jr { --c: var(--show-hi); --cb: var(--show); padding: 10px 10px 8px; }
+.jr.league { --c: var(--league-hi); --cb: var(--league); }
+.jr-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.jr-fact { min-width: 0; padding: 6px 7px 7px; border-radius: 8px; background: rgba(10, 8, 10, .5); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cb) 32%, transparent); }
+.jr-fact small { display: block; font: 500 11px/13px var(--fm); letter-spacing: .06em; text-transform: uppercase; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.jr-fact b { display: block; margin-top: 2px; font-size: 14px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
+.jr-fact b i { font-style: normal; font-size: 12px; font-weight: 700; color: var(--c); }
+.jr-plot { position: relative; height: 62px; margin: 30px 8px 28px; }
+.jr-top { position: absolute; left: -4px; right: -4px; top: 0; border-top: 1px dashed color-mix(in srgb, var(--gold2) 40%, transparent); }
+.jr-top em { position: absolute; left: 0; bottom: 3px; font: 500 11px/1 var(--fm); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--gold2) 70%, transparent); }
+.jr-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.jr-line path { fill: none; stroke: var(--c); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.jr-line .glow { stroke: var(--cb); stroke-width: 7px; opacity: .3; }
+.jr-pt { position: absolute; left: var(--x); top: var(--y); width: 22px; transform: translate(-50%, -50%); }
+.jr-pt .fp, .jr-pt .pk-blank { display: block; width: 22px; }
+.jr-pt b { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 1px; font-size: 11px; font-weight: 800; line-height: 13px; color: var(--t1); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.jr-pt.won .fp { filter: drop-shadow(0 0 5px var(--gold3)); }
+.jr-pt.won b { color: var(--gold3); }
+.jr-pt.now:not(.won) .fp { filter: drop-shadow(0 0 4px var(--cb)); }
+.jr-pt.later { opacity: .35; }
+.jr-rk { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 3px; padding: 1px 6px; border-radius: 999px; font: 500 11px/13px var(--fm); font-style: normal; letter-spacing: .04em; color: #fff; white-space: nowrap; background: color-mix(in srgb, var(--cb) 75%, transparent); box-shadow: 0 0 8px color-mix(in srgb, var(--cb) 50%, transparent); }
+.jr-eps { position: relative; height: 13px; margin: 0 8px; }
+.jr-eps span { position: absolute; left: var(--x); transform: translateX(-50%); font: 500 11px/13px var(--fm); color: var(--t3); }
+.jr-eps span.later { color: var(--t4); opacity: .6; }
+.jr-eps span.now { color: var(--c); }
+@keyframes jr-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
+@keyframes jr-pop { from { opacity: 0; transform: translate(-50%, -50%) scale(.55); } }
+.pc.open .jr-line { animation: jr-draw .8s var(--ease) both; }
+.pc.open .jr-pt { animation: jr-pop .45s var(--ease) both; animation-delay: calc(var(--i) * 55ms + 60ms); }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-line, .pc.open .jr-pt { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }
@@ -814,7 +849,6 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .board { --rk: 46px; --pad: 18px; --sc: 44px; --g: 10px; }
-  .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }
   .pc-bg { --face: 106px; }
