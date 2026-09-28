@@ -452,25 +452,25 @@ strong { color: var(--t1); font-weight: 700; }
    doesn't redraw that layer. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
 /* An opened half: the player's journey on that board (journey in table.js).
-   Three facts in small tiles, then their place after each episode as a line
-   in the board's colour (1st at the top, under a gold dashed summit line),
-   each week's pick sitting on it as a little framed portrait with the points
-   it scored; a pick that won glows gold, the latest has its place in a chip
-   above, and picks already in for later weeks wait, faint. Opening draws the
-   line in and pops the portraits along it (not under reduced motion). */
-.jr { --c: var(--show-hi); --cb: var(--show); padding: 10px 10px 8px; }
+   Their running total after each episode as a line in the board's colour,
+   against the league's running median (gold dotted, keyed at the top like
+   the Cast bars' median, on the side away from their latest point), from 0 to the leader's total; each week's pick
+   sits on their line as a little framed portrait with the points it scored; a
+   pick that won glows gold, the latest has their place in a chip above, and
+   picks already in for later weeks wait, faint. The plot's side margins keep
+   the first and last portraits inside the card; the episode numbers sit on
+   the same columns. Opening draws the lines in and pops the portraits along
+   them (not under reduced motion). */
+.jr { --c: var(--show-hi); --cb: var(--show); padding: 0 12px 10px; }
 .jr.league { --c: var(--league-hi); --cb: var(--league); }
-.jr-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
-.jr-fact { min-width: 0; padding: 6px 7px 7px; border-radius: 8px; background: rgba(10, 8, 10, .5); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cb) 32%, transparent); }
-.jr-fact small { display: block; font: 500 11px/13px var(--fm); letter-spacing: .06em; text-transform: uppercase; color: var(--t3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.jr-fact b { display: block; margin-top: 2px; font-size: 14px; font-weight: 800; line-height: 1.25; letter-spacing: -.01em; color: var(--t1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-variant-numeric: tabular-nums; }
-.jr-fact b i { font-style: normal; font-size: 12px; font-weight: 700; color: var(--c); }
-.jr-plot { position: relative; height: 62px; margin: 30px 8px 28px; }
-.jr-top { position: absolute; left: -4px; right: -4px; top: 0; border-top: 1px dashed color-mix(in srgb, var(--gold2) 40%, transparent); }
-.jr-top em { position: absolute; left: 0; bottom: 3px; font: 500 11px/1 var(--fm); font-style: normal; letter-spacing: .08em; text-transform: uppercase; color: color-mix(in srgb, var(--gold2) 70%, transparent); }
+.jr-plot { position: relative; height: 96px; margin: 34px 4px 30px; }
+.jr-key { position: absolute; left: 0; top: -30px; display: flex; align-items: center; gap: 6px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: color-mix(in srgb, var(--gold2) 80%, transparent); white-space: nowrap; }
+.jr-key.end { left: auto; right: 0; }
+.jr-key i { width: 16px; border-top: 1.5px dotted currentColor; }
 .jr-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .jr-line path { fill: none; stroke: var(--c); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
 .jr-line .glow { stroke: var(--cb); stroke-width: 7px; opacity: .3; }
+.jr-line .med { stroke: color-mix(in srgb, var(--gold2) 75%, transparent); stroke-width: 1.5px; stroke-dasharray: 1.5 4; }
 .jr-pt { position: absolute; left: var(--x); top: var(--y); width: 22px; transform: translate(-50%, -50%); }
 .jr-pt .fp, .jr-pt .pk-blank { display: block; width: 22px; }
 .jr-pt b { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 1px; font-size: 11px; font-weight: 800; line-height: 13px; color: var(--t1); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); white-space: nowrap; font-variant-numeric: tabular-nums; }

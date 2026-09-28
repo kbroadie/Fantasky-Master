@@ -157,49 +157,43 @@ function pickBackdrop(lf, rf) {
 
 
 /**
- * An opened half: the player's journey on that board. Their place after each
- * episode as a line in the board's colour, each week's pick sitting on it as a
- * little framed portrait with the points it scored (gold glow if it won the
- * episode), the latest place in a chip above, a gold dashed "1st" summit line,
- * and three facts above: winners called and the best pick or podiums, then
- * points missed against each episode's winner (Show) or the average finish
- * (League). All through
- * the week on show; picks already in for later weeks wait, faint, beyond it.
+ * An opened half: the player's journey on that board. Their running total
+ * after each episode as a line in the board's colour, against the league's
+ * running median (the dotted line, keyed "median 60" at the top, on the side away
+ * from their latest point, so it never meets its place chip), on one
+ * scale from 0 to the leader's total. Each week's pick sits on their line as
+ * a little framed portrait with the points it scored (gold glow if it won the
+ * episode), the latest has their place in a chip above, and picks already in
+ * for later weeks wait, faint. All through the week on show.
  */
 function journey(d, p, side, w) {
-  const k = side === "show" ? "show" : "league", n = d.players.length, upTo = Math.min(w, d.weeksScored);
-  const played = p.weeks.filter((x) => x.ep <= upTo && x.show != null);
-  const called = played.filter((x) => x.won).length;
-  const fact = (label, value) => `<div class="jr-fact"><small>${label}</small><b>${value}</b></div>`;
-  const best = [...played].sort((a, b) => b[k] - a[k] || b.show - a.show)[0];
-  const facts = [fact("Called", played.length ? `${called}<i> of ${played.length}</i>` : "–")];
-  if (k === "show") {
-    facts.push(fact("Best pick", best ? `${esc(best.pick)} <i>${best.show}</i>` : "–"));
-    facts.push(fact("Missed", played.length ? `${played.reduce((a, x) => a + (x.missed || 0), 0)}<i> pts</i>` : "–"));
-  } else {
-    const podiums = played.filter((x) => x.place <= 3).length;
-    facts.push(fact("Podiums", played.length ? `${podiums}<i> of ${played.length}</i>` : "–"));
-    facts.push(fact("Avg finish", played.length ? (played.reduce((a, x) => a + x.place, 0) / played.length).toFixed(1) : "–"));
-  }
-  // The plot: column i (episode i + 1) across, place down (1st at the top).
-  const X = (e) => ((e - .5) / d.episodes.length) * 100, Y = (r) => (n > 1 ? ((r - 1) / (n - 1)) * 100 : 50);
-  const pts = [];
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored);
+  const total = (q, e) => q.history[e - 1][k];
+  const median = (e) => {
+    const v = d.players.map((q) => total(q, e)).sort((a, b) => a - b), m = v.length >> 1;
+    return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
+  };
+  const top = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 1;
+  const X = (e) => ((e - .5) / d.episodes.length) * 100, Y = (v) => 100 - (v / top) * 100;
+  const pts = [], med = [];
   const cells = p.weeks.map((x) => {
-    const e = x.ep, done = e <= upTo, r = done ? p.history[e - 1][`${k}Rank`] : null;
-    if (done) pts.push([X(e), Y(r)]);
-    const y = done ? Y(r) : (pts.length ? pts.at(-1)[1] : 50);
+    const e = x.ep, done = e <= upTo;
+    if (done) { pts.push([X(e), Y(total(p, e))]); med.push([X(e), Y(median(e))]); }
+    const y = done ? pts.at(-1)[1] : (pts.length ? pts.at(-1)[1] : 100);
     const face = x.pick ? framed(d.cast[x.pick]) : `<span class="pk-blank">–</span>`;
     const got = done ? (x.pick ? x[k] : 0) : "";
     const cls = `jr-pt${done ? "" : " later"}${done && x.won ? " won" : ""}${e === upTo ? " now" : ""}`;
-    const chip = e === upTo ? `<i class="jr-rk">${ord(r)}</i>` : "";
+    const chip = e === upTo ? `<i class="jr-rk">${ord(p.history[e - 1][`${k}Rank`])}</i>` : "";
     return (x.pick || done) ? `<span class="${cls}" style="--x:${X(e).toFixed(2)}%;--y:${y.toFixed(2)}%;--i:${e}">${chip}${face}<b>${done ? `+${got}` : ""}</b></span>` : "";
   }).join("");
   const eps = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep < upTo ? "" : "later"}" style="--x:${X(ep).toFixed(2)}%">${ep}</span>`).join("");
+  const mv = upTo ? median(upTo) : null;
+  const svg = pts.length > 1 ? `<svg class="jr-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+        <path class="med" d="${smooth(med)}"/><path class="glow" d="${smooth(pts)}"/><path d="${smooth(pts)}"/></svg>` : "";
   return `<div class="jr ${k}">
-    <div class="jr-facts">${facts.join("")}</div>
     <div class="jr-plot">
-      <i class="jr-top" aria-hidden="true"><em>1st</em></i>
-      ${pts.length > 1 ? `<svg class="jr-line" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path class="glow" d="${smooth(pts)}" pathLength="1"/><path d="${smooth(pts)}" pathLength="1"/></svg>` : ""}
+      ${mv == null ? "" : `<span class="jr-key${X(upTo) < 50 ? " end" : ""}"><i aria-hidden="true"></i>median ${Number.isInteger(mv) ? mv : mv.toFixed(1)}</span>`}
+      ${svg}
       ${cells}
     </div>
     <div class="jr-eps" aria-hidden="true">${eps}</div>
