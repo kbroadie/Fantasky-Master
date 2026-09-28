@@ -463,37 +463,22 @@ strong { color: var(--t1); font-weight: 700; }
    the first and last portraits inside the card; the episode numbers sit on
    the same columns. Opening draws the lines in and pops the portraits along
    them (not under reduced motion). */
-.jr { --c: var(--show-hi); --cb: var(--show); padding: 0 12px 10px; }
+.jr { --c: var(--show-hi); --cb: var(--show); padding: 4px 12px 10px; }
 .jr.league { --c: var(--league-hi); --cb: var(--league); }
-/* The plot leaves a gutter on the left for the gridlines' labels; the episode
-   numbers below share its margins, so they stay under their columns. */
-.jr-plot { position: relative; height: 96px; margin: 34px 4px 27px 26px; }
-.jr-grid { position: absolute; left: 0; right: 0; top: var(--y); border-top: 1px solid rgba(255, 255, 255, .08); }
-.jr-grid em { position: absolute; right: calc(100% + 6px); top: -7px; font: 500 11px/13px var(--fm); font-style: normal; color: var(--t4); font-variant-numeric: tabular-nums; }
-.jr-key { position: absolute; left: 0; top: -30px; display: flex; align-items: center; gap: 6px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: color-mix(in srgb, var(--gold2) 80%, transparent); white-space: nowrap; }
-.jr-key.end { left: auto; right: 0; }
-.jr-key i { width: 16px; border-top: 1.5px dotted currentColor; }
-.jr-line { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.jr-line path { fill: none; stroke: var(--c); stroke-width: 2px; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
-.jr-line .glow { stroke: var(--cb); stroke-width: 7px; opacity: .3; }
-.jr-line .med { stroke: color-mix(in srgb, var(--gold2) 75%, transparent); stroke-width: 1.5px; stroke-dasharray: 1.5 4; }
-.jr-pt { position: absolute; left: var(--x); top: var(--y); width: 22px; transform: translate(-50%, -50%); }
-.jr-pt .fp, .jr-pt .pk-blank { display: block; width: 22px; }
-.jr-pt b { position: absolute; left: 50%; top: 100%; transform: translateX(-50%); margin-top: 1px; font-size: 11px; font-weight: 800; line-height: 13px; color: var(--t1); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.jr-pt.won .fp { filter: drop-shadow(0 0 5px var(--gold3)); }
-.jr-pt.won b { color: var(--gold3); }
-.jr-pt.now:not(.won) .fp { filter: drop-shadow(0 0 4px var(--cb)); }
-.jr-pt.later { opacity: .35; }
-.jr-rk { position: absolute; left: 50%; bottom: 100%; transform: translateX(-50%); margin-bottom: 3px; padding: 1px 6px; border-radius: 999px; font: 500 11px/13px var(--fm); font-style: normal; letter-spacing: .04em; color: #fff; white-space: nowrap; background: color-mix(in srgb, var(--cb) 75%, transparent); box-shadow: 0 0 8px color-mix(in srgb, var(--cb) 50%, transparent); }
-.jr-eps { position: relative; height: 13px; margin: 0 4px 0 26px; }
-.jr-eps span { position: absolute; left: var(--x); transform: translateX(-50%); font: 500 11px/13px var(--fm); color: var(--t3); }
-.jr-eps span.later { color: var(--t4); opacity: .6; }
-.jr-eps span.now { color: var(--c); }
-@keyframes jr-draw { from { clip-path: inset(0 100% 0 0); } to { clip-path: inset(0 0 0 0); } }
-@keyframes jr-pop { from { opacity: 0; transform: translate(-50%, -50%) scale(.55); } }
-.pc.open .jr-line { animation: jr-draw .8s var(--ease) both; }
-.pc.open .jr-pt { animation: jr-pop .45s var(--ease) both; animation-delay: calc(var(--i) * 55ms + 60ms); }
-@media (prefers-reduced-motion: reduce) { .pc.open .jr-line, .pc.open .jr-pt { animation: none; } }
+/* Drawn like the race chart (.rc-grid, .rc-axis, .rc-name…), over the photo. */
+.jr svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; overflow: visible; }
+.jr .rc-grid { stroke: rgba(255, 255, 255, .08); }
+.jr path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+.jr .jr-me { stroke: var(--c); stroke-width: 2; }
+.jr .jr-med { stroke: color-mix(in srgb, var(--gold2) 75%, transparent); stroke-width: 1.5; stroke-dasharray: 1.5 4; }
+.jr .rc-lead { stroke-width: 1; opacity: .6; }
+.jr .rc-name { paint-order: stroke; stroke: rgba(0, 0, 0, .6); stroke-width: 4px; stroke-linejoin: round; }
+@keyframes jr-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+@keyframes jr-fade { from { opacity: 0; } }
+.pc.open .jr-me { stroke-dasharray: 1; animation: jr-draw .8s var(--ease) both; }
+.pc.open .jr-med { animation: jr-fade .6s var(--ease) both; }
+.pc.open .jr-lbl { animation: jr-fade .35s var(--ease) .6s both; }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-med, .pc.open .jr-lbl { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }
