@@ -178,19 +178,14 @@ function curve(pts) {
  * chart on the Episodes tab but with no numbers, only lines, so it shows how
  * they're doing against everyone else at a glance. Their running total after
  * each episode as a 2px line in the board's colour, over every other player's
- * as a thin, faint line, and the league's running median (dotted gold), all
- * flowing Bézier curves from 0 at the left edge, over five evenly spaced
- * hairline gridlines, the top one at the leader's total. The x axis runs
- * 0 to 10 episodes. A legend above names the three kinds of line. All through
- * the week on show.
+ * as a very thin, faint line, all flowing Bézier curves from 0 at the left
+ * edge, over five evenly spaced hairline gridlines, the top one at the
+ * leader's total. The x axis runs 0 to 10 episodes. A legend above names the
+ * two kinds of line. All through the week on show.
  */
 function journey(d, p, side, w) {
   const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored);
   const total = (q, e) => q.history[e - 1][k];
-  const median = (e) => {
-    const v = d.players.map((q) => total(q, e)).sort((a, b) => a - b), m = v.length >> 1;
-    return v.length % 2 ? v[m] : (v[m - 1] + v[m]) / 2;
-  };
   // No numbers, so the plot tops out at the leader's total, with five
   // evenly spaced gridlines from 0.
   const top = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 4, step = top / 4;
@@ -199,11 +194,11 @@ function journey(d, p, side, w) {
   const grid = [0, 1, 2, 3, 4].map((i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(i * step))}" y2="${f1(y(i * step))}"/>`).join("");
   const run = (fn) => curve([[L, B], ...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(fn(i + 1))])]);
   const lines = upTo ? `<g class="jr-others">${d.players.filter((q) => q.name !== p.name).map((q) => `<path d="${run((e) => total(q, e))}"/>`).join("")}</g>`
-    + `<path class="jr-med" d="${run(median)}"/><path class="jr-me" pathLength="1" d="${run((e) => total(p, e))}"/>` : "";
+    + `<path class="jr-me" pathLength="1" d="${run((e) => total(p, e))}"/>` : "";
   const board = k === "show" ? "Show" : "League";
-  const say = upTo ? `${p.name}'s ${board} points after each episode, ${ord(p.history[upTo - 1][`${k}Rank`])} after episode ${upTo}, against the other players and the league median` : `${p.name}: no episodes scored yet`;
+  const say = upTo ? `${p.name}'s ${board} points after each episode, ${ord(p.history[upTo - 1][`${k}Rank`])} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`;
   return `<div class="jr ${k}">
-    <p class="jr-key" aria-hidden="true"><span><i class="me"></i>${esc(p.name)}</span><span><i class="med"></i>Median</span><span><i></i>Others</span></p>
+    <p class="jr-key" aria-hidden="true"><span><i class="me"></i>${esc(p.name)}</span><span><i></i>Others</span></p>
     <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${lines}</svg>
   </div>`;
 }
