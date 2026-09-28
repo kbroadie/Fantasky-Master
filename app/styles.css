@@ -463,24 +463,31 @@ strong { color: var(--t1); font-weight: 700; }
    the first and last portraits inside the card; the episode numbers sit on
    the same columns. Opening draws the lines in and pops the portraits along
    them (not under reduced motion). */
-.jr { --c: var(--show-hi); --cb: var(--show); padding: 4px 12px 10px; }
-.jr.league { --c: var(--league-hi); --cb: var(--league); }
+.jr { padding: 6px 0 10px var(--rk); }
+/* Two charts, one under each column: Points (red) under the Show, Position (blue) under the League. */
+.jr-two { display: grid; grid-template-columns: 1fr 1fr; }
+.jr-c { --c: var(--show-hi); min-width: 0; padding: 0 var(--pad); }
+.jr-c.league { --c: var(--league-hi); }
+.jr-c > * { max-width: 200px; margin-inline: auto; }
+.jr-t { margin-bottom: 4px; font: 500 11px/13px var(--fm); letter-spacing: .08em; text-transform: uppercase; color: var(--c); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
 /* Drawn like the race chart (.rc-grid), with no numbers: only lines. */
-.jr svg { display: block; width: 100%; max-width: 360px; margin: 0 auto; overflow: visible; }
+.jr svg { display: block; width: 100%; overflow: visible; }
 .jr .rc-grid { stroke: rgba(255, 255, 255, .08); }
 .jr path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 .jr .jr-others path { stroke: rgba(255, 255, 255, .32); stroke-width: .6; }
-.jr .jr-me { stroke: var(--c); stroke-width: 2; }
-.jr-key { display: flex; justify-content: center; gap: 16px; max-width: 360px; margin: 0 auto 8px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: var(--t3); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
+.jr .jr-others circle { fill: rgba(255, 255, 255, .32); }
+.jr .jr-me path { stroke: var(--c); stroke-width: 2; }
+.jr .jr-me circle { fill: var(--c); }
+.jr-key { display: flex; justify-content: center; gap: 16px; margin: 0 0 8px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: var(--t3); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
 .jr-key span { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.jr-key span:first-child { color: var(--c); }
-.jr-key i { width: 16px; border-top: 1px solid rgba(255, 255, 255, .32); }
-.jr-key i.me { border-top: 2px solid var(--c); }
+.jr-key span:first-child { color: var(--t1); }
+.jr-key i { width: 16px; height: 1px; background: rgba(255, 255, 255, .32); }
+.jr-key i.me { height: 2px; background: linear-gradient(90deg, var(--show-hi) 50%, var(--league-hi) 50%); }
 @keyframes jr-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
 @keyframes jr-fade { from { opacity: 0; } }
-.pc.open .jr-me { stroke-dasharray: 1; animation: jr-draw .8s var(--ease) both; }
+.pc.open .jr-me path { stroke-dasharray: 1; animation: jr-draw .8s var(--ease) both; }
 .pc.open .jr-others { animation: jr-fade .6s var(--ease) both; }
-@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-me path, .pc.open .jr-others { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }

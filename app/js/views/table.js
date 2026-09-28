@@ -174,31 +174,42 @@ function curve(pts) {
 }
 
 /**
- * An opened half: the player's journey on that board, drawn like the race
- * chart on the Episodes tab but with no numbers, only lines, so it shows how
- * they're doing against everyone else at a glance. Their running total after
- * each episode as a 2px line in the board's colour, over every other player's
- * as a very thin, faint line, all flowing Bézier curves from 0 at the left
- * edge, over five evenly spaced hairline gridlines, the top one at the
- * leader's total. The x axis runs 0 to 10 episodes. A legend above names the
- * two kinds of line. All through the week on show.
+ * An opened half: the player's journey as two comparative line charts, one
+ * under each column, with no numbers, only lines, so they show how the
+ * player is doing against everyone else at a glance. On the left, Points:
+ * their Show running total after each episode, a red line, the plot running
+ * from 0 to the leader's total. On the right, Position: their place on the
+ * League after each episode, a blue line with 1st at the top. Every other
+ * player is a very thin, faint line behind. Five evenly spaced hairline
+ * gridlines; both x axes run episode 1 to 10 edge to edge, like the race
+ * chart, so the two line up (after episode 1, each player is a dot). The
+ * same whichever half was opened. All through the week on show.
  */
 function journey(d, p, side, w) {
-  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored);
-  const total = (q, e) => q.history[e - 1][k];
-  // No numbers, so the plot tops out at the leader's total, with five
-  // evenly spaced gridlines from 0.
-  const top = upTo ? Math.max(1, ...d.players.map((q) => total(q, upTo))) : 4, step = top / 4;
-  const W = 340, L = 2, R = 338, T = 4, B = 124, H = B + 4;
-  const x = (e) => L + (e / d.episodes.length) * (R - L), y = (v) => B - (v / top) * (B - T), f1 = (v) => v.toFixed(1);
-  const grid = [0, 1, 2, 3, 4].map((i) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(i * step))}" y2="${f1(y(i * step))}"/>`).join("");
-  const run = (fn) => curve([[L, B], ...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(fn(i + 1))])]);
-  const lines = upTo ? `<g class="jr-others">${d.players.filter((q) => q.name !== p.name).map((q) => `<path d="${run((e) => total(q, e))}"/>`).join("")}</g>`
-    + `<path class="jr-me" pathLength="1" d="${run((e) => total(p, e))}"/>` : "";
-  const board = k === "show" ? "Show" : "League";
-  const say = upTo ? `${p.name}'s ${board} points after each episode, ${ord(p.history[upTo - 1][`${k}Rank`])} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`;
-  return `<div class="jr ${k}">
+  const upTo = Math.min(w, d.weeksScored), n = d.players.length, last = d.episodes.length;
+  const W = 160, L = 2, R = 158, T = 4, B = 96, H = B + 4, f1 = (v) => v.toFixed(1);
+  const x = (e) => L + ((e - 1) / Math.max(1, last - 1)) * (R - L);
+  const grid = [0, 1, 2, 3, 4].map((i) => { const gy = f1(T + (i / 4) * (B - T)); return `<line class="rc-grid" x1="${L}" x2="${R}" y1="${gy}" y2="${gy}"/>`; }).join("");
+  // One chart: every player's line through the episodes so far, the opened
+  // player's drawn last. A line of one point (after episode 1) is a dot.
+  const chart = (cls, title, y, say) => {
+    const pts = (q) => [...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(q, i + 1)])];
+    const line = (q) => { const v = pts(q); return v.length > 1 ? `d="${curve(v)}"` : ""; };
+    const dot = (q, r) => { const v = pts(q); return v.length === 1 ? `<circle cx="${f1(v[0][0])}" cy="${f1(v[0][1])}" r="${r}"/>` : ""; };
+    const others = d.players.filter((q) => q.name !== p.name);
+    const lines = upTo ? `<g class="jr-others">${others.map((q) => `<path ${line(q)}/>${dot(q, 1)}`).join("")}</g>`
+      + `<g class="jr-me"><path pathLength="1" ${line(p)}/>${dot(p, 2.5)}</g>` : "";
+    return `<div class="jr-c ${cls}"><p class="jr-t">${title}</p><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${lines}</svg></div>`;
+  };
+  const show = (q, e) => q.history[e - 1].show, place = (q, e) => q.history[e - 1].leagueRank;
+  const top = upTo ? Math.max(1, ...d.players.map((q) => show(q, upTo))) : 1;
+  const now = upTo && p.history[upTo - 1];
+  const points = chart("show", "Points", (q, e) => B - (show(q, e) / top) * (B - T),
+    now ? `${p.name}'s Show points after each episode, ${ord(now.showRank)} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`);
+  const position = chart("league", "Position", (q, e) => T + ((place(q, e) - 1) / Math.max(1, n - 1)) * (B - T),
+    now ? `${p.name}'s League position after each episode, ${ord(now.leagueRank)} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`);
+  return `<div class="jr">
     <p class="jr-key" aria-hidden="true"><span><i class="me"></i>${esc(p.name)}</span><span><i></i>Others</span></p>
-    <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${lines}</svg>
+    <div class="jr-two">${points}${position}</div>
   </div>`;
 }
