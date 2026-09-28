@@ -248,7 +248,13 @@ strong { color: var(--t1); font-weight: 700; }
    name then points. Nothing sorts:
    each board is already in its own order. With cast photos (Series 21, 22)
    each half sits over its player's pick that week (.pc-bg). */
-.board { --pe: 8px; --sc: 34px; --rk: 22px; --g: 5px; }
+/* Tracks: the place strip (--rk, flush to the card's edge, the number
+   centred in it), then two equal halves, each padded --pad on both sides
+   (so every name starts --pad after a rule and every score ends --pad before
+   the next rule or the card's edge), a name and right-aligned points (--sc)
+   with --g between. --pe is the head's side padding, now 0: the strip and the
+   League's half run to the card's edges (the photo geometry reads both). */
+.board { --pe: 0px; --rk: 32px; --pad: 11px; --sc: 34px; --g: 6px; }
 /* The head lines up with the rows: the place column's strip, then the Show's
    half over the left half and the League's over the right. */
 .card.board { position: relative; margin: 12px var(--px); }
@@ -281,21 +287,22 @@ strong { color: var(--t1); font-weight: 700; }
 /* Rows are not compositing layers of their own: with one per row (plus each
    backdrop's), iOS ran short of layer memory and dropped rows' text after
    scrolling. The backdrop clips itself to the row instead (below). */
-.pc { --head: 58px; position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
+.pc { --head: 52px; position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
 /* Rows don't clip (the backdrop clips itself, below), so a half can slide
    across other rows to its player's new place when the week changes. */
-.pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: center; height: var(--head); padding-inline: var(--pe); }
+/* One line of text a row, on one baseline: the place number, names and
+   points line up by baseline (not box centres, which sat the points 2px low). */
+.pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: baseline; height: var(--head); padding-inline: var(--pe); }
 /* Column rules, like the row rules (1px, --b-gold), on request: the place
    column's edge (its strip, .pc::after) and this one between the Show and
    the League (the halves' line: the middle plus half the place column), down
    each row's head and through the table's head. The opened picks run full
    width under them. It stays put while the halves slide. */
 .pc-head::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(50% + var(--rk) / 2); width: 1px; background: var(--b-gold); pointer-events: none; }
-.sd { display: grid; align-items: center; column-gap: var(--g); height: 100%; min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
-.sd { grid-template-columns: minmax(0, 1fr) var(--sc); }
-.sd.l { padding: 0 8px 0 10px; }
-.sd.r { padding: 0 var(--pe) 0 8px; margin-right: calc(-1 * var(--pe)); } /* its cell runs to the card's edge */
+.sd { display: grid; align-items: baseline; align-content: center; column-gap: var(--g); height: var(--head); min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
+.sd { grid-template-columns: minmax(0, 1fr) minmax(var(--sc), auto); } /* points at least --sc, wider for 3 digits; right-aligned, so their right edges still line up */
+.sd.l, .sd.r { padding: 0 var(--pad); }
 /* While a half is open, every other cell steps back (on request): each player
    cell a little darker with its text dimmed, and the other rows' place
    numbers dimmed, so the opened player reads first (.board.focus, set in
@@ -316,15 +323,24 @@ strong { color: var(--t1); font-weight: 700; }
 .sd .pc-name { justify-self: start; }
 /* The place number: no movement arrows (removed on request) */
 .pc-rank { text-align: center; }
-.pc-rank b { font-size: 17px; font-weight: 800; color: var(--t2); line-height: 1; }
+/* The place is secondary to the names and points: smaller and lighter */
+.pc-rank b { font-size: 15px; font-weight: 700; color: var(--t3); }
 .pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
 .pc-name .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* A chevron: rows open on tap. Drawn like the How scoring works chevron
-   and Player's sort arrow (fine 1.5px strokes), a quiet hint that steps
-   back behind the numbers; it brightens as it flips on open. */
-.chev { flex: none; width: 7px; height: 7px; margin-left: 6px; border-right: 1.5px solid; border-bottom: 1.5px solid; color: color-mix(in srgb, var(--t3) 80%, transparent); transform: translateY(-2px) rotate(45deg); transition: transform .3s var(--ease), color .3s var(--ease); }
-.pc[data-open="show"] .sd.l .chev, .pc[data-open="league"] .sd.r .chev { color: var(--t2); transform: translateY(2px) rotate(225deg); }
-.pc-num { text-align: center; font-size: clamp(18px, 4.9vw, 21px); font-weight: 800; letter-spacing: -.02em; }
+/* The chevron after each name: the only sign a cell opens, so it stays, but
+   quiet (refined on request): a drawn chevron with round caps and joins, 9 ×
+   5.5px on a 1.5px stroke, in --t4, centred on the lowercase letters rather
+   than the line box (1px down). Opened, it turns over and takes its board's
+   colour, red for the Show and blue for the League, so the open state reads
+   at a glance. */
+.chev {
+  flex: none; width: 9px; height: 5.5px; margin-left: 6px; overflow: visible;
+  fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  color: var(--t4); transform: translateY(1px); transition: transform .3s var(--ease), color .3s var(--ease);
+}
+.pc[data-open="show"] .sd.l .chev { color: var(--show-hi); transform: translateY(1px) rotate(180deg); }
+.pc[data-open="league"] .sd.r .chev { color: var(--league-hi); transform: translateY(1px) rotate(180deg); }
+.pc-num { text-align: right; font-size: clamp(18px, 4.9vw, 21px); font-weight: 800; letter-spacing: -.02em; }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
@@ -797,7 +813,7 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 
 @media (min-width: 600px) {
   :root { --px: 20px; }
-  .board { --pe: 16px; --sc: 48px; --rk: 30px; --g: 10px; }
+  .board { --rk: 46px; --pad: 18px; --sc: 44px; --g: 10px; }
   .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }
