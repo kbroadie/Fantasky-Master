@@ -107,31 +107,24 @@ export function standingsSlides(d) {
  * the League's, each as name then points. Each half is a button that opens that player's
  * card (rowMore), keyed by player (data-p).
  *
- * For visual interest (on request), each half also carries:
- * - that week's pick: a stripe down its inner edge in the pick's colour, and
- *   the pick's three letters over the points (gold if the pick won);
- * - a gap meter: a wash in the board's colour behind it, filled in proportion
- *   to the player's points against the board's leader (--m);
- * and the top three rows are a podium, a wash of their tier's colour fading
- * out from the place strip (first place with a gold hairline under it).
+ * Each half is also a gap meter (on request): a wash in the board's colour
+ * behind it, filled in proportion to the player's points against the
+ * board's leader (--m).
  */
 export function standingsRows(d, w = stWeek(d)) {
   const { show, league } = boards(d, w);
   const top = { show: Math.max(0, ...show.map((p) => p.show)), league: Math.max(0, ...league.map((p) => p.league)) };
   const half = (p, side) => {
     const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
-    const wk = p.weeks[w - 1], pick = wk?.pick, c = pick && d.cast[pick]?.color;
     const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
     const name = `<span class="pc-name"><span class="nm">${esc(p.name)}</span><svg class="chev" viewBox="0 0 10 6" aria-hidden="true"><path d="M1.25 1.25 5 4.75l3.75-3.5"/></svg></span>`;
-    const tag = pick ? `<em class="pk${wk.won ? " won" : ""}" aria-hidden="true">${esc(pick.slice(0, 3))}</em>` : "";
-    const style = `--m:${top[k] ? (p[k] / top[k]).toFixed(3) : 0}${c ? `;--pk:${c}` : ""}`;
-    const say = `${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points${pick ? `, picked ${pick}${wk.won ? ", who won" : ""}` : ""}`;
-    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" style="${style}" aria-expanded="false" aria-label="${esc(say)}">${name + num + tag}</button>`;
+    const say = `${p.name}, ${ord(rank)} in the ${side === "show" ? "Show" : "League"} with ${p[k]} points`;
+    return `<button class="sd ${side === "show" ? "l" : "r"}" type="button" data-side="${side}" data-p="${esc(p.name)}" style="--m:${top[k] ? (p[k] / top[k]).toFixed(3) : 0}" aria-expanded="false" aria-label="${esc(say)}">${name + num}</button>`;
   };
   return show.map((l, i) => {
     const r = league[i];
     return `
-    <div class="pc${i < 3 ? ` p${i + 1}` : ""}">
+    <div class="pc${l.showRank === 1 || r.leagueRank === 1 ? " lead" : ""}">
       <div class="pc-head"><span class="pc-rank"><b class="${tier(i + 1)}">${i + 1}</b></span>${half(l, "show")}${half(r, "league")}</div>
       <div class="pc-more"><div></div></div>
     </div>`;
