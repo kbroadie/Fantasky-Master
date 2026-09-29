@@ -54,7 +54,6 @@ function loadSeries(key) {
 function renderStandings(d) {
   $("#st-tabs").innerHTML = weekTabs(d);
   $("#st-body").innerHTML = standingsSlides(d);
-  pending = [];
   for (const s of $("#st-body").children) { sizes.observe(s); syncOpen(s); }
   queueLight();
 }
@@ -242,12 +241,12 @@ $("#p-standings").addEventListener("click", (e) => {
     return;
   }
   // A half of a row opens that player's picks under the row; tapping the
-  // same half closes it, and the other half switches to their player.
+  // same half closes it, and the other half switches to their player. Only
+  // the week on show opens; a row open in another week closes, without easing.
   const sd = e.target.closest(".pc .sd");
   if (sd) {
     const row = sd.closest(".pc"), side = sd.dataset.side, open = row.classList.contains("open") && row.dataset.open === side;
-    state.open = open ? null : { side, name: sd.dataset.p };
-    // Only the board on show eases into focus; the other weeks just switch.
+    state.open = open ? null : { side, name: sd.dataset.p, wk: +row.closest(".st-slide").dataset.week };
     for (const b of $$("#st-body .board.ease")) b.classList.remove("ease");
     row.closest(".board").classList.add("ease");
     syncAll();
@@ -257,7 +256,7 @@ $("#p-standings").addEventListener("click", (e) => {
 // ── Standings weeks ──────────────────────────────────────────────────────────
 // A swiper of weeks, like Episodes (ST, bound below): swipe or tap the strip,
 // and the neighbouring week slides in. An opened player (state.open) is opened
-// in every week's slide, so they stay opened as the weeks go by.
+// in their week only; the other weeks stay closed.
 
 /** Open a row on one side (its player's card), or close it (side null). */
 function openRow(row, side) {
@@ -273,36 +272,17 @@ function openRow(row, side) {
   const board = row.closest(".card.board");
   board?.classList.toggle("focus", !!board.querySelector(".pc.open"));
 }
-/** Bring a week's slide in line with state.open: that player's half open, nothing else. */
+/** Bring a week's slide in line with state.open: that player's half open if it's this week, nothing else. */
 function syncOpen(slide) {
-  const o = state.open;
+  const o = state.open?.wk === +slide.dataset.week ? state.open : null;
   const want = o && [...slide.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((b) => b.dataset.p === o.name)?.closest(".pc");
   for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
   if (want && !(want.classList.contains("open") && want.dataset.open === o.side && want.dataset.view === state.xpView)) openRow(want, o.side);
 }
-/**
- * A tap changes the week on show at once, so its first frame stays short and
- * the row opens smoothly; the other weeks catch up a slide at a time once the
- * line has drawn in (nearest first), or all at once as soon as a swipe starts.
- */
-let pending = [], ptimer = 0;
+/** Apply state.open: to its week, and to any week that still has a row open (closed at once). */
 function syncAll() {
-  const slides = [...$(ST.body).children], cur = ST.get();
-  syncOpen(slides[cur]);
-  pending = slides.filter((_, j) => j !== cur).sort((a, b) => Math.abs(slides.indexOf(a) - cur) - Math.abs(slides.indexOf(b) - cur));
-  clearTimeout(ptimer);
-  ptimer = setTimeout(drain, 900);
+  for (const s of $$("#st-body .st-slide")) if (+s.dataset.week === state.open?.wk || s.querySelector(".pc.open")) syncOpen(s);
 }
-function drain() {
-  const s = pending.shift();
-  if (s?.isConnected) syncOpen(s);
-  if (pending.length) ptimer = setTimeout(drain, 16);
-}
-function flush() {
-  clearTimeout(ptimer);
-  for (const s of pending.splice(0)) if (s.isConnected) syncOpen(s);
-}
-$(ST.body).addEventListener("scroll", () => { if (pending.length) flush(); }, { passive: true });
 
 bindSwiper(ST, (dir) => {
   if (dir > 0) show("episodes");
