@@ -2,7 +2,7 @@
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
 // columns (each under its portrait) and the ballot.
-import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, smooth, state } from "../ui.js";
+import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, smooth, niceStep, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
 import { edTitle, edStrip, edTable } from "../edit.js";
@@ -93,12 +93,6 @@ function slide(d, e) {
 // end with the first three letters of their name, like the task table's
 // columns, and their gap (the leader's total). Tap a line to bring it
 // forward and fade the rest; tap a point to read it in the caption.
-
-/** A tidy axis step (1, 2, 2.5 or 5 × 10ⁿ) giving at most five gridlines. */
-function niceStep(max) {
-  const raw = max / 4, p = 10 ** Math.floor(Math.log10(raw || 1));
-  return [1, 2, 2.5, 5, 10].map((k) => k * p).find((s) => s >= raw);
-}
 
 function raceChart(d, upTo) {
   const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);

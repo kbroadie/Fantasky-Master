@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, fmtDay, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -157,59 +157,46 @@ function pickBackdrop(lf, rf) {
 
 
 /**
- * A flowing Bézier through every point (Catmull-Rom, as cubic Béziers), for
- * the journey's lines: curvier than the race chart's monotone curve, which
- * runs nearly straight through steadily rising totals. Each control point's
- * height is kept between its two points', so a flat week never dips.
- */
-function curve(pts) {
-  const f = (v) => v.toFixed(2), clamp = (v, a, b) => Math.min(Math.max(v, Math.min(a, b)), Math.max(a, b));
-  let path = `M${f(pts[0][0])},${f(pts[0][1])}`;
-  for (let i = 0; i < pts.length - 1; i++) {
-    const [x0, y0] = pts[i - 1] || pts[i], [x1, y1] = pts[i], [x2, y2] = pts[i + 1], [x3, y3] = pts[i + 2] || pts[i + 1];
-    const c1 = [x1 + (x2 - x0) / 6, clamp(y1 + (y2 - y0) / 6, y1, y2)], c2 = [x2 - (x3 - x1) / 6, clamp(y2 - (y3 - y1) / 6, y1, y2)];
-    path += `C${f(c1[0])},${f(c1[1])} ${f(c2[0])},${f(c2[1])} ${f(x2)},${f(y2)}`;
-  }
-  return path;
-}
-
-/**
- * An opened half: the player's journey as two comparative line charts, one
- * under each column, with no numbers, only lines, so they show how the
- * player is doing against everyone else at a glance. On the left, Points:
- * their Show running total after each episode, a red line, the plot running
- * from 0 to the leader's total. On the right, Position: their place on the
- * League after each episode, a blue line with 1st at the top. Every other
- * player is a very thin, faint line behind. Five evenly spaced hairline
- * gridlines; both x axes run episode 1 to 10 edge to edge, like the race
- * chart, so the two line up (after episode 1, each player is a dot). The
- * same whichever half was opened. All through the week on show.
+ * An opened half: the race chart from the Episodes tab ("The race so far"),
+ * for the players on the opened board, across the full width of the row.
+ * Each player's gap to the board's leader in points after every episode: the
+ * leader runs flat along the top, everyone else below, over the race chart's
+ * gridlines (tidy steps from niceStep, none at 0), smoothed the same way
+ * (`smooth`, monotone). Only the opened player is highlighted: their line in
+ * the board's colour with the race chart's end label (the first three
+ * letters of their name, then their gap, or their total if they lead); every
+ * other player is a very thin, faint line. The x axis runs episode 1 to 10
+ * (this week in gold, later ones faint) and tightens only when the label
+ * needs the room. The plot is stretched to the row (SVG with
+ * preserveAspectRatio none and non-scaling strokes); its labels are HTML so
+ * they never stretch. All through the week on show.
  */
 function journey(d, p, side, w) {
-  const upTo = Math.min(w, d.weeksScored), n = d.players.length, last = d.episodes.length;
-  const W = 160, L = 2, R = 158, T = 4, B = 96, H = B + 4, f1 = (v) => v.toFixed(1);
-  const x = (e) => L + ((e - 1) / Math.max(1, last - 1)) * (R - L);
-  const grid = [0, 1, 2, 3, 4].map((i) => { const gy = f1(T + (i / 4) * (B - T)); return `<line class="rc-grid" x1="${L}" x2="${R}" y1="${gy}" y2="${gy}"/>`; }).join("");
-  // One chart: every player's line through the episodes so far, the opened
-  // player's drawn last. A line of one point (after episode 1) is a dot.
-  const chart = (cls, title, y, say) => {
-    const pts = (q) => [...Array.from({ length: upTo }, (_, i) => [x(i + 1), y(q, i + 1)])];
-    const line = (q) => { const v = pts(q); return v.length > 1 ? `d="${curve(v)}"` : ""; };
-    const dot = (q, r) => { const v = pts(q); return v.length === 1 ? `<circle cx="${f1(v[0][0])}" cy="${f1(v[0][1])}" r="${r}"/>` : ""; };
-    const others = d.players.filter((q) => q.name !== p.name);
-    const lines = upTo ? `<g class="jr-others">${others.map((q) => `<path ${line(q)}/>${dot(q, 1)}`).join("")}</g>`
-      + `<g class="jr-me"><path pathLength="1" ${line(p)}/>${dot(p, 2.5)}</g>` : "";
-    return `<div class="jr-c ${cls}"><p class="jr-t">${title}</p><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(say)}">${grid}${lines}</svg></div>`;
-  };
-  const show = (q, e) => q.history[e - 1].show, place = (q, e) => q.history[e - 1].leagueRank;
-  const top = upTo ? Math.max(1, ...d.players.map((q) => show(q, upTo))) : 1;
-  const now = upTo && p.history[upTo - 1];
-  const points = chart("show", "Points", (q, e) => B - (show(q, e) / top) * (B - T),
-    now ? `${p.name}'s Show points after each episode, ${ord(now.showRank)} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`);
-  const position = chart("league", "Position", (q, e) => T + ((place(q, e) - 1) / Math.max(1, n - 1)) * (B - T),
-    now ? `${p.name}'s League position after each episode, ${ord(now.leagueRank)} after episode ${upTo}, against the other players` : `${p.name}: no episodes scored yet`);
-  return `<div class="jr">
-    <p class="jr-key" aria-hidden="true"><span><i class="me"></i>${esc(p.name)}</span><span><i></i>Others</span></p>
-    <div class="jr-two">${points}${position}</div>
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
+  const eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const total = (q, e) => q.history[e - 1][k];
+  const best = (e) => Math.max(...d.players.map((q) => total(q, e)));
+  const gap = (q, e) => total(q, e) - best(e);
+  const deepest = Math.max(1, ...eps.flatMap((e) => d.players.map((q) => -gap(q, e))));
+  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
+  const x = (e) => ((e - 1) / Math.max(1, last - 1)) * 100, y = (v) => (v / yMin) * 100, f = (v) => v.toFixed(2);
+  const grid = Array.from({ length: Math.round(-yMin / step) }, (_, i) => `<i class="jr-grid" style="--y:${f(y(-(i + 1) * step))}%"></i>`).join("");
+  const pts = (q) => eps.map((e) => [x(e), y(gap(q, e))]);
+  const others = d.players.filter((q) => q.name !== p.name);
+  const svg = (cls, paths) => `<svg class="jr-lines ${cls}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
+  const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
+    // Episode 1, with no lines yet, keeps dots (as the race chart does).
+    : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
+  // The end label: the name's first three letters, then the gap (the total if they lead).
+  const g = upTo ? gap(p, upTo) : 0;
+  const label = upTo ? `<span class="jr-lbl" style="--x:${f(x(upTo))}%;--y:${f(y(g))}%"><b>${esc(p.name.slice(0, 3))}</b><em>${g ? `−${-g}` : total(p, upTo)}</em></span>` : "";
+  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
+  // Like the race chart, the axis only tightens (to make room for the label on
+  // the right) once this episode's point would leave too little.
+  const room = upTo > 1 ? `width:min(100%, calc((100% - var(--lbl)) * ${f((last - 1) / (upTo - 1))}))` : "";
+  const board = k === "show" ? "Show" : "League";
+  const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
+  return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
+    <div class="jr-plot">${grid}<div class="jr-in" style="${room}">${lines}${label}<div class="jr-ax" aria-hidden="true">${axis}</div></div></div>
   </div>`;
 }

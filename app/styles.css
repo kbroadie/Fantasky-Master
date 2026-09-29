@@ -451,43 +451,33 @@ strong { color: var(--t1); font-weight: 700; }
    picks strip, not inside the blurred backdrop layer, so opening a row
    doesn't redraw that layer. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
-/* An opened half: the player's journey on that board (journey in table.js).
-   Their running total after each episode as a line in the board's colour,
-   against the league's running median (gold dotted, keyed at the top like
-   the Cast bars' median, on the side away from their latest point), both
-   flowing Bézier curves from 0 at the left edge, over five hairline
-   gridlines at tidy values labelled in a gutter on the left, from 0 to the leader's total; each week's pick
-   sits on their line as a little framed portrait with the points it scored; a
-   pick that won glows gold, the latest has their place in a chip above, and
-   picks already in for later weeks wait, faint. The plot's side margins keep
-   the first and last portraits inside the card; the episode numbers sit on
-   the same columns. Opening draws the lines in and pops the portraits along
-   them (not under reduced motion). */
-.jr { padding: 6px 0 10px var(--rk); }
-/* Two charts, one under each column: Points (red) under the Show, Position (blue) under the League. */
-.jr-two { display: grid; grid-template-columns: 1fr 1fr; }
-.jr-c { --c: var(--show-hi); min-width: 0; padding: 0 var(--pad); }
-.jr-c.league { --c: var(--league-hi); }
-.jr-c > * { max-width: 200px; margin-inline: auto; }
-.jr-t { margin-bottom: 4px; font: 500 11px/13px var(--fm); letter-spacing: .08em; text-transform: uppercase; color: var(--c); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
-/* Drawn like the race chart (.rc-grid), with no numbers: only lines. */
-.jr svg { display: block; width: 100%; overflow: visible; }
-.jr .rc-grid { stroke: rgba(255, 255, 255, .08); }
-.jr path { fill: none; stroke-linejoin: round; stroke-linecap: round; }
+/* An opened half: the race chart ("The race so far") for the opened board,
+   full width, only the opened player highlighted (journey in table.js). */
+.jr { --c: var(--show-hi); --lbl: 76px; padding: 14px 16px 10px 12px; }
+.jr.league { --c: var(--league-hi); }
+.jr-plot { position: relative; height: 112px; margin-bottom: 22px; }
+.jr-in { position: absolute; inset: 0 auto 0 0; width: 100%; }
+.jr-grid { position: absolute; left: 0; right: 0; top: var(--y); border-top: 1px solid rgba(255, 255, 255, .08); }
+.jr-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.jr-lines path { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .jr .jr-others path { stroke: rgba(255, 255, 255, .32); stroke-width: .6; }
-.jr .jr-others circle { fill: rgba(255, 255, 255, .32); }
 .jr .jr-me path { stroke: var(--c); stroke-width: 2; }
-.jr .jr-me circle { fill: var(--c); }
-.jr-key { display: flex; justify-content: center; gap: 16px; margin: 0 0 8px; font: 500 11px/13px var(--fm); letter-spacing: .04em; color: var(--t3); text-shadow: 0 1px 3px rgba(0, 0, 0, .9); }
-.jr-key span { display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-.jr-key span:first-child { color: var(--t1); }
-.jr-key i { width: 16px; height: 1px; background: rgba(255, 255, 255, .32); }
-.jr-key i.me { height: 2px; background: linear-gradient(90deg, var(--show-hi) 50%, var(--league-hi) 50%); }
-@keyframes jr-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.jr-dot { position: absolute; left: var(--x); top: var(--y); width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: rgba(255, 255, 255, .32); }
+.jr-dot.me { width: 10px; height: 10px; margin: -5px; background: var(--c); }
+/* The end label, as the race chart's: DM Mono caps name in the line's colour, then the figure. */
+.jr-lbl { position: absolute; left: calc(var(--x) + 14px); top: var(--y); transform: translateY(-50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; text-shadow: 0 0 3px rgba(0, 0, 0, .9), 0 1px 3px rgba(0, 0, 0, .9); }
+.jr-lbl b { font: 500 12px/14px var(--fm); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
+.jr-lbl em { font: 800 12px/14px var(--ff); font-style: normal; color: var(--t2); font-variant-numeric: tabular-nums; }
+.jr-ax { position: absolute; left: 0; right: 0; top: calc(100% + 8px); height: 13px; }
+.jr-ax span { position: absolute; left: var(--x); transform: translateX(-50%); font: 400 11px/13px var(--fm); color: var(--t4); }
+.jr-ax span.now { color: var(--gold2); }
+.jr-ax span.later { opacity: .45; }
+@keyframes jr-draw { from { clip-path: inset(-10px 100% -10px -10px); } to { clip-path: inset(-10px -10px -10px -10px); } }
 @keyframes jr-fade { from { opacity: 0; } }
-.pc.open .jr-me path { stroke-dasharray: 1; animation: jr-draw .8s var(--ease) both; }
-.pc.open .jr-others { animation: jr-fade .6s var(--ease) both; }
-@media (prefers-reduced-motion: reduce) { .pc.open .jr-me path, .pc.open .jr-others { animation: none; } }
+.pc.open .jr-me { animation: jr-draw .8s var(--ease) both; } /* drawn in left to right (a dash would break on the stretched SVG) */
+.pc.open .jr-others, .pc.open .jr-dot { animation: jr-fade .6s var(--ease) both; }
+.pc.open .jr-lbl { animation: jr-fade .35s var(--ease) .6s both; }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others, .pc.open .jr-dot, .pc.open .jr-lbl { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }

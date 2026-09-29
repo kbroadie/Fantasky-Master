@@ -77,6 +77,12 @@ export function footer() {
     <div class="ducks" aria-hidden="true">${ducks}</div>`;
 }
 
+/** A tidy axis step (1, 2, 2.5 or 5 × 10ⁿ) giving at most five gridlines (the race charts). */
+export function niceStep(max) {
+  const raw = max / 4, p = 10 ** Math.floor(Math.log10(raw || 1));
+  return [1, 2, 2.5, 5, 10].map((k) => k * p).find((s) => s >= raw);
+}
+
 /** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
 export function smooth(pts) {
   const n = pts.length, f1 = (v) => v.toFixed(1);
