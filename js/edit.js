@@ -16,7 +16,7 @@ import { $, esc, framed, icon, TASK_NAME, state } from "./ui.js";
 import { parseRows, toCSV, parseCSV } from "./csv.js";
 import { checkData } from "./checks.js";
 
-const REPO = "kbroadie/Fantasky-Master", BRANCH = "main", PATH = "data/fantasky_master_data.csv";
+const REPO = "kbroadie/fantasky-master", BRANCH = "main", PATH = "data/fantasky_master_data.csv";
 const FILE_API = `https://api.github.com/repos/${REPO}/contents/${PATH}`;
 const KEY = "fm-gh-key";
 const PREFIX = { P: "Prize: ", T: "Team: ", L: "Live: ", F: "" };
@@ -183,7 +183,7 @@ function keyDialog() {
           <p>Saving writes picks and scores into the league's data on GitHub. Paste a GitHub key that can edit it. It stays in this browser and is never part of the site.</p>
           <ol>
             <li>On GitHub, open <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">a new fine-grained token</a>.</li>
-            <li>Repository access: <b>Only select repositories</b>, then <b>Fantasky-Master</b>.</li>
+            <li>Repository access: <b>Only select repositories</b>, then <b>fantasky-master</b>.</li>
             <li>Permissions: <b>Contents</b>, <b>Read and write</b>.</li>
             <li>Generate it, copy it and paste it here.</li>
           </ol>

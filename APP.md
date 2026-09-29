@@ -2,7 +2,7 @@
 
 The league site, designed for phones first and built around the players. It follows the rules in [README.md](README.md) and the calculations in [FANTASKY_MASTER_EXPLAINED.md](FANTASKY_MASTER_EXPLAINED.md).
 
-Live at **https://kbroadie.github.io/Fantasky-Master/**.
+Live at **https://kbroadie.github.io/fantasky-master/**.
 
 ## Data
 

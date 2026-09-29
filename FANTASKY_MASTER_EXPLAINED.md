@@ -2,8 +2,8 @@
 
 This document specifies the Fantasky Master system: its purpose, inputs, data model, state derivation, and every calculation it performs. It is a systems-design reference, written to be read by a language model (or a new developer) who has not seen the code: terms are defined before use, formulas are explicit, and a worked example is included.
 
-- **Live app:** <https://kbroadie.github.io/Fantasky-Master/>
-- **Source:** <https://github.com/kbroadie/Fantasky-Master> (the app: `index.html`, `js/`; the scoring engine: `js/league.js`)
+- **Live app:** <https://kbroadie.github.io/fantasky-master/>
+- **Source:** <https://github.com/kbroadie/fantasky-master> (the app: `index.html`, `js/`; the scoring engine: `js/league.js`)
 
 > **The site was rebuilt.** The single-file site this document was first written about (its architecture in §4 and its code in §10) has been replaced by the app at the site's root, which reads all league data from `data/fantasky_master_data.csv` at run time. The calculations (§5–§8) are unchanged: `js/league.js` implements them, and `tools/check-data.mjs` checks it against the worked example in §7. The old file is in the repository's git history.
 - **Taskmaster YouTube channel** (where episodes livestream): <https://www.youtube.com/@Taskmaster>
@@ -66,7 +66,7 @@ Therefore `PICKS[player][ep]` is exactly that player's final vote in the episode
 ## 4. Architecture
 
 - **Static files.** The original system was one static file, `index.html`, containing the data and the logic as plain JavaScript; the rebuilt app is static files (`index.html`, `styles.css`, `js/`) that load the data from `data/` at run time. Either way there is no framework, no build step and no dependencies.
-- **Hosting.** Served as a static file by GitHub Pages from the `main` branch of `kbroadie/Fantasky-Master`.
+- **Hosting.** Served as a static file by GitHub Pages from the `main` branch of `kbroadie/fantasky-master`.
 - **No backend, no persistence.** All league data are constants in the file. Nothing is written back, and there are no accounts. Updating the league means editing the file and republishing (§9).
 - **Execution model.** On load, the client:
   1. selects the current series (§5.3);

@@ -2,7 +2,7 @@
 
 Fantasy league for the TV show *Taskmaster*. Players pick one contestant per episode and score Show points (the contestant's score) and League points (5-4-3-2-1 by finishing place). Rules: `README.md`. Every calculation: `FANTASKY_MASTER_EXPLAINED.md`.
 
-- **Live app:** https://kbroadie.github.io/Fantasky-Master/ (GitHub Pages serves `main` as-is). The app is the site's root (promoted on request; it used to live in `app/`, and the old single-file site it replaced is only in git history: don't build on it). `app/index.html` is just a redirect to the root that keeps the route, so old `…/app/#/22/…` links and home-screen bookmarks still work.
+- **Live app:** https://kbroadie.github.io/fantasky-master/ (GitHub Pages serves `main` as-is). The repo is `kbroadie/fantasky-master`, lower case by convention (on request; it was `Fantasky-Master`, and Pages paths are case-sensitive): a small repo still named `Fantasky-Master` forwards the old address, keeping the route. The app is the site's root (promoted on request; it used to live in `app/`, and the old single-file site it replaced is only in git history: don't build on it). `app/index.html` is just a redirect to the root that keeps the route, so old `…/app/#/22/…` links and home-screen bookmarks still work.
 
 ## Layout
 

@@ -2,7 +2,7 @@
 
 **Our fantasy league for _Taskmaster_.** Pick a contestant each episode, score points when they do well, and see who in the group calls the series best.
 
-📊 **League table & stats:** **<https://kbroadie.github.io/Fantasky-Master/>**
+📊 **League table & stats:** **<https://kbroadie.github.io/fantasky-master/>**
 
 📺 **Watch the episodes live:** **[Taskmaster on YouTube](https://www.youtube.com/@Taskmaster)**
 
@@ -112,6 +112,6 @@ The site has three tabs: **Standings**, **Episodes** and **Cast**.
 
 ## Links
 
-- 📊 **League site:** <https://kbroadie.github.io/Fantasky-Master/>
+- 📊 **League site:** <https://kbroadie.github.io/fantasky-master/>
 - 📺 **Taskmaster on YouTube**, where episodes livestream: <https://www.youtube.com/@Taskmaster>
 - 🔧 **How the site works under the hood** (every calculation in detail): [FANTASKY_MASTER_EXPLAINED.md](FANTASKY_MASTER_EXPLAINED.md)
