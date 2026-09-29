@@ -86,7 +86,7 @@ function refresh(text) {
 function renderRows() {
   $("#rows").innerHTML = standingsRows(state.d);
   $(".card.board")?.classList.remove("focus");
-  queueParallax();
+  queueLight();
 }
 
 function show(page) {
@@ -96,7 +96,7 @@ function show(page) {
   $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
   $$(".page").forEach((p, j) => p.classList.toggle("active", j === i));
   scrollTo(0, 0);
-  if (page === "standings") { markWeek(false); queueParallax(); }
+  if (page === "standings") { markWeek(false); queueLight(); }
   if (page === "episodes") jump(EP, state.ep - 1);
   if (page === "cast") jump(CAST, state.cast);
   writeHash();
@@ -229,7 +229,7 @@ $("#p-standings").addEventListener("click", (e) => {
     state.how = !state.how;
     how.closest(".st-hero").classList.toggle("explain", state.how);
     how.setAttribute("aria-expanded", state.how);
-    queueParallax();
+    queueLight();
     return;
   }
   // An opened half's card title flips it between Points per episode and The
@@ -246,8 +246,6 @@ $("#p-standings").addEventListener("click", (e) => {
   if (sd) {
     const row = sd.closest(".pc"), side = sd.dataset.side;
     openRow(row, row.classList.contains("open") && row.dataset.open === side ? null : side);
-    // Rows below slide as this one opens; keep their parallax in step.
-    followParallax(settled([row.querySelector(".pc-more")]));
   }
 });
 
@@ -282,51 +280,17 @@ function openRow(row, side) {
   if (side) {
     const name = row.querySelector(`.sd[data-side="${side}"]`)?.dataset.p;
     row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side);
-    sizeOpen(row);
     row.dataset.open = side;
   } else delete row.dataset.open;
   row.classList.toggle("open", !!side);
   for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
-  sharpen(row, side);
   // While anything is open, every other cell steps back.
   $(".card.board")?.classList.toggle("focus", !!$("#rows .pc.open"));
 }
 
 /**
- * The opened half's L comes into focus: a sharp copy of the row's backdrop
- * (.pc-bg.sharp) fades in over the frosted one, clipped to that half and the
- * picks below, so the other half stays frosted. It holds only the opened
- * player's pick. It exists only while the row is open. When its photo
- * changes (the other half opened, or a week change), a new copy fades in over
- * the old one, which fades out.
- */
-const bgKey = (bg) => [...bg.querySelectorAll(".pf")].map((f) => f.getAttribute("style") + f.querySelector("img").getAttribute("src")).join("|");
-function sharpen(row, side) {
-  const bg = row.querySelector(".pc-bg:not(.sharp):not(.pc-ghost)");
-  let sh = row.querySelector(".pc-bg.sharp:not(.gone)");
-  if (sh && (!side || !bg || sh.dataset.key !== bgKey(bg) + side)) { unsharpen(sh); sh = null; }
-  if (!side || !bg) return;
-  if (!sh) {
-    sh = bg.cloneNode(true);
-    sh.classList.add("sharp");
-    sh.querySelector(side === "show" ? ".pf.r" : ".pf.l")?.remove(); // only the opened player's pick
-    sh.dataset.key = bgKey(bg) + side;
-    sh.dataset.side = side;
-    [...row.querySelectorAll(".pc-bg")].pop().after(sh); // over the frosted one (and any fading copies)
-    sh.getBoundingClientRect(); // start from transparent, so the fade always runs
-    sh.classList.add("on");
-  }
-  sh.dataset.side = side;
-}
-function unsharpen(sh) {
-  sh.classList.add("gone");
-  sh.classList.remove("on");
-  setTimeout(() => sh.remove(), reducedMotion ? 0 : 400);
-}
-
-/**
  * Brings the rows up to date without rebuilding the table. Rows are places,
- * so they stay put; each row's halves, backdrop and picks are patched, and
+ * so they stay put; each row's halves and picks are patched, and
  * each player's half slides from their old place to their new one on its
  * board (FLIP), the Show's and the League's independently. An opened half
  * follows its player to their new place. before() runs once the old places
@@ -345,7 +309,6 @@ function patchRows(before) {
     if (!old) return rows.append(n.cloneNode(true));
     old.classList.toggle("lead", n.classList.contains("lead"));
     old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
-    patchBackdrop(old, n);
   });
   while (rows.children.length > fresh.children.length) rows.lastElementChild.remove();
   // Opened halves follow their players.
@@ -355,7 +318,6 @@ function patchRows(before) {
     if (b && !want.has(b.closest(".pc"))) want.set(b.closest(".pc"), o.side);
   }
   for (const r of rows.children) if (want.has(r) || r.classList.contains("open")) openRow(r, want.get(r) || null);
-  queueParallax();
   if (reducedMotion) return;
   const moving = [];
   for (const b of rows.querySelectorAll(".sd")) {
@@ -372,54 +334,6 @@ function patchRows(before) {
     b.style.transform = "";
     b.addEventListener("transitionend", () => { b.style.transition = ""; }, { once: true });
   }
-  followParallax(settled([...rows.querySelectorAll(".pc-more")]));
-}
-
-/**
- * A row's backdrop, patched rather than replaced: each photo's crop (its
- * inline vars) and src are updated in place, so a new crop of the same photo
- * (every S22 face) just moves, with no reload or blank frame. A copy of the
- * old backdrop stays on top and fades out, so the photos blend (fadeGhost).
- */
-function patchBackdrop(old, n) {
-  const ob = old.querySelector(".pc-bg"), nb = n.querySelector(".pc-bg");
-  if (!ob || !nb) { ob?.remove(); if (nb) old.prepend(nb.cloneNode(true)); return; }
-  const ofs = ob.querySelectorAll(".pf"), nfs = nb.querySelectorAll(".pf");
-  const same = [...ofs].every((f, k) => f.getAttribute("style") === nfs[k].getAttribute("style")
-    && f.querySelector("img").getAttribute("src") === nfs[k].querySelector("img").getAttribute("src"));
-  if (same) return;
-  const ghost = reducedMotion ? null : ob.cloneNode(true);
-  ofs.forEach((f, k) => {
-    const nf = nfs[k];
-    if (!f.querySelector(".edge") !== !nf.querySelector(".edge")) return f.replaceWith(nf.cloneNode(true));
-    f.setAttribute("style", nf.getAttribute("style"));
-    const oi = f.querySelector("img"), src = nf.querySelector("img").getAttribute("src");
-    if (oi.getAttribute("src") !== src) oi.src = src;
-  });
-  if (ghost) fadeGhost(ghost, ob);
-}
-
-/** How tall a row's picks are when open, for its backdrop's clip (--open-h). */
-function sizeOpen(row) {
-  const more = row.querySelector(".pc-more > div");
-  if (more) row.style.setProperty("--open-h", `${more.scrollHeight}px`);
-}
-
-/**
- * Blend a row's backdrop into its new photo: the old one (a copy, `ghost`)
- * sits on top of the new one and fades out over the same second as the row's
- * slide, once the new photo is decoded, so there's never a blank frame. The
- * backdrop is already its own compositing layer, so fading a copy is cheap.
- */
-function fadeGhost(ghost, bg) {
-  ghost.classList.add("pc-ghost");
-  bg.after(ghost);
-  const ready = Promise.all([...bg.querySelectorAll("img")].map((img) => img.decode ? img.decode().catch(() => {}) : null));
-  // An explicit animation (not a CSS transition, which can miss its start if
-  // the copy is inserted and changed in the same frame) that always finishes
-  ready.then(() => ghost.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 1000, easing: "cubic-bezier(.65, 0, .35, 1)", fill: "forwards" })
-    .finished.then(() => ghost.remove(), () => ghost.remove()));
-  setTimeout(() => ghost.remove(), 3000); // in case it never runs (a hidden tab)
 }
 
 $("#p-standings").addEventListener("click", (e) => {
@@ -492,42 +406,22 @@ addEventListener("scroll", () => {
   });
 }, { passive: true });
 
-// Standings backdrops: a slight vertical parallax. Each face drifts against
-// the scroll, centred when its row's top line is mid-screen. Keyed to the top
-// line, so opening a row doesn't move its own photo.
-const PARALLAX = 0.06;
-let praf = 0;
-function parallax() {
-  praf = 0;
+// The scoring cards' light: its pool of colour shifts as the card moves up
+// the screen (--lx), updated once a frame while scrolling.
+let lraf = 0;
+function cardLight() {
+  lraf = 0;
   if (reducedMotion || state.page !== "standings") return;
   const mid = innerHeight / 2;
-  for (const img of $$("#rows .pc-bg img")) {
-    const r = img.closest(".pc").getBoundingClientRect();
-    if (r.bottom < -100 || r.top > innerHeight + 100) continue;
-    img.style.setProperty("--py", `${((mid - (r.top + 29)) * PARALLAX).toFixed(1)}px`);
-  }
-  // The scoring plaques' metal: its reflection moves as the plaque moves up the screen.
   for (const c of $$(".st-hero.explain .how-card")) {
     const r = c.getBoundingClientRect();
     c.style.setProperty("--lx", Math.max(-1, Math.min(1, (r.top + r.height / 2 - mid) / mid)).toFixed(3));
   }
 }
-const queueParallax = () => { if (!praf) praf = requestAnimationFrame(parallax); };
-/**
- * Keep the parallax in step while rows move (a row opening, or rows sliding to
- * new places): every frame until `done` settles, then once more at rest.
- */
-let following = 0;
-function followParallax(done) {
-  const step = () => { parallax(); if (following) requestAnimationFrame(step); };
-  if (following++ === 0) requestAnimationFrame(step);
-  Promise.race([done, new Promise((r) => setTimeout(r, 2500))]).finally(() => { following--; requestAnimationFrame(parallax); });
-}
-/** When the elements' current animations and transitions (their own, not their children's) have ended. */
-const settled = (els) => Promise.all(els.flatMap((el) => el?.getAnimations?.() || []).map((a) => a.finished.catch(() => {})));
-addEventListener("scroll", queueParallax, { passive: true });
+const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
+addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueParallax(); });
+addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); });
 
 addEventListener("hashchange", () => {
   const h = readHash();

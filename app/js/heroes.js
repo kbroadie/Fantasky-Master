@@ -3,9 +3,8 @@
 // where every contestant's eyes are in it (fractions of the photo's width and
 // height) and the size of their head (fraction of the photo's width: the
 // geometric mean of eye-line-to-chin and cheek-to-cheek, measured on the
-// original). Standings uses it as row backdrops, one face per row, and Cast
-// behind each Profile; both scale the photo so every head comes out the same
-// size. (Pupil distance was too noisy a yardstick: glasses and head turns
+// original). The Cast tab puts the face behind each Profile, scaling the
+// photo so every head comes out the same size. (Pupil distance was too noisy a yardstick: glasses and head turns
 // made some heads visibly bigger than others.) League data lives in the CSV.
 
 /** A contestant's face: in their own hero photo or the series' group photo; null if neither. */
@@ -14,10 +13,7 @@ export function faceFor(series, key) {
   return face ? { src: face.src || g.src, ratio: face.ratio || g.ratio, ex: face.eye[0], ey: face.eye[1], head: face.head } : null;
 }
 
-/** Patatas, standing in on Standings for a player who didn't pick that week. */
-export const NO_PICK = { src: "https://i.imgur.com/xkfkjKd.png", ratio: 810 / 1095, ex: 0.57, ey: 0.403, head: 0.318, cap: 1.6 };
-
-export const GROUP = {
+const GROUP = {
   // Series 21: each contestant's own hero photo (1440 × 1872), not the group
   // shot, so each face carries its own src.
   21: {
