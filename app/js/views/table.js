@@ -1,8 +1,9 @@
-// Standings: a strip of weeks (Ep 1–10), an "Episode 4 Standings" headline and the
-// leaders, then both boards side by side as they stood after that week: each
-// row is a place, the Show's player on the left and the League's on the right,
-// each over their pick that week. A week not yet scored is "Episode 5 Picks":
-// the boards as they stand now. Tapping a player opens their ten weekly picks.
+// Standings: a strip of weeks (Ep 1–10) over a swiper of weeks, like Episodes:
+// each slide an "Episode 4 Standings" headline and the leaders, then both
+// boards side by side as they stood after that week: each row is a place, the
+// Show's player on the left and the League's on the right. A week not yet
+// scored is "Episode 5 Picks": the boards as they stand now. Tapping a player
+// opens their card under the row.
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
@@ -71,10 +72,9 @@ function leaderLine(d, rows, w) {
  * The hero: "Episode 4 Standings" and who leads each board ("Episode 5 Picks" for a
  * week not yet scored), or when the series starts.
  */
-export function standingsHero(d) {
-  const w = stWeek(d);
-  const how = `<button type="button" class="st-how" aria-expanded="${state.how}" aria-controls="st-explain">How scoring works<i class="st-how-chev" aria-hidden="true"></i></button>
-    <div class="st-explain" id="st-explain"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
+export function standingsHero(d, w = stWeek(d)) {
+  const how = `<button type="button" class="st-how" aria-expanded="${state.how}" aria-controls="st-explain-${w}">How scoring works<i class="st-how-chev" aria-hidden="true"></i></button>
+    <div class="st-explain" id="st-explain-${w}"><div><div class="how-grid">${TERMS.map(howCard).join("")}</div></div></div>`;
   // The kicker, like the episode head's: the series and that week's episode.
   const kicker = `<div class="kicker">Series ${esc(state.key)} · ${esc(fmtDay.format(d.episodes[w - 1].air))}</div>`;
   if (!d.weeksScored) return `${kicker}<h2 class="ep-title">Episode ${w} Picks</h2><div class="ep-sub">The series starts ${esc(fmtWhen.format(d.episodes[0].air))}</div>${how}`;
@@ -83,31 +83,33 @@ export function standingsHero(d) {
 
 /** Ep 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
-  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}${ep === d.weeksScored + 1 ? " next" : ""}" data-week="${ep}"><span>Ep ${ep}</span></button>`).join("");
+  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}${ep === d.weeksScored + 1 ? " next" : ""}" data-slide="${ep - 1}"><span>Ep ${ep}</span></button>`).join("");
 
-export function standingsHead(d) {
-  return `
-    <div class="strip scroll" id="st-tabs">${weekTabs(d)}</div>
-    <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d)}</div>
-    <div class="card board">
-      <div class="st-head">
-        <span class="st-rk" aria-hidden="true"></span>
-        <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
-        <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
+/** One slide per week (in #st-body): that week's hero, then both boards. */
+export function standingsSlides(d) {
+  return d.episodes.map(({ ep: w }) => `
+    <section class="slide st-slide" data-week="${w}">
+      <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d, w)}</div>
+      <div class="card board">
+        <div class="st-head">
+          <span class="st-rk" aria-hidden="true"></span>
+          <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
+          <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
+        </div>
+        <div class="rows">${standingsRows(d, w)}</div>
       </div>
-      <div id="rows"></div>
-    </div>`;
+    </section>`).join("");
 }
 
 /**
  * One row per place: the place number in a fixed column at the left (it never
  * moves or changes), then the Show's player at that place and
  * the League's, each as name then points. Each half is a button that opens that player's
- * picks (rowMore). Rows are keyed by place; each half by player (data-p), so
- * a week change can slide each player to their new place (patchRows).
+ * card (rowMore); each half is keyed by player (data-p), so an opened player
+ * can be opened in every week's slide.
  */
-export function standingsRows(d) {
-  const w = stWeek(d), { show, league } = boards(d, w);
+export function standingsRows(d, w = stWeek(d)) {
+  const { show, league } = boards(d, w);
   const half = (p, side) => {
     const k = side === "show" ? "show" : "league", rank = p[`${k}Rank`];
     const num = `<span class="pc-num${rank === 1 ? " t1" : ""}">${p[k]}</span>`;
@@ -125,8 +127,8 @@ export function standingsRows(d) {
 }
 
 /** What an opened half shows: the player's points or race card (their pick chooser in edit mode). */
-export function rowMore(d, name, side) {
-  const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
+export function rowMore(d, name, side, w = stWeek(d)) {
+  const p = atWeek(d, w).find((x) => x.name === name);
   if (!p) return "";
   if (state.edit) return pickChooser(d, p, w);
   const k = side === "show" ? "show" : "league";

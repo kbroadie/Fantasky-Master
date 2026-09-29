@@ -288,7 +288,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .card.board::before, .card.board::after { content: ""; position: absolute; inset: 0 0 auto; height: 90px; z-index: 0; pointer-events: none; }
 .card.board::before { background: var(--grain), radial-gradient(55% 110% at 22% 0%, rgba(229, 72, 77, .36), transparent 80%); }
 .card.board::after { background: radial-gradient(55% 110% at 78% 0%, rgba(62, 123, 250, .36), transparent 80%); }
-.board #rows { position: relative; z-index: 1; }
+.board .rows { position: relative; z-index: 1; }
 .board .pc:last-child { border-bottom: 0; }
 /* The head names the two halves in the week strip's language: DM Mono caps
    under the scoring cards' crown and trophy, each half tinted from the top in
