@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, fmtDay, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
@@ -143,7 +143,8 @@ export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
   if (!p) return "";
   if (state.edit) return pickChooser(d, p, w);
-  return `<div class="xp">${pointsCard(d, p, w, side === "show" ? "show" : "league")}</div>`;
+  const k = side === "show" ? "show" : "league";
+  return `<div class="xp">${state.xpView === "race" ? raceCard(d, p, w, k) : pointsCard(d, p, w, k)}</div>`;
 }
 
 /**
@@ -165,7 +166,73 @@ function pointsCard(d, p, w, k) {
     if (!x || ep > upTo) return null;
     return { v: x.pick ? x[k] : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
-  return barsCard(d, at, max, median(all), `var(--${k}-hi)`, `${k === "show" ? "Show" : "League"} points per episode`);
+  return barsCard(d, at, max, median(all), `var(--${k}-hi)`, swapTitle(`${BOARD[k]} points per episode`, "race"));
+}
+
+const BOARD = { show: "Show", league: "League" };
+/** The swap icon, as on the series chip. */
+const SWAP = `<svg class="swap" viewBox="0 0 12 12" aria-hidden="true"><path d="M1.5 4h8M7 1.5 9.5 4 7 6.5M10.5 8h-8M5 5.5 2.5 8 5 10.5"/></svg>`;
+/**
+ * An opened half's card title is also its switch (on request): tapping it
+ * flips the card between Points per episode and The race so far, with the
+ * series chip's swap icon to say so. The choice holds for every row opened
+ * after it (state.xpView), so players can be compared in the same view.
+ */
+const swapTitle = (title, to) => `<button class="xp-swap" type="button" data-xp="${to}" aria-label="${esc(title)}: show the ${to === "race" ? "race so far" : "points per episode"} instead">${esc(title)}${SWAP}</button>`;
+
+/**
+ * An opened half's other card: the Episodes tab's "The race so far", for
+ * that board: every player's gap to the board's leader, only the opened
+ * player's line highlighted (journey), and how far behind the leader they
+ * are that week in the legend.
+ */
+function raceCard(d, p, w, k) {
+  const upTo = Math.min(w, d.weeksScored), pts = (q) => q.history[upTo - 1][k];
+  const behind = upTo ? Math.max(...d.players.map(pts)) - pts(p) : null;
+  return `<div class="card jr-card">
+      <div class="card-head">${swapTitle(`${BOARD[k]} race so far`, "bars")}<span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
+      ${journey(d, p, k, w)}
+    </div>`;
+}
+
+
+
+/**
+ * An opened half: the race chart from the Episodes tab ("The race so far"),
+ * for the players on the opened board, across the full width of the row.
+ * Each player's gap to the board's leader in points after every episode: the
+ * leader runs flat along the top, everyone else below, over the race chart's
+ * gridlines (tidy steps from niceStep, none at 0), smoothed the same way
+ * (`smooth`, monotone). Only the opened player is highlighted: their line in
+ * the board's colour; every other player is a very thin, faint line. No line
+ * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
+ * later ones faint). The plot is stretched to the row (SVG with
+ * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
+ * are HTML so they never stretch. All through the week on show.
+ */
+function journey(d, p, side, w) {
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
+  const eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const total = (q, e) => q.history[e - 1][k];
+  const best = (e) => Math.max(...d.players.map((q) => total(q, e)));
+  const gap = (q, e) => total(q, e) - best(e);
+  const deepest = Math.max(1, ...eps.flatMap((e) => d.players.map((q) => -gap(q, e))));
+  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
+  const x = (e) => ((e - 1) / Math.max(1, last - 1)) * 100, y = (v) => (v / yMin) * 100, f = (v) => v.toFixed(2);
+  const grid = Array.from({ length: Math.round(-yMin / step) }, (_, i) => `<i class="jr-grid" style="--y:${f(y(-(i + 1) * step))}%"></i>`).join("");
+  const pts = (q) => eps.map((e) => [x(e), y(gap(q, e))]);
+  const others = d.players.filter((q) => q.name !== p.name);
+  const svg = (cls, paths) => `<svg class="jr-lines ${cls}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
+  const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
+    // Episode 1, with no lines yet, keeps dots (as the race chart does).
+    : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
+  const g = upTo ? gap(p, upTo) : 0;
+  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
+  const board = k === "show" ? "Show" : "League";
+  const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
+  return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
+    <div class="jr-plot">${grid}${lines}<div class="jr-ax" aria-hidden="true">${axis}</div></div>
+  </div>`;
 }
 
 /**

@@ -232,6 +232,14 @@ $("#p-standings").addEventListener("click", (e) => {
     queueParallax();
     return;
   }
+  // An opened half's card title flips it between Points per episode and The
+  // race so far; the choice holds for every row opened after it.
+  const swap = e.target.closest(".xp-swap");
+  if (swap) {
+    state.xpView = swap.dataset.xp;
+    for (const row of $$("#rows .pc.open")) openRow(row, row.dataset.open);
+    return;
+  }
   // A half of a row opens that player's picks under the row; tapping the
   // same half closes it, and the other half switches to their player.
   const sd = e.target.closest(".pc .sd");
