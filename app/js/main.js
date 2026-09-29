@@ -393,9 +393,9 @@ $("#ep-body").addEventListener("click", (e) => {
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 
-// The top bar compacts once you scroll. Its layout height stays the same
-// (see .topbar.compact in the CSS), and the two thresholds differ so it
-// can't flicker at the boundary.
+// The top bar compacts once you scroll. It's fixed over a spacer, so this
+// never moves the page (see .topbar in the CSS), and the two thresholds
+// differ so it can't flicker at the boundary.
 const bar = $(".topbar");
 let hraf = 0;
 addEventListener("scroll", () => {

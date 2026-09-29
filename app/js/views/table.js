@@ -83,7 +83,7 @@ export function standingsHero(d) {
 
 /** Ep 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
-  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}">Ep ${ep}</button>`).join("");
+  `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}"><span>Ep ${ep}</span></button>`).join("");
 
 export function standingsHead(d) {
   return `

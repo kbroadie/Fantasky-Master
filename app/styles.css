@@ -24,11 +24,13 @@
   --fm: "DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --px: 16px;
-  /* Top bar heights, open and compact. .topbar.compact adds the difference
-     back as margin, so the bar's layout height never changes. */
+  /* Top bar heights, open and compact. The bar is fixed over a spacer of its
+     open height (main's padding), so compacting never moves the page. */
   --hdr-h: 62px; --hdr-hc: 36px;
   --tabs-h: 58px; --tabs-hc: 40px;
   --tabs-m: 8px; --tabs-mc: 5px;
+  --bar-h: calc(var(--hdr-h) + var(--tabs-h) + 2 * var(--tabs-m)); /* open, without the safe area */
+  --bar-d: calc(var(--hdr-h) - var(--hdr-hc) + var(--tabs-h) - var(--tabs-hc) + 2 * (var(--tabs-m) - var(--tabs-mc))); /* what compacting saves */
   --strip-h: 44px; --strip-hc: 32px; /* the sub-tab strips, open and compact */
   --ease: cubic-bezier(.22, 1, .36, 1);
 }
@@ -50,19 +52,27 @@ strong { color: var(--t1); font-weight: 700; }
 .loading-msg, .err { padding: 40px var(--px); text-align: center; color: var(--t3); font-family: var(--fm); font-size: 13px; }
 
 /* ── Top bar: masthead + tabs, pinned ───────────────────────────────── */
+/* The bar is fixed, out of the page's flow, over a spacer of its open height
+   (main's padding-top), so compacting it never re-lays out the page (that
+   made the animation choppy, on request) and the page never moves: moving it
+   let scroll anchoring flip the bar open and shut in a loop. Compacting
+   shrinks the masthead to one thin line and the tabs to their labels; only
+   the bar's own few boxes are laid out as it does. */
 .topbar {
-  position: sticky; top: 0; z-index: 5;
+  position: fixed; top: 0; left: 0; right: 0; margin: 0 auto; max-width: inherit; z-index: 5;
   display: flow-root; /* the tabs' margin mustn't collapse into the bar's */
-  /* Frosted glass: content scrolls underneath as a soft blur */
+}
+main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
+/* Frosted glass: content scrolls underneath as a soft blur. It's its own
+   layer at the open height, which slides up when the bar compacts (a
+   transform, so the blur is never re-rendered at a new size each frame). */
+.topbar::before {
+  content: ""; position: absolute; z-index: -1; left: 0; right: 0; top: 0; height: calc(var(--bar-h) + env(safe-area-inset-top)); pointer-events: none;
   background: linear-gradient(180deg, rgba(7, 5, 7, .35), rgba(7, 5, 7, .6));
   -webkit-backdrop-filter: blur(18px) saturate(1.4); backdrop-filter: blur(18px) saturate(1.4);
-  transition: margin-bottom .3s var(--ease);
+  transition: transform .3s var(--ease);
 }
-/* Compacting shrinks the masthead to one thin line and the tabs to their
-   labels. The height it saves goes back as margin, animated in step, so
-   nothing below moves; otherwise the browser's scroll anchoring pulls the
-   page back above the threshold and the bar flips open and shut in a loop. */
-.topbar.compact { margin-bottom: calc(var(--hdr-h) - var(--hdr-hc) + var(--tabs-h) - var(--tabs-hc) + 2 * (var(--tabs-m) - var(--tabs-mc))); }
+.topbar.compact::before { transform: translateY(calc(-1 * var(--bar-d))); }
 .hdr {
   display: flex; align-items: center; gap: 8px;
   height: calc(var(--hdr-h) + env(safe-area-inset-top));
@@ -403,25 +413,25 @@ strong { color: var(--t1); font-weight: 700; }
 /* ── Tab strips over swipers (episodes, cast) ──────────────────────── */
 .strip { display: flex; border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, var(--s2), var(--s1)); }
 /* The sub-tab strips (Standings' episodes, Episodes, Cast) stick under the
-   top bar and compact with it: their tabs shorten from 44px to 32px as the
-   bar does, and like the bar they give the saved height back as margin, so
-   nothing below moves (see .topbar.compact). */
+   top bar and compact with it, by transform only, so nothing is re-laid out
+   (on request: animating their top, height and margin was choppy). The strip
+   keeps its size and slides up by what the bar saves plus its own 12px, which
+   tucks its top under the bar, leaving a 32px band; the labels (each tab's
+   span) drop by half that so they stay centred in it. */
 .page > .strip {
-  position: sticky; z-index: 4; top: calc(var(--hdr-h) + env(safe-area-inset-top) + var(--tabs-h) + 2 * var(--tabs-m));
-  transition: top .3s var(--ease), margin-bottom .3s var(--ease);
+  position: sticky; z-index: 4; top: calc(var(--bar-h) + env(safe-area-inset-top));
+  transition: transform .3s var(--ease);
 }
-.topbar.compact ~ main .page > .strip {
-  top: calc(var(--hdr-hc) + env(safe-area-inset-top) + var(--tabs-hc) + 2 * var(--tabs-mc));
-  margin-bottom: calc(var(--strip-h) - var(--strip-hc));
-}
-.topbar.compact ~ main .page > .strip .strip-tab { min-height: var(--strip-hc); padding-block: 4px; }
+.topbar.compact ~ main .page > .strip { transform: translateY(calc(-1 * (var(--bar-d) + var(--strip-h) - var(--strip-hc)))); }
+.strip-tab > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: translate .3s var(--ease); }
+.topbar.compact ~ main .page > .strip .strip-tab > span { translate: 0 calc((var(--strip-h) - var(--strip-hc)) / 2); }
 .strip.scroll { overflow-x: auto; scrollbar-width: none; }
 .strip.scroll::-webkit-scrollbar { display: none; }
 .strip-tab {
   position: relative; flex-shrink: 0; min-height: var(--strip-h); padding: 10px clamp(13px, 3.4vw, 18px);
   font-family: var(--fm); font-size: 12px; color: var(--t3); letter-spacing: .1em; white-space: nowrap;
   border-right: 1px solid var(--b-dim); border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color .15s, background .15s, min-height .3s var(--ease), padding .3s var(--ease);
+  transition: color .15s, background .15s;
 }
 .strip.even .strip-tab { flex: 1; min-width: 0; padding-inline: 4px; overflow: hidden; text-overflow: ellipsis; }
 .strip-tab.tbd { color: var(--t4); }

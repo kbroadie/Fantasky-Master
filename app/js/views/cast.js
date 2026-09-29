@@ -6,7 +6,7 @@ import { faceFor } from "../heroes.js";
 /** Contestants by series total, best first. */
 export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.rank || a.key.localeCompare(b.key));
 
-export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}">${esc(c.key)}</button>`).join("");
+export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}"><span>${esc(c.key)}</span></button>`).join("");
 
 export { median };
 

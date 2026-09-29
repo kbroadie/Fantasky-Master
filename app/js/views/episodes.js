@@ -14,7 +14,7 @@ function seated(d) {
 }
 
 export const epTabs = (d) => d.episodes.map((e) =>
-  `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}">Ep ${e.ep}</button>`).join("");
+  `<button class="strip-tab${e.ep > d.weeksScored ? " tbd" : ""}" data-slide="${e.ep - 1}"><span>Ep ${e.ep}</span></button>`).join("");
 
 export const epSlides = (d) => d.episodes.map((e) => `<section class="slide">${slide(d, e)}</section>`).join("");
 
