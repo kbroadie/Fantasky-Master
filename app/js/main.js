@@ -54,6 +54,7 @@ function loadSeries(key) {
 function renderStandings(d) {
   $("#st-tabs").innerHTML = weekTabs(d);
   $("#st-body").innerHTML = standingsSlides(d);
+  pending = [];
   for (const s of $("#st-body").children) { sizes.observe(s); syncOpen(s); }
   queueLight();
 }
@@ -237,7 +238,7 @@ $("#p-standings").addEventListener("click", (e) => {
   const swap = e.target.closest(".xp-swap");
   if (swap) {
     state.xpView = swap.dataset.xp;
-    for (const row of $$("#st-body .pc.open")) openRow(row, row.dataset.open);
+    syncAll();
     return;
   }
   // A half of a row opens that player's picks under the row; tapping the
@@ -249,7 +250,7 @@ $("#p-standings").addEventListener("click", (e) => {
     // Only the board on show eases into focus; the other weeks just switch.
     for (const b of $$("#st-body .board.ease")) b.classList.remove("ease");
     row.closest(".board").classList.add("ease");
-    for (const s of $$("#st-body .st-slide")) syncOpen(s);
+    syncAll();
   }
 });
 
@@ -264,6 +265,7 @@ function openRow(row, side) {
     const name = row.querySelector(`.sd[data-side="${side}"]`)?.dataset.p;
     row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side, +row.closest(".st-slide").dataset.week);
     row.dataset.open = side;
+    row.dataset.view = state.xpView;
   } else delete row.dataset.open;
   row.classList.toggle("open", !!side);
   for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
@@ -276,8 +278,31 @@ function syncOpen(slide) {
   const o = state.open;
   const want = o && [...slide.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((b) => b.dataset.p === o.name)?.closest(".pc");
   for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
-  if (want && !(want.classList.contains("open") && want.dataset.open === o.side)) openRow(want, o.side);
+  if (want && !(want.classList.contains("open") && want.dataset.open === o.side && want.dataset.view === state.xpView)) openRow(want, o.side);
 }
+/**
+ * A tap changes the week on show at once, so its first frame stays short and
+ * the row opens smoothly; the other weeks catch up a slide at a time once the
+ * line has drawn in (nearest first), or all at once as soon as a swipe starts.
+ */
+let pending = [], ptimer = 0;
+function syncAll() {
+  const slides = [...$(ST.body).children], cur = ST.get();
+  syncOpen(slides[cur]);
+  pending = slides.filter((_, j) => j !== cur).sort((a, b) => Math.abs(slides.indexOf(a) - cur) - Math.abs(slides.indexOf(b) - cur));
+  clearTimeout(ptimer);
+  ptimer = setTimeout(drain, 900);
+}
+function drain() {
+  const s = pending.shift();
+  if (s?.isConnected) syncOpen(s);
+  if (pending.length) ptimer = setTimeout(drain, 16);
+}
+function flush() {
+  clearTimeout(ptimer);
+  for (const s of pending.splice(0)) if (s.isConnected) syncOpen(s);
+}
+$(ST.body).addEventListener("scroll", () => { if (pending.length) flush(); }, { passive: true });
 
 bindSwiper(ST, (dir) => {
   if (dir > 0) show("episodes");

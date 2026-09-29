@@ -330,11 +330,8 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* While a half is open, every other cell steps back (on request): each player
    cell a little darker with its text dimmed, and the other rows' place
    numbers dimmed, so the opened player reads first (.board.focus, set in
-   openRow). */
-/* Only the board tapped on eases (.ease, set in main.js); the other weeks'
-   boards just switch, so they add no animations. */
-.board.ease .sd { transition: background-color .35s var(--ease); }
-.board.ease :is(.sd > *, .pc-rank) { transition: opacity .35s var(--ease); }
+   openRow). It switches at once: fading every cell's opacity made each one a
+   compositing layer for the fade, and the row's opening stuttered. */
 .board.focus .sd { background-color: rgba(8, 6, 8, .32); }
 .board.focus .sd > *, .board.focus .pc:not(.open) .pc-rank { opacity: .6; }
 .board.focus .pc[data-open="show"] .sd.l, .board.focus .pc[data-open="league"] .sd.r { background-color: transparent; }
@@ -374,7 +371,8 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 
 /* Tap a half to open its card under the row */
-.pc-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
+.pc-more { display: grid; grid-template-rows: 0fr; }
+.board.ease .pc-more { transition: grid-template-rows .3s var(--ease); } /* only the board tapped on animates (.ease, set in main.js); the other weeks just switch */
 .pc.open .pc-more { grid-template-rows: 1fr; }
 .pc-more > div { overflow: hidden; min-height: 0; }
 /* A slightly darker bed behind an opened row's card. */
