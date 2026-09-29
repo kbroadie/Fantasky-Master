@@ -386,6 +386,20 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
    itself (with overscroll-behavior: contain) swallowed vertical swipes, so
    the page couldn't be scrolled from an opened row (fixed on request). */
 .xp { height: calc(5 * var(--head)); overflow: hidden; padding: 10px 10px 16px; }
+/* Which half the card belongs to (on request: it was unclear): the opened
+   half is underlined in its board's colour, a pointer in the same colour sits
+   on the card's top edge under that half's centre, and the card's border
+   takes the colour too. The pointer's x is the half's centre in the row
+   (the Show half runs from the place strip to the column rule, the League
+   half from the rule to the edge). */
+.pc[data-open="show"] .sd.l { box-shadow: inset 0 -2px 0 var(--show-hi); }
+.pc[data-open="league"] .sd.r { box-shadow: inset 0 -2px 0 var(--league-hi); }
+.xp { position: relative; }
+.xp::before { content: ""; position: absolute; top: 4px; width: 14px; height: 7px; margin-left: -7px; clip-path: polygon(50% 0, 100% 100%, 0 100%); pointer-events: none; }
+.pc[data-open="show"] .xp::before { left: calc(25% + var(--rk) * .75); background: var(--show-hi); }
+.pc[data-open="league"] .xp::before { left: calc(75% + var(--rk) * .25); background: var(--league-hi); }
+.pc[data-open="show"] .xp > .card { border-color: var(--show-edge); }
+.pc[data-open="league"] .xp > .card { border-color: var(--league-edge); }
 .xp .card { margin: 0 0 10px; }
 .xp .card:last-child { margin-bottom: 0; }
 .xp .bars { --plot: 140px; } /* the one card fills the five rows */
