@@ -331,8 +331,10 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
    cell a little darker with its text dimmed, and the other rows' place
    numbers dimmed, so the opened player reads first (.board.focus, set in
    openRow). */
-.sd { transition: background-color .35s var(--ease); }
-.sd > *, .pc-rank { transition: opacity .35s var(--ease); }
+/* Only the board tapped on eases (.ease, set in main.js); the other weeks'
+   boards just switch, so they add no animations. */
+.board.ease .sd { transition: background-color .35s var(--ease); }
+.board.ease :is(.sd > *, .pc-rank) { transition: opacity .35s var(--ease); }
 .board.focus .sd { background-color: rgba(8, 6, 8, .32); }
 .board.focus .sd > *, .board.focus .pc:not(.open) .pc-rank { opacity: .6; }
 .board.focus .pc[data-open="show"] .sd.l, .board.focus .pc[data-open="league"] .sd.r { background-color: transparent; }
@@ -476,6 +478,9 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 }
 .swiper::-webkit-scrollbar { display: none; }
 .slide { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+/* Slides off screen (all but the one on show and its neighbours) skip style,
+   layout and paint until they come near. They keep their last size once seen. */
+.slide { content-visibility: auto; contain-intrinsic-size: auto 390px auto 1200px; }
 
 /* ── Cards ─────────────────────────────────────────────────────────── */
 .card {
