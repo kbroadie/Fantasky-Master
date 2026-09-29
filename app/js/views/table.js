@@ -143,17 +143,18 @@ export function rowMore(d, name, side, w = stWeek(d)) {
  * the pick's place, out of 5), in the pick's colour, a gold number for a pick
  * that won, the pick's first three letters under it above the episode
  * number, and the median of every player's weekly points on that board.
- * Every week is shown; the weeks after the week on show are faded (dim):
+ * Every week is shown, and every week but the one on show is faded (dim):
  * scored ones with their bars, later ones with just the picks already made.
+ * The median is of every scored week.
  */
 function pointsCard(d, p, w, k) {
   const upTo = Math.min(w, d.weeksScored);
   const max = k === "show" ? Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored))) : 5;
-  const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.ep <= upTo && x.pick).map((x) => x[k]));
+  const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.pick).map((x) => x[k]));
   const at = (ep) => {
     const x = p.weeks[ep - 1];
     if (!x) return null;
-    const dim = ep > upTo, color = x.pick ? d.cast[x.pick].color : "var(--t4)", tag = x.pick ? x.pick.slice(0, 3) : null;
+    const dim = ep !== w, color = x.pick ? d.cast[x.pick].color : "var(--t4)", tag = x.pick ? x.pick.slice(0, 3) : null;
     if (!x.scored) return { tbd: true, dim, color: x.pick && color, tag };
     return { v: x.pick ? x[k] : 0, won: !!x.won, dim, color, tag: tag || "–" };
   };
@@ -198,13 +199,14 @@ function raceCard(d, p, w, k) {
  * (`smooth`, monotone). Only the opened player is highlighted: their line in
  * the board's colour; every other player is a very thin, faint line. No line
  * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
- * later ones faint). The plot is stretched to the row (SVG with
+ * episodes not yet scored faint). The plot is stretched to the row (SVG with
  * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
- * are HTML so they never stretch. All through the week on show.
+ * are HTML so they never stretch. The lines run through every scored week,
+ * with a dot on the opened player's line at the week on show.
  */
 function journey(d, p, side, w) {
-  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
-  const eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), end = d.weeksScored, last = d.episodes.length;
+  const eps = Array.from({ length: end }, (_, i) => i + 1);
   const total = (q, e) => q.history[e - 1][k];
   const best = (e) => Math.max(...d.players.map((q) => total(q, e)));
   const gap = (q, e) => total(q, e) - best(e);
@@ -215,11 +217,12 @@ function journey(d, p, side, w) {
   const pts = (q) => eps.map((e) => [x(e), y(gap(q, e))]);
   const others = d.players.filter((q) => q.name !== p.name);
   const svg = (cls, paths) => `<svg class="jr-lines ${cls}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
-  const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
+  const lines = end > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
+      + `<i class="jr-dot me" style="--x:${f(x(upTo))}%;--y:${f(y(gap(p, upTo)))}%"></i>` // the week on show
     // Episode 1, with no lines yet, keeps dots (as the race chart does).
-    : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
+    : end ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
   const g = upTo ? gap(p, upTo) : 0;
-  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
+  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > end ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
   const board = k === "show" ? "Show" : "League";
   const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
   return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
