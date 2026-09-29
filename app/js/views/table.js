@@ -173,8 +173,11 @@ function showCards(d, p, w) {
  * line highlighted (journey).
  */
 function raceCard(d, p, w) {
+  // How far behind the League leader they are that week, in the legend's own type.
+  const upTo = Math.min(w, d.weeksScored), pts = (q) => q.history[upTo - 1].league;
+  const behind = upTo ? Math.max(...d.players.map(pts)) - pts(p) : null;
   return `<div class="card jr-card">
-      <div class="card-head"><span>The race so far</span><span class="legend">behind the leader</span></div>
+      <div class="card-head"><span>The race so far</span><span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
       ${journey(d, p, "league", w)}
     </div>`;
 }
