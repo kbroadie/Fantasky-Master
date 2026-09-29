@@ -152,7 +152,7 @@ function pointsCard(d, p, w, k) {
     if (!x || ep > upTo) return null;
     return { v: x.pick ? x[k] : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
-  return barsCard(d, at, max, median(all), `var(--${k}-hi)`, swapTitle(`${BOARD[k]} points per episode`, "race"));
+  return barsCard(d, at, max, median(all), `var(--${k}-hi)`, swapTitle(k, "points per episode", "race"));
 }
 
 const BOARD = { show: "Show", league: "League" };
@@ -163,8 +163,9 @@ const SWAP = `<svg class="swap" viewBox="0 0 12 12" aria-hidden="true"><path d="
  * flips the card between Points per episode and The race so far, with the
  * series chip's swap icon to say so. The choice holds for every row opened
  * after it (state.xpView), so players can be compared in the same view.
+ * The board's name is in its colour (Show red, League blue).
  */
-const swapTitle = (title, to) => `<button class="xp-swap" type="button" data-xp="${to}" aria-label="${esc(title)}: show the ${to === "race" ? "race so far" : "points per episode"} instead">${esc(title)}${SWAP}</button>`;
+const swapTitle = (k, rest, to) => `<button class="xp-swap" type="button" data-xp="${to}" aria-label="${BOARD[k]} ${rest}: show the ${to === "race" ? "race so far" : "points per episode"} instead"><span><b class="${k}">${BOARD[k]}</b> ${rest}</span>${SWAP}</button>`;
 
 /**
  * An opened half's other card: the Episodes tab's "The race so far", for
@@ -176,7 +177,7 @@ function raceCard(d, p, w, k) {
   const upTo = Math.min(w, d.weeksScored), pts = (q) => q.history[upTo - 1][k];
   const behind = upTo ? Math.max(...d.players.map(pts)) - pts(p) : null;
   return `<div class="card jr-card">
-      <div class="card-head">${swapTitle(`${BOARD[k]} race so far`, "bars")}<span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
+      <div class="card-head">${swapTitle(k, "race so far", "bars")}<span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
       ${journey(d, p, k, w)}
     </div>`;
 }
