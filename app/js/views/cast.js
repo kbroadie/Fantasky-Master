@@ -34,7 +34,7 @@ function median(xs) {
  * The series median is a dashed line, keyed in the head. A win's number is
  * gold; there are no crowns (removed on request).
  */
-export function barsCard(d, at, max, med, color, title = "Points per episode") {
+export function barsCard(d, at, max, med, color, title = "Points per episode") { // title: text, or a head element (a player's switch)
   const f = (v) => (v / max).toFixed(4);
   let tagged = false;
   const bars = d.episodes.map((e) => {
@@ -47,7 +47,7 @@ export function barsCard(d, at, max, med, color, title = "Points per episode") {
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
   return `
     <div class="card">
-      <div class="card-head"><span>${title}</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}</span></div>
+      <div class="card-head">${title.startsWith("<") ? title : `<span>${title}</span>`}<span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}</span></div>
       <div class="bars${tagged ? " tagged" : ""}" style="--c:${color}">${medLine}${bars}</div>
     </div>`;
 }
