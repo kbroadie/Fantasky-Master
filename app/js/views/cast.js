@@ -28,25 +28,27 @@ function median(xs) {
  * The Points per episode card: one bar per episode on one scale (max), each
  * exactly its score over the max (--f); the number and crown sit above it and
  * the episode number below, outside the plot, so they never squeeze the bar.
- * `at(ep)` gives { v, won, color? } for a scored episode, or null for one not
- * yet scored (a bar may carry its own colour: a player's pick that week).
+ * `at(ep)` gives { v, won, color?, tag? } for a scored episode, or null for
+ * one not yet scored (a bar may carry its own colour and a label under it,
+ * above the episode number: a player's pick that week).
  * The series median is a dashed line, keyed in the head.
  */
 export function barsCard(d, at, max, med, color) {
   const f = (v) => (v / max).toFixed(4);
-  let wins = 0;
+  let wins = 0, tagged = false;
   const bars = d.episodes.map((e) => {
     const x = at(e.ep);
     if (!x) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
     if (x.won) wins++;
-    return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b><small>${e.ep}</small></div>`;
+    if (x.tag) tagged = true;
+    return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
   }).join("");
   const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
   return `
     <div class="card">
       <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
-      <div class="bars" style="--c:${color}">${medLine}${bars}</div>
+      <div class="bars${tagged ? " tagged" : ""}" style="--c:${color}">${medLine}${bars}</div>
     </div>`;
 }
 

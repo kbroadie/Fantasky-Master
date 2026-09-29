@@ -458,7 +458,12 @@ strong { color: var(--t1); font-weight: 700; }
   -webkit-mask-image: linear-gradient(#000 calc(100% - 16px), transparent); mask-image: linear-gradient(#000 calc(100% - 16px), transparent); }
 .xp .card { margin: 0 0 10px; }
 .xp .card:last-child { margin-bottom: 0; }
-.xp .bars { --plot: 64px; } /* a little shorter, so Every task starts in view */
+.xp .bars { --plot: 118px; } /* the one card fills the five rows */
+/* A player's bars: their pick's first three letters under each bar, above the episode number, in the pick's colour. */
+.bars.tagged { --axis: 36px; }
+.bars.tagged em { position: absolute; bottom: 18px; font: 500 11px/13px var(--fm); font-style: normal; letter-spacing: .04em; text-transform: uppercase; color: var(--c); white-space: nowrap; }
+.bars.tagged .bar.tbd em { display: none; }
+.bars.tagged .bar small { height: auto; padding-top: 0; bottom: 2px; line-height: 13px; } /* the episode number under the letters */
 .xp .jr-card .jr-plot { height: 152px; } /* the race fills the five rows */
 /* An opened half: the race chart ("The race so far") for the opened board,
    full width, only the opened player highlighted (journey in table.js). */

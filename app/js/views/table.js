@@ -6,7 +6,7 @@
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
-import { barsCard, heatStrip, median } from "./cast.js";
+import { barsCard, median } from "./cast.js";
 
 /** The week on show: state.wk, or the latest scored week. */
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
@@ -147,12 +147,12 @@ export function rowMore(d, name, side) {
 }
 
 /**
- * An opened Show half: the Cast tab's Points per episode and Every task
- * cards, for the player's picks. Each bar is the Show points their pick
- * scored that episode, in the pick's colour (a crown for a pick that won),
- * on the same scale as the Cast tab, with the median of every player's
- * weekly Show points; each column of the heat strip is their pick's tasks
- * that episode. Through the week on show.
+ * An opened Show half: the Cast tab's Points per episode card, for the
+ * player's picks. Each bar is the Show points their pick scored that
+ * episode, in the pick's colour (a crown for a pick that won), with the
+ * pick's first three letters under it, above the episode number, on the
+ * same scale as the Cast tab, with the median of every player's weekly Show
+ * points. Through the week on show.
  */
 function showCards(d, p, w) {
   const upTo = Math.min(w, d.weeksScored);
@@ -161,10 +161,9 @@ function showCards(d, p, w) {
   const at = (ep) => {
     const x = p.weeks[ep - 1];
     if (!x || ep > upTo) return null;
-    return { v: x.pick ? x.show : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)" };
+    return { v: x.pick ? x.show : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
-  const pick = (ep) => { const k = p.weeks[ep - 1]?.pick; return k ? d.cast[k] : null; };
-  return barsCard(d, at, max, median(all), "var(--show-hi)") + heatStrip(d, pick, upTo, "var(--show-hi)");
+  return barsCard(d, at, max, median(all), "var(--show-hi)");
 }
 
 /**
