@@ -88,16 +88,18 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// How far each contestant is behind the leader after every episode up to this
-// one (the leader runs flat along 0 at the top; the x axis always runs 1 to
-// 10, so the race builds rightwards week by week): a smooth line in their colour (a monotone cubic Bézier, so it
+// How far each contestant is behind the leader after every episode scored so
+// far, whichever episode is on show, with a dot on each line at this one (the
+// leader runs flat along 0 at the top; the x axis always runs 1 to 10, so the
+// race builds rightwards week by week): a smooth line in their colour (a monotone cubic Bézier, so it
 // never overshoots a point, e.g. above the leader's 0 or past a real low),
 // labelled at the
 // end with the first three letters of their name, like the task table's
 // columns, and their gap (the leader's total). Tap a line to bring it
 // forward and fade the rest; tap a point to read it in the caption.
 
-function raceChart(d, upTo) {
+function raceChart(d, cur) {
+  const upTo = Math.max(cur, d.weeksScored); // the lines run to the latest episode scored
   const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
   const total = Object.fromEntries(names.map((n) => [n, [0]]));
   for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
@@ -125,7 +127,7 @@ function raceChart(d, upTo) {
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
   const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
-  const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === upTo ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === cur ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
   // numbers), then push up only the ones that still crowd. A hairline joins a moved label to its line.
@@ -138,8 +140,8 @@ function raceChart(d, upTo) {
   const lines = [...ends].reverse().map((name) => {
     const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(gap(name, e))]);
     const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
-    // No points on the lines; only Episode 1, with no lines yet, shows dots.
-    const dots = upTo > 1 ? "" : pts.map(([a, b], i) => `<circle class="rc-pt${i === upTo - 1 ? " now" : ""}" cx="${f1(a)}" cy="${f1(b)}" r="${i === upTo - 1 ? 5 : 3.5}" style="fill:${c}"/>`).join("");
+    // One point on each line: the episode on show.
+    const [dx, dy] = pts[cur - 1], dots = `<circle class="rc-pt now" cx="${f1(dx)}" cy="${f1(dy)}" r="4.5" style="fill:${c}"/>`;
     const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
     const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}</text>`
