@@ -39,8 +39,9 @@ export function barsCard(d, at, max, med, color, title = "Points per episode") {
   let tagged = false;
   const bars = d.episodes.map((e) => {
     const x = at(e.ep);
-    if (!x) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
-    if (x.tag) tagged = true;
+    if (x?.tag) tagged = true;
+    // Not scored yet (or after the week on show): no bar, but a pick already made shows its letters.
+    if (!x || x.tbd) return `<div class="bar tbd"${x?.color ? ` style="--c:${x.color}"` : ""}><i></i>${x?.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
     return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
   }).join("");
   const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);

@@ -143,7 +143,8 @@ export function rowMore(d, name, side, w = stWeek(d)) {
  * the pick's place, out of 5), in the pick's colour, a gold number for a pick
  * that won, the pick's first three letters under it above the episode
  * number, and the median of every player's weekly points on that board.
- * Through the week on show.
+ * Points through the week on show; after it, only the picks already made
+ * (their letters, faint, with no bar).
  */
 function pointsCard(d, p, w, k) {
   const upTo = Math.min(w, d.weeksScored);
@@ -151,7 +152,8 @@ function pointsCard(d, p, w, k) {
   const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.ep <= upTo && x.pick).map((x) => x[k]));
   const at = (ep) => {
     const x = p.weeks[ep - 1];
-    if (!x || ep > upTo) return null;
+    if (!x) return null;
+    if (ep > upTo) return x.pick ? { tbd: true, color: d.cast[x.pick].color, tag: x.pick.slice(0, 3) } : null;
     return { v: x.pick ? x[k] : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
   return barsCard(d, at, max, median(all), `var(--${k}-hi)`, swapTitle(k, "points per episode", "race"));

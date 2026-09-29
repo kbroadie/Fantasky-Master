@@ -388,7 +388,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* A player's bars: their pick's first three letters under each bar, above the episode number, in the pick's colour. */
 .bars.tagged { --axis: 36px; }
 .bars.tagged em { position: absolute; bottom: 18px; font: 500 11px/13px var(--fm); font-style: normal; letter-spacing: .04em; text-transform: uppercase; color: var(--c); white-space: nowrap; }
-.bars.tagged .bar.tbd em { display: none; }
+.bars.tagged .bar.tbd em { opacity: .5; } /* a pick for an episode not yet counted: faint, like the later weeks */
 .bars.tagged .bar small { height: auto; padding-top: 0; bottom: 2px; line-height: 13px; } /* the episode number under the letters */
 /* The card title is a switch between Points per episode and The race so far:
    the head's own type, with the series chip's swap icon after it. */
