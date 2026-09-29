@@ -31,9 +31,10 @@ function median(xs) {
  * `at(ep)` gives { v, won, color?, tag? } for a scored episode, or null for
  * one not yet scored (a bar may carry its own colour and a label under it,
  * above the episode number: a player's pick that week).
- * The series median is a dashed line, keyed in the head.
+ * The series median is a dashed line, keyed in the head. `crowns` false
+ * leaves the crowns off (a player's bars on Standings; a win keeps its gold number).
  */
-export function barsCard(d, at, max, med, color) {
+export function barsCard(d, at, max, med, color, crowns = true) {
   const f = (v) => (v / max).toFixed(4);
   let wins = 0, tagged = false;
   const bars = d.episodes.map((e) => {
@@ -47,8 +48,8 @@ export function barsCard(d, at, max, med, color) {
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
   return `
     <div class="card">
-      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
-      <div class="bars${tagged ? " tagged" : ""}" style="--c:${color}">${medLine}${bars}</div>
+      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${wins && crowns ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
+      <div class="bars${tagged ? " tagged" : ""}${crowns ? "" : " no-crown"}" style="--c:${color}">${medLine}${bars}</div>
     </div>`;
 }
 
