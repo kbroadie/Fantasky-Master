@@ -327,6 +327,10 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .sd { display: grid; align-items: baseline; align-content: center; column-gap: var(--g); height: var(--head); min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
 .sd { grid-template-columns: minmax(0, 1fr) minmax(var(--sc), auto); } /* points at least --sc, wider for 3 digits; right-aligned, so their right edges still line up */
 .sd.l, .sd.r { padding: 0 var(--pad); }
+/* Each half is a gap meter (on request): a wash in the board's colour, filled
+   in proportion to the player's points against the leader's (--m). */
+.sd.l { background-image: linear-gradient(90deg, rgba(229, 72, 77, .04), rgba(229, 72, 77, .15) calc(var(--m) * 100%), transparent calc(var(--m) * 100%)); }
+.sd.r { background-image: linear-gradient(90deg, rgba(62, 123, 250, .04), rgba(62, 123, 250, .16) calc(var(--m) * 100%), transparent calc(var(--m) * 100%)); }
 /* While a half is open, every other cell steps back (on request): each player
    cell a little darker with its text dimmed, and the other rows' place
    numbers dimmed, so the opened player reads first (.board.focus, set in
