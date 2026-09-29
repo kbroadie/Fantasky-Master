@@ -128,6 +128,7 @@ function mark(sw, i, smooth = true) {
   const tabs = $(sw.tabs), t = tabs.children[i];
   [...tabs.children].forEach((b, j) => b.classList.toggle("on", j === i));
   if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
+  edges();
 }
 function jump(sw, i) {
   const body = $(sw.body);
@@ -261,6 +262,7 @@ function markWeek(smooth = true) {
   for (const b of tabs.children) b.classList.toggle("on", +b.dataset.week === w);
   const t = tabs.children[w - 1];
   if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
+  edges();
 }
 
 function setWeek(w) {
@@ -393,18 +395,44 @@ $("#ep-body").addEventListener("click", (e) => {
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
 
-// The top bar compacts once you scroll. It's fixed over a spacer, so this
-// never moves the page (see .topbar in the CSS), and the two thresholds
-// differ so it can't flicker at the boundary.
+// The top bar compacts once you scroll, and hides while you scroll down
+// (past its first screenful), coming back on any scroll up, like Safari's
+// address bar; the sticky sub-tab strip stays, sliding up to the top. It's
+// fixed over a spacer, so none of this moves the page (see .topbar in the
+// CSS). The compact thresholds differ so it can't flicker at the boundary;
+// hiding needs a deliberate 12px down, showing just 8px up, and the
+// overscroll bounce at either end is ignored.
 const bar = $(".topbar");
-let hraf = 0;
+let hraf = 0, lastY = scrollY, down = 0, up = 0;
+function setHidden(on) {
+  bar.classList.toggle("hidden", on);
+  document.body.classList.toggle("bar-hidden", on);
+}
 addEventListener("scroll", () => {
   if (!hraf) hraf = requestAnimationFrame(() => {
     hraf = 0;
+    const max = document.documentElement.scrollHeight - innerHeight;
+    const y = Math.max(0, Math.min(scrollY, max)), dy = y - lastY;
+    lastY = y;
     const on = bar.classList.contains("compact");
-    bar.classList.toggle("compact", on ? scrollY > 4 : scrollY > 16);
+    bar.classList.toggle("compact", on ? y > 4 : y > 16);
+    if (y < 120) { down = up = 0; return setHidden(false); }
+    if (dy > 0) { down += dy; up = 0; if (down > 12) setHidden(true); }
+    else if (dy < 0) { up -= dy; down = 0; if (up > 8) setHidden(false); }
   });
 }, { passive: true });
+bar.addEventListener("focusin", () => setHidden(false)); // never hide what the keyboard is on
+
+// A strip that scrolls sideways (Standings' weeks, Episodes) fades at the edge
+// where more tabs are hidden (.more-l / .more-r), so it reads as scrollable.
+function edges() {
+  for (const s of $$(".strip.scroll")) {
+    if (!s.offsetParent) continue;
+    s.classList.toggle("more-l", s.scrollLeft > 2);
+    s.classList.toggle("more-r", s.scrollLeft + s.clientWidth < s.scrollWidth - 2);
+  }
+}
+document.addEventListener("scroll", (e) => { if (e.target.classList?.contains("strip")) edges(); }, { capture: true, passive: true });
 
 // The scoring cards' light: its pool of colour shifts as the card moves up
 // the screen (--lx), updated once a frame while scrolling.
@@ -421,7 +449,7 @@ function cardLight() {
 const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
 addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); });
+addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); });
 
 addEventListener("hashchange", () => {
   const h = readHash();
