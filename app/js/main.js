@@ -100,7 +100,7 @@ function show(page) {
 
 // ── Swipers: a tab strip over a row of scroll-snapped slides ─────────────────
 
-const ST = { body: "#st-body", tabs: "#st-tabs", get: () => stWeek(state.d) - 1, set: (i) => { state.wk = i + 1; } };
+const ST = { body: "#st-body", tabs: "#st-tabs", get: () => stWeek(state.d) - 1, set: (i) => { state.wk = i + 1; queueLight(); } };
 const EP = { body: "#ep-body", tabs: "#ep-tabs", get: () => state.ep - 1, set: (i) => { state.ep = i + 1; } };
 const CAST = { body: "#cast-body", tabs: "#cast-tabs", get: () => state.cast, set: (i) => { state.cast = i; } };
 
@@ -246,6 +246,9 @@ $("#p-standings").addEventListener("click", (e) => {
   if (sd) {
     const row = sd.closest(".pc"), side = sd.dataset.side, open = row.classList.contains("open") && row.dataset.open === side;
     state.open = open ? null : { side, name: sd.dataset.p };
+    // Only the board on show eases into focus; the other weeks just switch.
+    for (const b of $$("#st-body .board.ease")) b.classList.remove("ease");
+    row.closest(".board").classList.add("ease");
     for (const s of $$("#st-body .st-slide")) syncOpen(s);
   }
 });
@@ -371,8 +374,10 @@ let lraf = 0;
 function cardLight() {
   lraf = 0;
   if (reducedMotion || state.page !== "standings") return;
+  const cards = $(ST.body).children[ST.get()]?.querySelectorAll(".st-hero.explain .how-card") || []; // only the week on show
+  if (!cards.length) return;
   const mid = innerHeight / 2;
-  for (const c of $$(".st-hero.explain .how-card")) {
+  for (const c of cards) {
     const r = c.getBoundingClientRect();
     c.style.setProperty("--lx", Math.max(-1, Math.min(1, (r.top + r.height / 2 - mid) / mid)).toFixed(3));
   }
@@ -391,8 +396,17 @@ addEventListener("hashchange", () => {
 
 // ── Boot ─────────────────────────────────────────────────────────────────────
 
+// The web fonts load alongside the data, so the page is first drawn in them
+// rather than drawn in fallbacks and laid out again when they swap in. A slow
+// font gives up after 1.2s from here and swaps in later.
+const FACES = ["16px Bungee", "500 16px Fredoka", "600 16px Fredoka", "700 16px Fredoka", "16px Inter", "600 16px Inter", "700 16px Inter", "800 16px Inter", "16px 'DM Mono'", "500 16px 'DM Mono'"];
+const fontsIn = Promise.race([
+  Promise.all(FACES.map((f) => document.fonts.load(f).catch(() => {}))),
+  new Promise((r) => setTimeout(r, 1200)),
+]);
+
 try {
-  const [text, allTime] = await Promise.all([loadText(), loadStats()]);
+  const [text, allTime] = await Promise.all([loadText(), loadStats(), fontsIn]);
   SERIES = buildSeries(parseCSV(text));
   CURRENT = currentSeriesKey(SERIES, new Date());
   // The radar compares against every contestant in Taskmaster history when

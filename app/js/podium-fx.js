@@ -89,13 +89,17 @@ class Scene {
     this.pod = pod;
     pod.__fx = this;
     pod.classList.add("has-fx");
+    // Only the layers this podium uses: light for a winner, gas for a last place.
     const layer = (cls) => Object.assign(document.createElement("canvas"), { className: `fx ${cls}`, ariaHidden: "true" });
     this.back = layer("fx-back");
-    this.light = layer("fx-light");
-    this.gasC = layer("fx-gas");
+    this.light = pod.querySelector(".pod-col.win") ? layer("fx-light") : null;
+    this.gasC = pod.querySelector(".pod-col.last") ? layer("fx-gas") : null;
+    this.canvases = [this.back, this.light, this.gasC].filter(Boolean);
     pod.prepend(this.back);
-    pod.append(this.light, this.gasC);
-    this.ctx = [this.back, this.light, this.gasC].map((c) => c.getContext("2d"));
+    pod.append(...this.canvases.slice(1));
+    this.ctx = this.canvases.map((c) => c.getContext("2d"));
+    [this.bctx, this.lctx, this.gctx] = [this.back, this.light, this.gasC].map((c) => c?.getContext("2d"));
+    this.cache = null;
     this.gas = [];
     this.dust = [];
     this.glints = [];
@@ -115,7 +119,8 @@ class Scene {
     this.w = this.pod.clientWidth;
     this.h = this.pod.clientHeight;
     if (!this.w) return;
-    for (const c of [this.back, this.light, this.gasC]) {
+    this.cache = null;
+    for (const c of this.canvases) {
       c.width = Math.round(this.w * DPR);
       c.height = Math.round(this.h * DPR);
     }
@@ -151,6 +156,7 @@ class Scene {
   reset() {
     this.gas = []; this.dust = []; this.glints = [];
     this.spawnGas = this.spawnDust = 0;
+    this.cache = null;
     for (const c of this.ctx) { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, c.canvas.width, c.canvas.height); }
   }
 
@@ -241,24 +247,103 @@ class Scene {
     this.draw();
   }
 
+  /**
+   * The parts that never move, painted once (at full strength) while the
+   * podium is on screen, then drawn each frame as one image at the light's
+   * current strength: the glow and the pool of light (added, so their order
+   * with the rays doesn't matter), the shadows, the bounce light and the murk.
+   */
+  statics() {
+    if (this.cache) return this.cache;
+    const f = this.win, floor = this.floor;
+    const paint = (fn) => {
+      const c = document.createElement("canvas");
+      c.width = this.back.width; c.height = this.back.height;
+      const x = c.getContext("2d");
+      x.setTransform(DPR, 0, 0, DPR, 0, 0);
+      fn(x);
+      return c;
+    };
+    this.cache = {};
+    if (f) {
+      // Glow behind the winner, and a pool of light on the shelf under them.
+      this.cache.glow = paint((x) => {
+        x.globalCompositeOperation = "lighter";
+        const R = f.h * 1.3;
+        let gr = x.createRadialGradient(f.cx, f.cy, f.w * 0.35, f.cx, f.cy, R);
+        gr.addColorStop(0, "rgba(255,222,140,.95)");
+        gr.addColorStop(0.4, "rgba(255,176,64,.42)");
+        gr.addColorStop(1, "rgba(255,140,40,0)");
+        x.fillStyle = gr;
+        x.fillRect(f.cx - R, f.cy - R, R * 2, R * 2);
+        x.translate(f.cx, floor);
+        x.scale(1, 0.16);
+        gr = x.createRadialGradient(0, 0, 0, 0, 0, f.w * 1.5);
+        gr.addColorStop(0, "rgba(255,200,100,.55)");
+        gr.addColorStop(1, "rgba(255,160,60,0)");
+        x.fillStyle = gr;
+        x.fillRect(-f.w * 1.5, -f.w * 1.5, f.w * 3, f.w * 3);
+      });
+      // Shadows: every other portrait casts one along the shelf, away from
+      // the light, darker and longer the closer it stands to the winner.
+      this.cache.shade = paint((x) => {
+        for (const o of this.frames) {
+          if (o === f) continue;
+          const dir = Math.sign(o.cx - f.cx), near = clamp(1.25 - Math.abs(o.cx - f.cx) / (f.w * 4), 0.15, 1);
+          const len = o.w * (0.5 + near * 0.9), x0 = dir > 0 ? o.x + o.w * 0.15 : o.x + o.w * 0.85;
+          const sg = x.createLinearGradient(x0, 0, x0 + dir * (o.w * 0.7 + len), 0);
+          sg.addColorStop(0, `rgba(0,0,0,${0.55 * near})`);
+          sg.addColorStop(1, "rgba(0,0,0,0)");
+          x.fillStyle = sg;
+          x.beginPath();
+          x.moveTo(o.x + o.w * 0.1, floor - 3);
+          x.lineTo(o.x + o.w * 0.9, floor - 3);
+          x.lineTo(o.x + o.w * 0.9 + dir * len, floor + 9);
+          x.lineTo(o.x + o.w * 0.1 + dir * len, floor + 9);
+          x.closePath();
+          x.fill();
+        }
+      });
+      // Bounce light: warm gold spilling onto the portraits beside the winner,
+      // painted at the strongest the light gets (1.5), so it's only ever dimmed.
+      this.cache.bounce = paint((x) => {
+        const gr = x.createRadialGradient(f.cx, f.cy, f.w * 0.3, f.cx, f.cy, f.w * 2.8);
+        gr.addColorStop(0, `rgba(255,190,90,${0.22 * 1.5})`);
+        gr.addColorStop(0.4, `rgba(255,160,60,${0.12 * 1.5})`);
+        gr.addColorStop(1, "rgba(255,140,40,0)");
+        x.fillStyle = gr;
+        x.fillRect(0, 0, this.w, this.h);
+      });
+    }
+    // A murky green glow behind last place, at its strongest (.35).
+    if (this.losers.length) this.cache.murk = paint((x) => {
+      x.globalCompositeOperation = "lighter";
+      for (const l of this.losers) {
+        const gr = x.createRadialGradient(l.cx, l.cy, l.w * 0.2, l.cx, l.cy, l.h);
+        gr.addColorStop(0, "rgba(118,128,62,.35)");
+        gr.addColorStop(1, "rgba(90,100,45,0)");
+        x.fillStyle = gr;
+        x.fillRect(l.cx - l.h, l.cy - l.h, l.h * 2, l.h * 2);
+      }
+    });
+    return this.cache;
+  }
+
   draw() {
     if (!this.w) return;
-    const [back, light, gas] = this.ctx;
+    const back = this.bctx, light = this.lctx, gas = this.gctx;
     for (const c of this.ctx) { c.setTransform(DPR, 0, 0, DPR, 0, 0); c.clearRect(0, 0, this.w, this.h); }
-    const t = this.t, f = this.win, floor = this.floor;
+    const t = this.t, f = this.win;
+    const st = this.statics(), put = (x, img, a) => { x.globalAlpha = a; x.drawImage(img, 0, 0, this.w, this.h); };
     // Light intensity: a slow, uneven breath, plus a surge when scrolled.
     const I = 0.82 + 0.1 * Math.sin(t * 1.4) + 0.05 * Math.sin(t * 3.7 + 1.2) + this.energy * 0.35;
 
     if (f) {
-      // Glow behind the winner.
+      // Glow and pool, added once per whole unit of the light's strength.
       back.globalCompositeOperation = "lighter";
+      for (let k = I; k > 0.001; k--) put(back, st.glow, Math.min(1, k));
+      back.globalAlpha = 1;
       const R = f.h * 1.3;
-      let gr = back.createRadialGradient(f.cx, f.cy, f.w * 0.35, f.cx, f.cy, R);
-      gr.addColorStop(0, `rgba(255,222,140,${0.95 * I})`);
-      gr.addColorStop(0.4, `rgba(255,176,64,${0.42 * I})`);
-      gr.addColorStop(1, "rgba(255,140,40,0)");
-      back.fillStyle = gr;
-      back.fillRect(f.cx - R, f.cy - R, R * 2, R * 2);
       // Light rays turning slowly behind the frame.
       const rays = 18, spin = t * 0.07;
       for (let i = 0; i < rays; i++) {
@@ -276,45 +361,9 @@ class Scene {
         back.closePath();
         back.fill();
       }
-      // A pool of light on the shelf under the winner.
-      back.save();
-      back.translate(f.cx, floor);
-      back.scale(1, 0.16);
-      gr = back.createRadialGradient(0, 0, 0, 0, 0, f.w * 1.5);
-      gr.addColorStop(0, `rgba(255,200,100,${0.55 * I})`);
-      gr.addColorStop(1, "rgba(255,160,60,0)");
-      back.fillStyle = gr;
-      back.fillRect(-f.w * 1.5, -f.w * 1.5, f.w * 3, f.w * 3);
-      back.restore();
-
-      // Shadows: every other portrait casts one along the shelf, away from
-      // the light, darker and longer the closer it stands to the winner.
       back.globalCompositeOperation = "source-over";
-      for (const o of this.frames) {
-        if (o === f) continue;
-        const dir = Math.sign(o.cx - f.cx), near = clamp(1.25 - Math.abs(o.cx - f.cx) / (f.w * 4), 0.15, 1);
-        const len = o.w * (0.5 + near * 0.9), x0 = dir > 0 ? o.x + o.w * 0.15 : o.x + o.w * 0.85;
-        const sg = back.createLinearGradient(x0, 0, x0 + dir * (o.w * 0.7 + len), 0);
-        sg.addColorStop(0, `rgba(0,0,0,${0.55 * near})`);
-        sg.addColorStop(1, "rgba(0,0,0,0)");
-        back.fillStyle = sg;
-        back.beginPath();
-        back.moveTo(o.x + o.w * 0.1, floor - 3);
-        back.lineTo(o.x + o.w * 0.9, floor - 3);
-        back.lineTo(o.x + o.w * 0.9 + dir * len, floor + 9);
-        back.lineTo(o.x + o.w * 0.1 + dir * len, floor + 9);
-        back.closePath();
-        back.fill();
-      }
-
-      // Bounce light: warm gold spilling onto the portraits beside the winner.
-      light.globalCompositeOperation = "source-over";
-      gr = light.createRadialGradient(f.cx, f.cy, f.w * 0.3, f.cx, f.cy, f.w * 2.8);
-      gr.addColorStop(0, `rgba(255,190,90,${0.22 * I})`);
-      gr.addColorStop(0.4, `rgba(255,160,60,${0.12 * I})`);
-      gr.addColorStop(1, "rgba(255,140,40,0)");
-      light.fillStyle = gr;
-      light.fillRect(0, 0, this.w, this.h);
+      put(back, st.shade, 1);
+      put(light, st.bounce, Math.min(1, I / 1.5));
       // (No rim light: a glowing rectangle traced the frame's box, not its
       // ornate edge, and screened over the gold it read as a greenish band.)
       // Dust and glints.
@@ -342,15 +391,12 @@ class Scene {
     }
 
     // A murky green glow behind last place.
-    back.globalCompositeOperation = "lighter";
-    for (const l of this.losers) {
-      const gr = back.createRadialGradient(l.cx, l.cy, l.w * 0.2, l.cx, l.cy, l.h);
-      gr.addColorStop(0, `rgba(118,128,62,${0.3 + 0.05 * Math.sin(t * 1.1)})`);
-      gr.addColorStop(1, "rgba(90,100,45,0)");
-      back.fillStyle = gr;
-      back.fillRect(l.cx - l.h, l.cy - l.h, l.h * 2, l.h * 2);
+    if (st.murk) {
+      back.globalCompositeOperation = "lighter";
+      put(back, st.murk, (0.3 + 0.05 * Math.sin(t * 1.1)) / 0.35);
+      back.globalCompositeOperation = "source-over";
     }
-    back.globalCompositeOperation = "source-over";
+    back.globalAlpha = 1;
 
     // The gas: shaded puffs, mostly behind the portraits. Near the bottom
     // they flatten and widen into a low bank; a faint veil of that bank is
@@ -371,7 +417,7 @@ class Scene {
       }
     }
     back.globalAlpha = 1;
-    gas.globalAlpha = 1;
+    if (gas) gas.globalAlpha = 1;
   }
 }
 
