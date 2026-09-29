@@ -7,7 +7,7 @@
 //   node tools/import-stats.mjs file.csv   (uses a CSV you exported yourself)
 
 import { readFileSync, writeFileSync } from "node:fs";
-import { parseCSV } from "../app/js/csv.js";
+import { parseCSV } from "../js/csv.js";
 
 const SHEET = "1S8L34lUyaaV78K02_eAAS-URsKxrWxY1aHT9qKXSoe8";
 const OUT = new URL("../data/taskmaster_stats.csv", import.meta.url);

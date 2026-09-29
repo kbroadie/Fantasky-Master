@@ -23,7 +23,7 @@ const server = createServer(async (req, res) => {
     res.end(body);
   } catch { res.writeHead(404); res.end(); }
 }).listen(0);
-const BASE = `http://127.0.0.1:${server.address().port}/app/`;
+const BASE = `http://127.0.0.1:${server.address().port}/`;
 
 // [name, width, height, hash, action?]
 const SHOTS = [

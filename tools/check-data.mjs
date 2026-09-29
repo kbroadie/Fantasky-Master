@@ -1,13 +1,13 @@
-// Validates data/fantasky_master_data.csv (the rules are in app/js/checks.js,
+// Validates data/fantasky_master_data.csv (the rules are in js/checks.js,
 // shared with edit mode) and checks the scoring engine against the worked
 // example in FANTASKY_MASTER_EXPLAINED.md. No dependencies:
 //   node tools/check-data.mjs
 // Exits non-zero on any error; warnings are printed but don't fail.
 
 import { readFileSync } from "node:fs";
-import { parseCSV } from "../app/js/csv.js";
-import { derive } from "../app/js/league.js";
-import { checkData } from "../app/js/checks.js";
+import { parseCSV } from "../js/csv.js";
+import { derive } from "../js/league.js";
+import { checkData } from "../js/checks.js";
 
 const CSV = process.env.FM_CSV || new URL("../data/fantasky_master_data.csv", import.meta.url);
 const STATS = new URL("../data/taskmaster_stats.csv", import.meta.url);

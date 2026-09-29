@@ -3,7 +3,9 @@
 This document specifies the Fantasky Master system: its purpose, inputs, data model, state derivation, and every calculation it performs. It is a systems-design reference, written to be read by a language model (or a new developer) who has not seen the code: terms are defined before use, formulas are explicit, and a worked example is included.
 
 - **Live app:** <https://kbroadie.github.io/Fantasky-Master/>
-- **Source:** <https://github.com/kbroadie/Fantasky-Master> (`index.html`)
+- **Source:** <https://github.com/kbroadie/Fantasky-Master> (the app: `index.html`, `js/`; the scoring engine: `js/league.js`)
+
+> **The site was rebuilt.** The single-file site this document was first written about (its architecture in §4 and its code in §10) has been replaced by the app at the site's root, which reads all league data from `data/fantasky_master_data.csv` at run time. The calculations (§5–§8) are unchanged: `js/league.js` implements them, and `tools/check-data.mjs` checks it against the worked example in §7. The old file is in the repository's git history.
 - **Taskmaster YouTube channel** (where episodes livestream): <https://www.youtube.com/@Taskmaster>
 - **Player-facing rules and how to vote:** [README.md](README.md)
 - **Contestant image albums (Imgur):** Series 22 <https://imgur.com/a/taskmaster-series-22-r7FwUp3> · Series 21 <https://imgur.com/a/taskmaster-series-21-sQsejvk>
@@ -34,7 +36,7 @@ The system does not collect votes; it is a deterministic calculator over data th
 2. **Voting.** Each player votes for one contestant per poll. They may change their vote any number of times until the poll closes.
 3. **League rule — pick every contestant at least once.** Across the 10 polls of a series, each player must vote for each of the 5 contestants at least once. The other 5 picks are free, including repeats. The system does not enforce or score this rule, but it computes each player's compliance status (§6.9).
 4. **Deadline.** A WhatsApp poll timer closes each poll when its episode starts **livestreaming on the [Taskmaster YouTube channel](https://www.youtube.com/@Taskmaster) at 22:00 London time**. That is normally 17:00 US Eastern / 14:00 US Pacific, and one hour later in the US for any episode that falls between the UK and US clock changes (e.g. 29 Oct 2026).
-5. **Data entry.** At any time after an episode airs, the host adds that episode's task scores and the players' final poll votes to `index.html` (§9), publishes it, and shares the link.
+5. **Data entry.** At any time after an episode airs, the host adds that episode's task scores and the players' final poll votes to `data/fantasky_master_data.csv` (§9), in the app's edit mode or by hand, and shares the link.
 
 Therefore `PICKS[player][ep]` is exactly that player's final vote in the episode-`ep` poll. A missing or `null` pick means they did not vote.
 
@@ -63,7 +65,7 @@ Therefore `PICKS[player][ep]` is exactly that player's final vote in the episode
 
 ## 4. Architecture
 
-- **Single artefact.** The whole system is one static file, `index.html`, containing the data and the logic as plain JavaScript. There is no framework, no build step and no dependencies.
+- **Static files.** The original system was one static file, `index.html`, containing the data and the logic as plain JavaScript; the rebuilt app is static files (`index.html`, `styles.css`, `js/`) that load the data from `data/` at run time. Either way there is no framework, no build step and no dependencies.
 - **Hosting.** Served as a static file by GitHub Pages from the `main` branch of `kbroadie/Fantasky-Master`.
 - **No backend, no persistence.** All league data are constants in the file. Nothing is written back, and there are no accounts. Updating the league means editing the file and republishing (§9).
 - **Execution model.** On load, the client:
@@ -121,9 +123,9 @@ Contestant images are not stored in the repository. They are hosted in one Imgur
 - **External dependency.** Images are fetched from Imgur at run time. If Imgur is unreachable or an image is deleted, the system still computes everything; only the image is missing. No calculation reads `PORT`.
 - **Replacing an image.** Upload the new image to the series' album, then point that contestant's `PORT` entry at the new image's direct link. Deleting an image from the album breaks any `PORT` entry still pointing at it.
 
-### 4.3 Planned data source: `data/fantasky_master_data.csv`
+### 4.3 Data source: `data/fantasky_master_data.csv`
 
-All hand-entered data (§4.1) also exists as one CSV file, `data/fantasky_master_data.csv`, which is intended to replace the constants in `index.html` as the single editable source. The rebuilt app in `app/` already loads it at run time (`app/js/csv.js`); `index.html` does not parse it yet and remains authoritative for the original site. The file was generated from `index.html`, and rebuilding every series from the CSV alone reproduces the in-file data exactly.
+All hand-entered data (§4.1) lives in one CSV file, `data/fantasky_master_data.csv`, the single editable source. The app loads it at run time (`js/csv.js`). The file was first generated from the original site's in-file constants, and rebuilding every series from the CSV alone reproduced them exactly.
 
 The CSV holds inputs only; nothing derived (§5–§6) is stored. Each row has a `record` type; columns not used by that type are blank:
 
@@ -364,18 +366,16 @@ League points = 2 + 4 + 5 + 3 = **14**.
 
 ## 9. Operations: data maintenance
 
-At any time after a Series 22 episode airs, edit `index.html`:
+All league data is in `data/fantasky_master_data.csv`; its columns and record types are in `data/README.md`. After an episode airs, either use the app's edit mode (tap all seven rubber ducks at the bottom of any tab; see `APP.md`), which fetches the scores from the Taskmaster Wiki and writes the rows, or add them by hand:
 
-1. **Scores:** append the episode's tasks to `TASKS_S22` (`{ep, n, t, s}`, with `s` in `NAMES_S22` order). This alone marks the episode as scored.
-2. **Picks:** copy each player's final poll vote into `PICKS_S22` (no entry for a player who didn't vote). Votes for future episodes may be entered early; they don't score until their episode is scored.
-3. **Tiebreak:** only if contestants tied for the top score, add `tb:"Name"` to that episode's `EM_S22` entry.
-4. **Text (optional):** the episode title in `EM_S22`, analysis in `EI_S22`, and contestant `stat` / `bio` in `CONT_S22`.
+1. **Scores:** a `score` row for every contestant on every task of the episode. This alone marks the episode as scored.
+2. **Picks:** a `pick` row for each player's final poll vote (no row for a player who didn't vote). Votes for future episodes may be entered early; they don't score until their episode is scored.
+3. **Tiebreak:** only if contestants tied for the top score, `tiebreak_winner` on that episode's `episode` row.
+4. **Title (optional):** the `title` on the `episode` row.
 
-Keep `data/fantasky_master_data.csv` (§4.3) in step with the same edits; once CSV parsing is integrated it replaces these steps. Everything else is derived: aired and scored weeks, totals, both boards, ranks, rank deltas, episode winners, pick-rule statuses, contestant statistics, the next episode and the current series.
+Run `node tools/check-data.mjs` after editing by hand (CI runs it on every push). Everything else is derived: aired and scored weeks, totals, both boards, ranks, episode winners, pick-rule statuses, contestant statistics, the next episode and the current series.
 
-**New series:**
-1. Add a `SERIES_RAW` entry keyed `"s" + number`, with the same fields and the 10 London air dates in `EM`.
-2. Create an Imgur album for the series, upload one image per contestant, and set `PORT` to each image's direct link (§4.2).
+**New series:** 5 `contestant` rows (with portraits uploaded to a new Imgur album, §4.2), a `player` row per league member, and 10 `episode` rows with their London air dates.
 
 The series becomes current automatically when its Episode 1 airs.
 

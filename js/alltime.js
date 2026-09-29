@@ -5,7 +5,7 @@
 
 import { parseCSV } from "./csv.js";
 
-export const STATS_URL = "../data/taskmaster_stats.csv";
+export const STATS_URL = "data/taskmaster_stats.csv";
 
 /** The stats rows, or [] if the file can't be loaded (the features then hide). */
 export async function loadStats() {

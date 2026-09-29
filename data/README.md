@@ -2,7 +2,7 @@
 
 This CSV holds **every hand-entered piece of league data**, for all series. Nothing in it is calculated. Show and League points, placings, ranks, rank changes, winners and every statistic are worked out from it.
 
-> **Status:** the new app in [`app/`](../app/) reads this file directly, so an edit here shows up there on the next page load. The original `index.html` site does **not** read it; it still uses its own in-file data.
+> **Status:** the app (the site's root: `index.html` and `js/`) reads this file directly, so an edit here shows up there on the next page load.
 
 - Save as **CSV, UTF-8**. The file starts with a byte-order mark so Excel shows `—` and `’` correctly.
 - Row order doesn't matter to the data, but keeping each episode's rows together makes weekly edits easy.
@@ -28,7 +28,7 @@ Each row has a `record` type that says which columns it uses. Leave the other co
 
 ## Weekly update (after an episode airs)
 
-The easy way is the app's edit mode (tap all seven rubber ducks at the bottom of any tab; see [`app/README.md`](../app/README.md#edit-mode)): it fetches the scores from the Taskmaster Wiki, takes picks with a tap, and writes the rows below for you. By hand, for episode *N* of the current series:
+The easy way is the app's edit mode (tap all seven rubber ducks at the bottom of any tab; see [`APP.md`](../APP.md#edit-mode)): it fetches the scores from the Taskmaster Wiki, takes picks with a tap, and writes the rows below for you. By hand, for episode *N* of the current series:
 
 1. **Scores.** Add a `score` row for every contestant on every task; that's 5 rows per task, so usually 25 rows. The five rows of a task share `task_no`, `task_type` and `task_name`.
 2. **Picks.** Add a `pick` row for each player who voted, with their final vote from the WhatsApp poll.
