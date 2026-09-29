@@ -311,7 +311,11 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* Rows are not compositing layers of their own: with one per row, iOS ran
    short of layer memory and dropped rows' text after scrolling. */
 .pc { --head: 52px; position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
-.pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
+/* The podium (on request): the top three rows wash in their tier's colour,
+   fading out from the place strip; first place has a gold hairline under it. */
+.pc.p1 { background: linear-gradient(90deg, rgba(212, 160, 40, .17), transparent 55%), linear-gradient(170deg, var(--s2), var(--s1)); border-bottom-color: rgba(212, 160, 40, .5); }
+.pc.p2 { background: linear-gradient(90deg, rgba(201, 187, 164, .11), transparent 50%), linear-gradient(170deg, var(--s2), var(--s1)); }
+.pc.p3 { background: linear-gradient(90deg, rgba(201, 138, 69, .11), transparent 50%), linear-gradient(170deg, var(--s2), var(--s1)); }
 /* Rows don't clip, so a half can slide across other rows to its player's
    new place when the week changes. */
 /* One line of text a row, on one baseline: the place number, names and
@@ -327,6 +331,15 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .sd { display: grid; align-items: baseline; align-content: center; column-gap: var(--g); height: var(--head); min-width: 0; text-align: left; -webkit-tap-highlight-color: transparent; }
 .sd { grid-template-columns: minmax(0, 1fr) minmax(var(--sc), auto); } /* points at least --sc, wider for 3 digits; right-aligned, so their right edges still line up */
 .sd.l, .sd.r { padding: 0 var(--pad); }
+/* Each half (on request): a gap meter, a wash in the board's colour filled
+   in proportion to the player's points against the leader's (--m), and a
+   stripe down its inner edge in the colour of that week's pick (--pk). */
+.sd { position: relative; box-shadow: inset 3px 0 0 var(--pk, transparent); }
+.sd.l { background-image: linear-gradient(90deg, rgba(229, 72, 77, .04), rgba(229, 72, 77, .15) calc(var(--m) * 100%), transparent calc(var(--m) * 100%)); }
+.sd.r { background-image: linear-gradient(90deg, rgba(62, 123, 250, .04), rgba(62, 123, 250, .16) calc(var(--m) * 100%), transparent calc(var(--m) * 100%)); }
+/* The pick's three letters, over the points, in its colour; gold if it won. */
+.pk { position: absolute; top: 4px; right: var(--pad); font: 500 11px/11px var(--fm); font-style: normal; letter-spacing: .06em; text-transform: uppercase; color: var(--pk); text-shadow: 0 1px 2px rgba(0, 0, 0, .8); pointer-events: none; }
+.pk.won { color: var(--gold3); }
 /* While a half is open, every other cell steps back (on request): each player
    cell a little darker with its text dimmed, and the other rows' place
    numbers dimmed, so the opened player reads first (.board.focus, set in
