@@ -26,21 +26,20 @@ function median(xs) {
 
 /**
  * The Points per episode card: one bar per episode on one scale (max), each
- * exactly its score over the max (--f); the number and crown sit above it and
+ * exactly its score over the max (--f); the number sits above it and
  * the episode number below, outside the plot, so they never squeeze the bar.
  * `at(ep)` gives { v, won, color?, tag? } for a scored episode, or null for
  * one not yet scored (a bar may carry its own colour and a label under it,
  * above the episode number: a player's pick that week).
- * The series median is a dashed line, keyed in the head. `crowns` false
- * leaves the crowns off (a player's bars on Standings; a win keeps its gold number).
+ * The series median is a dashed line, keyed in the head. A win's number is
+ * gold; there are no crowns (removed on request).
  */
-export function barsCard(d, at, max, med, color, crowns = true) {
+export function barsCard(d, at, max, med, color) {
   const f = (v) => (v / max).toFixed(4);
-  let wins = 0, tagged = false;
+  let tagged = false;
   const bars = d.episodes.map((e) => {
     const x = at(e.ep);
     if (!x) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
-    if (x.won) wins++;
     if (x.tag) tagged = true;
     return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
   }).join("");
@@ -48,8 +47,8 @@ export function barsCard(d, at, max, med, color, crowns = true) {
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
   return `
     <div class="card">
-      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${wins && crowns ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
-      <div class="bars${tagged ? " tagged" : ""}${crowns ? "" : " no-crown"}" style="--c:${color}">${medLine}${bars}</div>
+      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}</span></div>
+      <div class="bars${tagged ? " tagged" : ""}" style="--c:${color}">${medLine}${bars}</div>
     </div>`;
 }
 
