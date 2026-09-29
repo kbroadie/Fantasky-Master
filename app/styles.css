@@ -61,7 +61,18 @@ strong { color: var(--t1); font-weight: 700; }
 .topbar {
   position: fixed; top: 0; left: 0; right: 0; margin: 0 auto; max-width: inherit; z-index: 5;
   display: flow-root; /* the tabs' margin mustn't collapse into the bar's */
+  transition: transform .3s var(--ease);
 }
+/* Hidden while scrolling down (on request; .hidden, set in main.js): the
+   compact bar slides up out of sight. Under a notch or status bar a frosted
+   band stays (body.bar-hidden::before), so the page never runs under it. */
+.topbar.hidden { transform: translateY(calc(-1 * (var(--bar-h) - var(--bar-d)) - env(safe-area-inset-top))); }
+body::before {
+  content: ""; position: fixed; z-index: 6; top: 0; left: 0; right: 0; height: env(safe-area-inset-top); pointer-events: none;
+  background: rgba(7, 5, 7, .7); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+  opacity: 0; transition: opacity .3s var(--ease);
+}
+body.bar-hidden::before { opacity: 1; }
 main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* Frosted glass: content scrolls underneath as a soft blur. It's its own
    layer at the open height, which slides up when the bar compacts (a
@@ -106,7 +117,12 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
   display: inline-flex; align-items: baseline; gap: 4px;
   font-size: 14px; line-height: 1.15; color: var(--gold3); white-space: nowrap;
 }
-.cd-what { font-size: 12px; font-weight: 500; color: var(--t2); }
+.cd-what { font-size: 12px; font-weight: 500; color: var(--t2); transition: opacity .25s var(--ease); }
+/* Compact, the countdown is just the gold time (on request): the words step
+   out of the flow and fade where they stood, left of the time, which stays
+   put (the countdown is right-aligned). */
+.cd-pill { position: relative; }
+.compact #cd-what { position: absolute; right: calc(100% + 4px); opacity: 0; white-space: nowrap; pointer-events: none; }
 .cd-pill b { font-weight: 800; letter-spacing: -.01em; }
 .cd-pill small { font-family: var(--fm); font-size: 11px; color: var(--t2); margin-left: 1px; }
 
@@ -132,7 +148,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .tab:active { transform: scale(.93); }
 .tab svg { width: 24px; height: 22px; fill: currentColor; transition: height .3s var(--ease), opacity .3s var(--ease); }
 .compact .tab svg { height: 0; opacity: 0; }
-.tab span { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
+.tab span { font-family: var(--fm); font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; }
 
 /* ── Pages ─────────────────────────────────────────────────────────── */
 .page { display: none; }
@@ -423,10 +439,21 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
   transition: transform .3s var(--ease);
 }
 .topbar.compact ~ main .page > .strip { transform: translateY(calc(-1 * (var(--bar-d) + var(--strip-h) - var(--strip-hc)))); }
+/* With the bar hidden, the strip goes to the top (its 32px band just under the safe area). */
+.topbar.hidden ~ main .page > .strip { transform: translateY(calc(-1 * (var(--bar-h) + var(--strip-h) - var(--strip-hc)))); }
 .strip-tab > span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; transition: translate .3s var(--ease); }
 .topbar.compact ~ main .page > .strip .strip-tab > span { translate: 0 calc((var(--strip-h) - var(--strip-hc)) / 2); }
 .strip.scroll { overflow-x: auto; scrollbar-width: none; }
 .strip.scroll::-webkit-scrollbar { display: none; }
+/* A strip that scrolls fades at the edge where more tabs are hidden (on
+   request; .more-l / .more-r, set in main.js): sticky overlays in the strip's
+   colour that take no room. */
+.strip.scroll::before, .strip.scroll::after {
+  content: ""; position: sticky; z-index: 1; flex: 0 0 32px; pointer-events: none; opacity: 0; transition: opacity .2s;
+}
+.strip.scroll::before { left: 0; margin-right: -32px; background: linear-gradient(90deg, #141114 20%, transparent); }
+.strip.scroll::after { right: 0; margin-left: -32px; background: linear-gradient(270deg, #141114 20%, transparent); }
+.strip.scroll.more-l::before, .strip.scroll.more-r::after { opacity: 1; }
 .strip-tab {
   position: relative; flex-shrink: 0; min-height: var(--strip-h); padding: 10px clamp(13px, 3.4vw, 18px);
   font-family: var(--fm); font-size: 12px; color: var(--t3); letter-spacing: .1em; white-space: nowrap;
@@ -435,6 +462,8 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 }
 .strip.even .strip-tab { flex: 1; min-width: 0; padding-inline: 4px; overflow: hidden; text-overflow: ellipsis; }
 .strip-tab.tbd { color: var(--t4); }
+/* The next episode to air: a small gold dot after its label, so "not yet" and "next" read apart. */
+.strip-tab.next > span::after { content: ""; display: inline-block; width: 5px; height: 5px; margin: 0 0 1px 6px; border-radius: 50%; background: var(--gold2); vertical-align: middle; box-shadow: 0 0 6px var(--gold-glow); }
 .strip-tab.on {
   color: var(--t1); border-bottom-color: var(--gold3);
   background: linear-gradient(180deg, rgba(212, 160, 40, .2), rgba(212, 160, 40, .05));
