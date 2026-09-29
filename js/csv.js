@@ -1,7 +1,7 @@
 // Loads data/fantasky_master_data.csv (the single hand-edited source, see
 // data/README.md) and shapes it into one object per series for league.js.
 
-export const CSV_URL = "../data/fantasky_master_data.csv";
+export const CSV_URL = "data/fantasky_master_data.csv";
 
 /**
  * RFC 4180 CSV → rows of raw fields (nothing trimmed; blank lines dropped).

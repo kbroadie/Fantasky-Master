@@ -2,27 +2,27 @@
 
 Fantasy league for the TV show *Taskmaster*. Players pick one contestant per episode and score Show points (the contestant's score) and League points (5-4-3-2-1 by finishing place). Rules: `README.md`. Every calculation: `FANTASKY_MASTER_EXPLAINED.md`.
 
-- **Live app:** https://kbroadie.github.io/Fantasky-Master/app/ (GitHub Pages serves `main` as-is).
-- **Legacy site:** `index.html` at the root. It is frozen; don't read it or build on it.
+- **Live app:** https://kbroadie.github.io/fantasky-master/ (GitHub Pages serves `main` as-is). The repo is `kbroadie/fantasky-master`, lower case by convention (renamed on request from `Fantasky-Master`; Pages paths are case-sensitive, and the old addresses weren't kept, as they'd never been shared). The app is the site's root (promoted on request; it used to live in `app/`, and the old single-file site it replaced is only in git history: don't build on it).
 
 ## Layout
 
 ```
 data/fantasky_master_data.csv   ← the ONLY league data (hand-edited; schema in data/README.md)
 data/taskmaster_stats.csv       all-time stats for every contestant, S1–22 (imported, never hand-edited)
-app/index.html                  sticky top bar (masthead + 3 tabs), the three pages and the footer
-app/styles.css                  all styles; mobile-first, wider layouts in @media at the end
-app/js/main.js                  renders all pages at load, tabs, swipers, the Standings rows, series toggle, countdown, routing (#/series/page/arg)
-app/js/ui.js                    shared helpers ($, esc, ord, framed…) and `state`
-app/js/views/{table,episodes,cast}.js   one file per tab (Standings, Episodes, Cast); each returns HTML strings
-app/js/podium-fx.js             canvas effects on episode podiums (winner's gold light, last place's stink gas), and the gold light on the first-place Cast header
-app/js/heroes.js                presentation only: each series' cast photos (a group photo, or a hero photo per contestant), and each contestant's eyes and head size in them (the Cast profile's face)
-app/js/league.js                pure scoring engine (derive) — must match the systems doc
-app/js/csv.js                   CSV → series objects
-app/js/alltime.js               loads taskmaster_stats.csv: the radar baseline, all-time record badges, profile facts
-app/js/edit.js                  edit mode: picks and scores entered on the page, saved to the CSV through the GitHub API
-app/js/wiki.js                  reads an episode's scores from the Taskmaster Wiki's API (for edit mode)
-app/js/checks.js                the CSV's rules, shared by check-data and edit mode (which checks before saving)
+index.html                      sticky top bar (masthead + 3 tabs), the three pages and the footer
+styles.css                      all styles; mobile-first, wider layouts in @media at the end
+js/main.js                      renders all pages at load, tabs, swipers, the Standings rows, series toggle, countdown, routing (#/series/page/arg)
+js/ui.js                        shared helpers ($, esc, ord, framed…) and `state`
+js/views/{table,episodes,cast}.js       one file per tab (Standings, Episodes, Cast); each returns HTML strings
+js/podium-fx.js                 canvas effects on episode podiums (winner's gold light, last place's stink gas), and the gold light on the first-place Cast header
+js/heroes.js                    presentation only: each series' cast photos (a group photo, or a hero photo per contestant), and each contestant's eyes and head size in them (the Cast profile's face)
+js/league.js                    pure scoring engine (derive) — must match the systems doc
+js/csv.js                       CSV → series objects
+js/alltime.js                   loads taskmaster_stats.csv: the radar baseline, all-time record badges, profile facts
+js/edit.js                      edit mode: picks and scores entered on the page, saved to the CSV through the GitHub API
+js/wiki.js                      reads an episode's scores from the Taskmaster Wiki's API (for edit mode)
+js/checks.js                    the CSV's rules, shared by check-data and edit mode (which checks before saving)
+APP.md                          the app's own notes (data, edit mode, layout)
 tools/check-data.mjs            validates the CSV (checks.js) + worked-example regression + cross-check against the stats (no deps)
 tools/import-stats.mjs          regenerates taskmaster_stats.csv from the all-time stats Google Sheet
 tools/screenshots.mjs           Playwright shots of every view at 390px and 1440px → shots/
@@ -109,7 +109,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
 ## Commands
 
 ```sh
-npm run serve                 # http://localhost:8000/app/
+npm run serve                 # http://localhost:8000/
 node tools/check-data.mjs     # run after any CSV or league.js change
 node tools/import-stats.mjs   # refresh data/taskmaster_stats.csv from the Google Sheet, then run check-data
 npm ci && npx playwright install chromium && node tools/screenshots.mjs

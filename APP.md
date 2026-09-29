@@ -1,12 +1,12 @@
 # Fantasky Master: the app
 
-The league site, designed for phones first and built around the players. It follows the rules in [../README.md](../README.md) and the calculations in [../FANTASKY_MASTER_EXPLAINED.md](../FANTASKY_MASTER_EXPLAINED.md).
+The league site, designed for phones first and built around the players. It follows the rules in [README.md](README.md) and the calculations in [FANTASKY_MASTER_EXPLAINED.md](FANTASKY_MASTER_EXPLAINED.md).
 
-Live at **https://kbroadie.github.io/Fantasky-Master/app/**.
+Live at **https://kbroadie.github.io/fantasky-master/**.
 
 ## Data
 
-The app reads **[`../data/fantasky_master_data.csv`](../data/fantasky_master_data.csv)** every time it loads (always the newest copy). To update the league, use edit mode (below) or edit that file as described in [`data/README.md`](../data/README.md); nothing in the app needs changing.
+The app reads **[`data/fantasky_master_data.csv`](data/fantasky_master_data.csv)** every time it loads (always the newest copy). To update the league, use edit mode (below) or edit that file as described in [`data/README.md`](data/README.md); nothing in the app needs changing.
 
 ### Edit mode
 
@@ -20,7 +20,7 @@ Tap all seven rubber ducks at the bottom of any tab to open edit mode. The first
 - `js/csv.js` parses the CSV.
 - `js/league.js` derives the boards, ranks, movement, tiebreak placings, rank history, pick-rule status and contestant stats.
 
-It also reads **[`../data/taskmaster_stats.csv`](../data/taskmaster_stats.csv)**, all-time stats for every Taskmaster contestant (series 1–22), for the Cast tab. `js/alltime.js` reads it. It's imported from a community Google Sheet with `node tools/import-stats.mjs`; don't edit it by hand. If it fails to load, the Cast tab still works and the radar compares against the league's own series.
+It also reads **[`data/taskmaster_stats.csv`](data/taskmaster_stats.csv)**, all-time stats for every Taskmaster contestant (series 1–22), for the Cast tab. `js/alltime.js` reads it. It's imported from a community Google Sheet with `node tools/import-stats.mjs`; don't edit it by hand. If it fails to load, the Cast tab still works and the radar compares against the league's own series.
 
 ## Layout
 
@@ -72,8 +72,8 @@ Swiping left on Standings' Week 10 opens Episodes, swiping past the last episode
 
 ## Run locally
 
-Serve the repository root, because the app loads `../data/…`:
+Serve the repository root (the app loads `data/…`):
 
 ```sh
-npm run serve   # then open http://localhost:8000/app/
+npm run serve   # then open http://localhost:8000/
 ```
