@@ -264,7 +264,6 @@ strong { color: var(--t1); font-weight: 700; }
 .card.board::before { background: var(--grain), radial-gradient(55% 110% at 22% 0%, rgba(229, 72, 77, .36), transparent 80%); }
 .card.board::after { background: radial-gradient(55% 110% at 78% 0%, rgba(62, 123, 250, .36), transparent 80%); }
 .board #rows { position: relative; z-index: 1; }
-.board .pk-grid { padding-inline: 14px; }
 .board .pc:last-child { border-bottom: 0; }
 /* The head names the two halves in the week strip's language: DM Mono caps
    under the scoring cards' crown and trophy, each half tinted from the top in
@@ -362,7 +361,7 @@ strong { color: var(--t1); font-weight: 700; }
 /* Its height is fixed (taller than any opened row, which is at most ~200px),
    so opening a row only uncovers more of it: the backdrop's layer is never
    resized, and so never redrawn, while the row grows. */
-.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 170px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
+.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 200px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
 /* Two photos: the Show player's pick on the left and the League player's on
    the right, not blended (on request): each is its own box (a query
    container) that ends at the line between the halves (the backdrop's middle
@@ -408,7 +407,7 @@ strong { color: var(--t1); font-weight: 700; }
    a dark glow). Opening the row lowers the clip with the expand, to the
    opened height (--open-h, measured in main.js). */
 .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head)) var(--bleed)); }
-.pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 170px)) var(--bleed)); }
+.pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 200px)) var(--bleed)); }
 /* Opening a half sharpens an L (on request): that player's half of the row
    and the picks below, while the other player's half stays frosted. A sharp
    copy of the backdrop (.sharp, made by sharpen in main.js, only while the
@@ -419,7 +418,7 @@ strong { color: var(--t1); font-weight: 700; }
    their half, so it comes into focus without moving, but free to run on
    across the row, its edges fading into the row's colour where it ends. */
 .pc .pc-bg.sharp {
-  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 170px)); --R: calc(100% - var(--bleed));
+  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 200px)); --R: calc(100% - var(--bleed));
   filter: none; will-change: opacity; opacity: 0;
   clip-path: polygon(var(--bleed) var(--bleed), var(--X) var(--bleed), var(--X) var(--M), var(--R) var(--M), var(--R) var(--B), var(--bleed) var(--B));
   transition: opacity .35s var(--ease), clip-path .35s var(--ease);
@@ -452,7 +451,27 @@ strong { color: var(--t1); font-weight: 700; }
    picks strip, not inside the blurred backdrop layer, so opening a row
    doesn't redraw that layer. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
-.pk-grid { display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px; padding: 4px var(--px) 14px; }
+/* An opened half: the race chart ("The race so far") for the opened board,
+   full width, only the opened player highlighted (journey in table.js). */
+.jr { --c: var(--show-hi); padding: 14px 16px 10px; }
+.jr.league { --c: var(--league-hi); }
+.jr-plot { position: relative; height: 112px; margin-bottom: 22px; }
+.jr-grid { position: absolute; left: 0; right: 0; top: var(--y); border-top: 1px solid rgba(255, 255, 255, .08); }
+.jr-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.jr-lines path { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+.jr .jr-others path { stroke: rgba(255, 255, 255, .32); stroke-width: .6; }
+.jr .jr-me path { stroke: var(--c); stroke-width: 2; }
+.jr-dot { position: absolute; left: var(--x); top: var(--y); width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: rgba(255, 255, 255, .32); }
+.jr-dot.me { width: 10px; height: 10px; margin: -5px; background: var(--c); }
+.jr-ax { position: absolute; left: 0; right: 0; top: calc(100% + 8px); height: 13px; }
+.jr-ax span { position: absolute; left: var(--x); transform: translateX(-50%); font: 400 11px/13px var(--fm); color: var(--t4); }
+.jr-ax span.now { color: var(--gold2); }
+.jr-ax span.later { opacity: .45; }
+@keyframes jr-draw { from { clip-path: inset(-10px 100% -10px -10px); } to { clip-path: inset(-10px -10px -10px -10px); } }
+@keyframes jr-fade { from { opacity: 0; } }
+.pc.open .jr-me { animation: jr-draw .8s var(--ease) both; } /* drawn in left to right (a dash would break on the stretched SVG) */
+.pc.open .jr-others, .pc.open .jr-dot { animation: jr-fade .6s var(--ease) both; }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others, .pc.open .jr-dot { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }
@@ -814,7 +833,6 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 @media (min-width: 600px) {
   :root { --px: 20px; }
   .board { --rk: 46px; --pad: 18px; --sc: 44px; --g: 10px; }
-  .board .pk-grid { padding-inline: 20px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }
   .pc-bg { --face: 106px; }

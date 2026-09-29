@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, framed, fmtDay, fmtWhen, state } from "../ui.js";
+import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 
@@ -138,7 +138,7 @@ function faceOf(p, w) {
 /** What an opened half shows: the player's ten picks (their chooser in edit mode). */
 export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
-  return !p ? "" : state.edit ? pickChooser(d, p, w) : picks(d, p, side);
+  return !p ? "" : state.edit ? pickChooser(d, p, w) : journey(d, p, side, w);
 }
 
 /**
@@ -156,12 +156,40 @@ function pickBackdrop(lf, rf) {
 }
 
 
-function picks(d, p, side) {
-  const league = side === "league";
-  const cells = p.weeks.map((w) => {
-    if (!w.pick) return `<div class="pk"><small>${w.ep}</small><span class="pk-blank">${w.ep <= d.weeksScored ? "–" : ""}</span><b></b></div>`;
-    const pts = w.show == null ? "…" : league ? w.league : w.show;
-    return `<div class="pk${w.won ? " won" : ""}"><small>${w.ep}</small>${framed(d.cast[w.pick])}<b>${pts}</b></div>`;
-  }).join("");
-  return `<div class="pk-grid">${cells}</div>`;
+/**
+ * An opened half: the race chart from the Episodes tab ("The race so far"),
+ * for the players on the opened board, across the full width of the row.
+ * Each player's gap to the board's leader in points after every episode: the
+ * leader runs flat along the top, everyone else below, over the race chart's
+ * gridlines (tidy steps from niceStep, none at 0), smoothed the same way
+ * (`smooth`, monotone). Only the opened player is highlighted: their line in
+ * the board's colour; every other player is a very thin, faint line. No line
+ * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
+ * later ones faint). The plot is stretched to the row (SVG with
+ * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
+ * are HTML so they never stretch. All through the week on show.
+ */
+function journey(d, p, side, w) {
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
+  const eps = Array.from({ length: upTo }, (_, i) => i + 1);
+  const total = (q, e) => q.history[e - 1][k];
+  const best = (e) => Math.max(...d.players.map((q) => total(q, e)));
+  const gap = (q, e) => total(q, e) - best(e);
+  const deepest = Math.max(1, ...eps.flatMap((e) => d.players.map((q) => -gap(q, e))));
+  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
+  const x = (e) => ((e - 1) / Math.max(1, last - 1)) * 100, y = (v) => (v / yMin) * 100, f = (v) => v.toFixed(2);
+  const grid = Array.from({ length: Math.round(-yMin / step) }, (_, i) => `<i class="jr-grid" style="--y:${f(y(-(i + 1) * step))}%"></i>`).join("");
+  const pts = (q) => eps.map((e) => [x(e), y(gap(q, e))]);
+  const others = d.players.filter((q) => q.name !== p.name);
+  const svg = (cls, paths) => `<svg class="jr-lines ${cls}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
+  const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
+    // Episode 1, with no lines yet, keeps dots (as the race chart does).
+    : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
+  const g = upTo ? gap(p, upTo) : 0;
+  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
+  const board = k === "show" ? "Show" : "League";
+  const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
+  return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
+    <div class="jr-plot">${grid}${lines}<div class="jr-ax" aria-hidden="true">${axis}</div></div>
+  </div>`;
 }
