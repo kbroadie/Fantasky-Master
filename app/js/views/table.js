@@ -6,6 +6,7 @@
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
+import { barsCard, median } from "./cast.js";
 
 /** The week on show: state.wk, or the latest scored week. */
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
@@ -81,8 +82,10 @@ export function standingsHero(d) {
   return `${kicker}<h2 class="ep-title">${w > d.weeksScored ? `Episode ${w} Picks` : `Episode ${w} Standings`}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
-/** Series with a group photo show the week's pick as each row's backdrop. */
-const heroRows = () => !!GROUP[state.key]?.faces;
+/** Series with a group photo show the week's pick as each row's backdrop.
+ *  Off for now (on request); set ROW_PHOTOS to bring them back. */
+const ROW_PHOTOS = false;
+const heroRows = () => ROW_PHOTOS && !!GROUP[state.key]?.faces;
 
 /** Ep 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
@@ -138,7 +141,44 @@ function faceOf(p, w) {
 /** What an opened half shows: the player's ten picks (their chooser in edit mode). */
 export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
-  return !p ? "" : state.edit ? pickChooser(d, p, w) : journey(d, p, side, w);
+  if (!p) return "";
+  if (state.edit) return pickChooser(d, p, w);
+  return `<div class="xp">${side === "show" ? showCards(d, p, w) : raceCard(d, p, w)}</div>`;
+}
+
+/**
+ * An opened Show half: the Cast tab's Points per episode card, for the
+ * player's picks. Each bar is the Show points their pick scored that
+ * episode, in the pick's colour (a gold number for a pick that won, no
+ * crown), with the pick's first three letters under it, above the episode
+ * number, on the same scale as the Cast tab, with the median of every
+ * player's weekly Show points. Through the week on show.
+ */
+function showCards(d, p, w) {
+  const upTo = Math.min(w, d.weeksScored);
+  const max = Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored)));
+  const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.ep <= upTo && x.pick).map((x) => x.show));
+  const at = (ep) => {
+    const x = p.weeks[ep - 1];
+    if (!x || ep > upTo) return null;
+    return { v: x.pick ? x.show : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
+  };
+  return barsCard(d, at, max, median(all), "var(--show-hi)", false);
+}
+
+/**
+ * An opened League half: the Episodes tab's "The race so far" card, for the
+ * League: every player's gap to the League leader, only the opened player's
+ * line highlighted (journey).
+ */
+function raceCard(d, p, w) {
+  // How far behind the League leader they are that week, in the legend's own type.
+  const upTo = Math.min(w, d.weeksScored), pts = (q) => q.history[upTo - 1].league;
+  const behind = upTo ? Math.max(...d.players.map(pts)) - pts(p) : null;
+  return `<div class="card jr-card">
+      <div class="card-head"><span>The race so far</span><span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
+      ${journey(d, p, "league", w)}
+    </div>`;
 }
 
 /**

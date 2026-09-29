@@ -434,7 +434,7 @@ bindSwiper(CAST, (dir) => {
 
 // Task heat strip (Cast): tap an episode's slot in a row to read its tasks;
 // tap it again to deselect it.
-$("#cast-body").addEventListener("click", (e) => {
+const heatTap = (e) => {
   const slot = e.target.closest("button.hs-slot");
   if (!slot) return;
   const card = slot.closest(".heat"), was = slot.classList.contains("on");
@@ -442,7 +442,8 @@ $("#cast-body").addEventListener("click", (e) => {
   slot.classList.toggle("on", !was);
   slot.setAttribute("aria-pressed", !was);
   card.querySelector(".hs-cap").textContent = was ? "" : slot.dataset.say;
-});
+};
+$("#cast-body").addEventListener("click", heatTap);
 
 // The race chart (Episodes): tap a line, name or point to follow that
 // contestant (their line comes forward, the rest fade); a point also reads out

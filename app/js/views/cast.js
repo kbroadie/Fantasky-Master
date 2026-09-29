@@ -8,6 +8,8 @@ export const castOrder = (d) => [...d.contestants].sort((a, b) => a.rank - b.ran
 
 export const castTabs = (d) => castOrder(d).map((c, i) => `<button class="strip-tab" data-slide="${i}">${esc(c.key)}</button>`).join("");
 
+export { median };
+
 export function castSlides(d) {
   // One scale for every contestant, so bars compare across slides, with the
   // series median of every contestant's episode scores as a reference line.
@@ -22,18 +24,37 @@ function median(xs) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-function slide(d, c, max, med) {
-  // Each bar's height is exactly its score over the shared max (--f); the
-  // number and crown sit above it and the episode number below, outside the
-  // plot, so they never squeeze the bar.
+/**
+ * The Points per episode card: one bar per episode on one scale (max), each
+ * exactly its score over the max (--f); the number and crown sit above it and
+ * the episode number below, outside the plot, so they never squeeze the bar.
+ * `at(ep)` gives { v, won, color?, tag? } for a scored episode, or null for
+ * one not yet scored (a bar may carry its own colour and a label under it,
+ * above the episode number: a player's pick that week).
+ * The series median is a dashed line, keyed in the head. `crowns` false
+ * leaves the crowns off (a player's bars on Standings; a win keeps its gold number).
+ */
+export function barsCard(d, at, max, med, color, crowns = true) {
   const f = (v) => (v / max).toFixed(4);
+  let wins = 0, tagged = false;
   const bars = d.episodes.map((e) => {
-    if (e.ep > d.weeksScored) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
-    const v = c.eps[e.ep - 1], won = d.winners[e.ep]?.winner === c.key;
-    return `<div class="bar${won ? " won" : ""}" style="--f:${f(v)}"><i></i><b>${v}</b><small>${e.ep}</small></div>`;
+    const x = at(e.ep);
+    if (!x) return `<div class="bar tbd"><i></i><small>${e.ep}</small></div>`;
+    if (x.won) wins++;
+    if (x.tag) tagged = true;
+    return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
   }).join("");
   const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
+  return `
+    <div class="card">
+      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${wins && crowns ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
+      <div class="bars${tagged ? " tagged" : ""}${crowns ? "" : " no-crown"}" style="--c:${color}">${medLine}${bars}</div>
+    </div>`;
+}
+
+function slide(d, c, max, med) {
+  const bars = barsCard(d, (ep) => ep > d.weeksScored ? null : { v: c.eps[ep - 1], won: d.winners[ep]?.winner === c.key }, max, med, c.color);
 
   return `
     <div class="ep-head cd-head${c.rank === 1 ? " fx-stage" : ""}">
@@ -43,11 +64,8 @@ function slide(d, c, max, med) {
       <div class="ep-sub"><b style="color:${c.color}">${c.total}</b> points · ${c.avg.toFixed(1)} an episode${c.wins ? ` · ${c.wins} win${c.wins > 1 ? "s" : ""}` : ""}</div>
     </div>
     ${records(d, c)}
-    <div class="card">
-      <div class="card-head"><span>Points per episode</span><span class="legend">${med == null ? "" : `<i class="med-key"></i>median ${medText}`}${c.wins ? `${med == null ? "" : " · "}👑 won` : ""}</span></div>
-      <div class="bars" style="--c:${c.color}">${medLine}${bars}</div>
-    </div>
-    ${heatStrip(d, c)}
+    ${bars}
+    ${heatStrip(d, () => c, d.weeksScored, c.color)}
     ${radar(d, c)}
     ${profile(c)}`;
 }
@@ -96,31 +114,42 @@ function profile(c) {
 
 const HEAT_TYPES = ["P", "F", "T", "L"];
 
-function heatStrip(d, c) {
-  const i = d.idx[c.key], eps = d.episodes.map((e) => e.ep);
+/**
+ * The Every task card. `who(ep)` is the contestant whose tasks fill that
+ * episode's column: always the same one on the Cast tab, or a player's pick
+ * that week on Standings (then each column takes its pick's colour and the
+ * caption names them; a week with no pick is a dash). Episodes after `upTo`
+ * are still to come.
+ */
+export function heatStrip(d, who, upTo, color) {
+  const eps = d.episodes.map((e) => e.ep), picks = new Set(eps.map((e) => who(e)?.key)).size > 1;
   const byType = Object.fromEntries(HEAT_TYPES.map((k) => [k, []]));
-  for (const ep of eps.filter((e) => e <= d.weeksScored)) {
+  for (const ep of eps.filter((e) => e <= upTo)) {
+    const c = who(ep);
+    if (!c) continue;
+    const i = d.idx[c.key];
     for (const t of d.epTasks(ep)) if (byType[t.t]) byType[t.t].push({ ep, name: t.n, v: t.s[i], dq: !!t.dq?.[i] });
   }
   const types = HEAT_TYPES.filter((k) => byType[k].length);
   if (!types.length) return "";
-  const head = `<span></span>${eps.map((e) => `<span class="hs-ep${e > d.weeksScored ? " tbd" : ""}">${e}</span>`).join("")}<span class="hs-ep">avg</span>`;
+  const head = `<span></span>${eps.map((e) => `<span class="hs-ep${e > upTo ? " tbd" : ""}">${e}</span>`).join("")}<span class="hs-ep">avg</span>`;
   const rows = types.map((k) => {
     const all = byType[k], avg = all.reduce((a, x) => a + x.v, 0) / all.length;
     const slots = eps.map((e) => {
-      const here = all.filter((x) => x.ep === e);
+      const here = all.filter((x) => x.ep === e), c = who(e);
+      if (e <= upTo && !c) return `<span class="hs-slot na" title="No pick"></span>`;
       // No task of this type that episode: n/a, a dash rather than a square.
-      if (!here.length) return e > d.weeksScored ? `<span class="hs-slot tbd"></span>` : `<span class="hs-slot na" title="No ${TASK_NAME[k].toLowerCase()} task"></span>`;
-      const say = `Ep ${e} · ${TASK_NAME[k]} · ${here.map((x) => `${x.name}: ${x.dq ? "DQ" : x.v}`).join(" · ")}`;
+      if (!here.length) return e > upTo ? `<span class="hs-slot tbd"></span>` : `<span class="hs-slot na" title="No ${TASK_NAME[k].toLowerCase()} task"></span>`;
+      const say = `Ep ${e} · ${picks ? `${c.key} · ` : ""}${TASK_NAME[k]} · ${here.map((x) => `${x.name}: ${x.dq ? "DQ" : x.v}`).join(" · ")}`;
       const cells = here.map((x) => `<i class="hs-cell${x.dq ? " dq" : ""}" style="--v:${x.v}"></i>`).join("");
-      return `<button class="hs-slot" data-say="${esc(say)}" aria-label="${esc(say)}">${cells}</button>`;
+      return `<button class="hs-slot" data-say="${esc(say)}" aria-label="${esc(say)}"${picks ? ` style="--c:${c.color}"` : ""}>${cells}</button>`;
     }).join("");
     return `<span class="hs-type">${icon(k)}${TASK_NAME[k]}</span>${slots}<span class="hs-avg">${avg.toFixed(1)}</span>`;
   }).join("");
   const key = [0, 1, 2, 3, 4, 5].map((v) => `<i class="hs-key" style="--v:${v}"></i>`).join("");
   const anyDq = types.some((k) => byType[k].some((x) => x.dq));
   return `
-    <div class="card heat" style="--c:${c.color}">
+    <div class="card heat" style="--c:${color}">
       <div class="card-head"><span>Every task</span><span class="legend hs-legend">0${key}5${anyDq ? `<i class="hs-key dq"></i>DQ` : ""}</span></div>
       <div class="hs-grid">${head}${rows}</div>
       <p class="hs-cap"></p>
