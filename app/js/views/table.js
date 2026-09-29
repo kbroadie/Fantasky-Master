@@ -3,7 +3,7 @@
 // row is a place, the Show's player on the left and the League's on the right,
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
-import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
+import { esc, listing, tier, ord, fmtDay, fmtWhen, state } from "../ui.js";
 import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
@@ -143,42 +143,29 @@ export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
   if (!p) return "";
   if (state.edit) return pickChooser(d, p, w);
-  return `<div class="xp">${side === "show" ? showCards(d, p, w) : raceCard(d, p, w)}</div>`;
+  return `<div class="xp">${pointsCard(d, p, w, side === "show" ? "show" : "league")}</div>`;
 }
 
 /**
- * An opened Show half: the Cast tab's Points per episode card, for the
- * player's picks. Each bar is the Show points their pick scored that
- * episode, in the pick's colour (a gold number for a pick that won), with
- * the pick's first three letters under it, above the episode number, on the
- * same scale as the Cast tab, with the median of every player's weekly Show
- * points. Through the week on show.
+ * An opened half: the Cast tab's Points per episode card, for the player's
+ * picks on the opened board ("Show points per episode" or "League points per
+ * episode"). Each bar is the points their pick earned that episode on that
+ * board (Show: the pick's score, on the Cast tab's scale; League: 5 to 1 by
+ * the pick's place, out of 5), in the pick's colour, a gold number for a pick
+ * that won, the pick's first three letters under it above the episode
+ * number, and the median of every player's weekly points on that board.
+ * Through the week on show.
  */
-function showCards(d, p, w) {
+function pointsCard(d, p, w, k) {
   const upTo = Math.min(w, d.weeksScored);
-  const max = Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored)));
-  const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.ep <= upTo && x.pick).map((x) => x.show));
+  const max = k === "show" ? Math.max(1, ...d.contestants.flatMap((c) => c.eps.slice(0, d.weeksScored))) : 5;
+  const all = d.players.flatMap((q) => q.weeks.filter((x) => x.scored && x.ep <= upTo && x.pick).map((x) => x[k]));
   const at = (ep) => {
     const x = p.weeks[ep - 1];
     if (!x || ep > upTo) return null;
-    return { v: x.pick ? x.show : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
+    return { v: x.pick ? x[k] : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
-  return barsCard(d, at, max, median(all), "var(--show-hi)");
-}
-
-/**
- * An opened League half: the Episodes tab's "The race so far" card, for the
- * League: every player's gap to the League leader, only the opened player's
- * line highlighted (journey).
- */
-function raceCard(d, p, w) {
-  // How far behind the League leader they are that week, in the legend's own type.
-  const upTo = Math.min(w, d.weeksScored), pts = (q) => q.history[upTo - 1].league;
-  const behind = upTo ? Math.max(...d.players.map(pts)) - pts(p) : null;
-  return `<div class="card jr-card">
-      <div class="card-head"><span>The race so far</span><span class="legend">${behind == null ? "" : `${behind} `}behind the leader</span></div>
-      ${journey(d, p, "league", w)}
-    </div>`;
+  return barsCard(d, at, max, median(all), `var(--${k}-hi)`, `${k === "show" ? "Show" : "League"} points per episode`);
 }
 
 /**
@@ -193,43 +180,4 @@ function raceCard(d, p, w) {
 function pickBackdrop(lf, rf) {
   const face = (f, side) => `<span class="pf ${side}" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
   return `<span class="pc-bg" aria-hidden="true">${face(lf, "l")}${face(rf, "r")}</span>`;
-}
-
-
-/**
- * An opened half: the race chart from the Episodes tab ("The race so far"),
- * for the players on the opened board, across the full width of the row.
- * Each player's gap to the board's leader in points after every episode: the
- * leader runs flat along the top, everyone else below, over the race chart's
- * gridlines (tidy steps from niceStep, none at 0), smoothed the same way
- * (`smooth`, monotone). Only the opened player is highlighted: their line in
- * the board's colour; every other player is a very thin, faint line. No line
- * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
- * later ones faint). The plot is stretched to the row (SVG with
- * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
- * are HTML so they never stretch. All through the week on show.
- */
-function journey(d, p, side, w) {
-  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
-  const eps = Array.from({ length: upTo }, (_, i) => i + 1);
-  const total = (q, e) => q.history[e - 1][k];
-  const best = (e) => Math.max(...d.players.map((q) => total(q, e)));
-  const gap = (q, e) => total(q, e) - best(e);
-  const deepest = Math.max(1, ...eps.flatMap((e) => d.players.map((q) => -gap(q, e))));
-  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const x = (e) => ((e - 1) / Math.max(1, last - 1)) * 100, y = (v) => (v / yMin) * 100, f = (v) => v.toFixed(2);
-  const grid = Array.from({ length: Math.round(-yMin / step) }, (_, i) => `<i class="jr-grid" style="--y:${f(y(-(i + 1) * step))}%"></i>`).join("");
-  const pts = (q) => eps.map((e) => [x(e), y(gap(q, e))]);
-  const others = d.players.filter((q) => q.name !== p.name);
-  const svg = (cls, paths) => `<svg class="jr-lines ${cls}" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${paths}</svg>`;
-  const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
-    // Episode 1, with no lines yet, keeps dots (as the race chart does).
-    : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
-  const g = upTo ? gap(p, upTo) : 0;
-  const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
-  const board = k === "show" ? "Show" : "League";
-  const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
-  return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
-    <div class="jr-plot">${grid}${lines}<div class="jr-ax" aria-hidden="true">${axis}</div></div>
-  </div>`;
 }
