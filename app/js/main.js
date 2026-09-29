@@ -5,7 +5,7 @@ import { loadText, parseCSV, buildSeries } from "./csv.js";
 import { initEdit } from "./edit.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsHead, standingsRows, standingsHero, stWeek, weekTabs, rowMore } from "./views/table.js";
+import { standingsSlides, stWeek, weekTabs, rowMore } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -44,12 +44,18 @@ function loadSeries(key) {
   btn.classList.toggle("multi", Object.keys(SERIES).length > 1);
   btn.classList.toggle("past", key !== CURRENT);
   btn.setAttribute("aria-label", `Series ${key}. Tap to switch series`);
-  $("#p-standings").innerHTML = standingsHead(d);
-  renderRows();
-  markWeek(false);
+  renderStandings(d);
   renderSlides(d);
   if (!$("#foot").children.length) $("#foot").innerHTML = footer();
   countdown();
+}
+
+/** Standings: the week strip and one slide per week; an opened player stays opened. */
+function renderStandings(d) {
+  $("#st-tabs").innerHTML = weekTabs(d);
+  $("#st-body").innerHTML = standingsSlides(d);
+  for (const s of $("#st-body").children) { sizes.observe(s); syncOpen(s); }
+  queueLight();
 }
 
 function renderSlides(d) {
@@ -63,30 +69,20 @@ function renderSlides(d) {
 }
 
 /**
- * Edit mode (edit.js): re-render from the data file's new text, in place. The
- * Standings rows are patched (they slide if the order changes); the Episodes
- * and Cast slides are rebuilt on the same slide.
+ * Edit mode (edit.js): re-render from the data file's new text, in place: the
+ * Standings, Episodes and Cast slides are rebuilt on the same slide (and the
+ * opened player stays opened).
  */
 function refresh(text) {
   // Edit mode may redraw while a box has focus: put focus back on its new copy.
   const fk = document.activeElement?.dataset?.fk;
   SERIES = buildSeries(parseCSV(text));
   const d = state.d = derive(SERIES[state.key], new Date());
-  patchRows(() => {
-    $("#st-tabs").innerHTML = weekTabs(d);
-    $(".st-hero").innerHTML = standingsHero(d);
-    markWeek(false);
-  });
+  renderStandings(d);
   renderSlides(d);
-  for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get());
+  for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get());
   else mark(sw, sw.get(), false);
   if (fk) $(`[data-fk="${CSS.escape(fk)}"]`)?.focus({ preventScroll: true });
-}
-
-function renderRows() {
-  $("#rows").innerHTML = standingsRows(state.d);
-  $(".card.board")?.classList.remove("focus");
-  queueLight();
 }
 
 function show(page) {
@@ -96,7 +92,7 @@ function show(page) {
   $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
   $$(".page").forEach((p, j) => p.classList.toggle("active", j === i));
   scrollTo(0, 0);
-  if (page === "standings") { markWeek(false); queueLight(); }
+  if (page === "standings") { jump(ST, ST.get()); queueLight(); }
   if (page === "episodes") jump(EP, state.ep - 1);
   if (page === "cast") jump(CAST, state.cast);
   writeHash();
@@ -104,6 +100,7 @@ function show(page) {
 
 // ── Swipers: a tab strip over a row of scroll-snapped slides ─────────────────
 
+const ST = { body: "#st-body", tabs: "#st-tabs", get: () => stWeek(state.d) - 1, set: (i) => { state.wk = i + 1; } };
 const EP = { body: "#ep-body", tabs: "#ep-tabs", get: () => state.ep - 1, set: (i) => { state.ep = i + 1; } };
 const CAST = { body: "#cast-body", tabs: "#cast-tabs", get: () => state.cast, set: (i) => { state.cast = i; } };
 
@@ -228,8 +225,10 @@ $("#p-standings").addEventListener("click", (e) => {
   const how = e.target.closest(".st-how");
   if (how) {
     state.how = !state.how;
-    how.closest(".st-hero").classList.toggle("explain", state.how);
-    how.setAttribute("aria-expanded", state.how);
+    for (const h of $$("#st-body .st-hero")) {
+      h.classList.toggle("explain", state.how);
+      h.querySelector(".st-how")?.setAttribute("aria-expanded", state.how);
+    }
     queueLight();
     return;
   }
@@ -238,116 +237,48 @@ $("#p-standings").addEventListener("click", (e) => {
   const swap = e.target.closest(".xp-swap");
   if (swap) {
     state.xpView = swap.dataset.xp;
-    for (const row of $$("#rows .pc.open")) openRow(row, row.dataset.open);
+    for (const row of $$("#st-body .pc.open")) openRow(row, row.dataset.open);
     return;
   }
   // A half of a row opens that player's picks under the row; tapping the
   // same half closes it, and the other half switches to their player.
   const sd = e.target.closest(".pc .sd");
   if (sd) {
-    const row = sd.closest(".pc"), side = sd.dataset.side;
-    openRow(row, row.classList.contains("open") && row.dataset.open === side ? null : side);
+    const row = sd.closest(".pc"), side = sd.dataset.side, open = row.classList.contains("open") && row.dataset.open === side;
+    state.open = open ? null : { side, name: sd.dataset.p };
+    for (const s of $$("#st-body .st-slide")) syncOpen(s);
   }
 });
 
 // ── Standings weeks ──────────────────────────────────────────────────────────
-// The Ep 1–10 strip and sideways swipes change the week on show. The table
-// stays put: each row keeps its element (and whether it's open), its numbers
-// update, and the rows slide from their old places to their new ones (FLIP).
-// A left swipe on the last week goes on to Episodes.
+// A swiper of weeks, like Episodes (ST, bound below): swipe or tap the strip,
+// and the neighbouring week slides in. An opened player (state.open) is opened
+// in every week's slide, so they stay opened as the weeks go by.
 
-function markWeek(smooth = true) {
-  const tabs = $("#st-tabs"), w = stWeek(state.d);
-  if (!tabs) return;
-  for (const b of tabs.children) b.classList.toggle("on", +b.dataset.week === w);
-  const t = tabs.children[w - 1];
-  if (t) tabs.scrollTo({ left: t.offsetLeft - (tabs.clientWidth - t.offsetWidth) / 2, behavior: smooth && !reducedMotion ? "smooth" : "auto" });
-  edges();
-}
-
-function setWeek(w) {
-  const d = state.d;
-  w = Math.max(1, Math.min(d.episodes.length, w));
-  if (w === stWeek(d)) return;
-  state.wk = w;
-  patchRows(() => {
-    $(".st-hero").innerHTML = standingsHero(d);
-    markWeek();
-    writeHash();
-  });
-}
-
-/** Open a row on one side (its player's picks), or close it (side null). */
+/** Open a row on one side (its player's card), or close it (side null). */
 function openRow(row, side) {
   if (side) {
     const name = row.querySelector(`.sd[data-side="${side}"]`)?.dataset.p;
-    row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side);
+    row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side, +row.closest(".st-slide").dataset.week);
     row.dataset.open = side;
   } else delete row.dataset.open;
   row.classList.toggle("open", !!side);
   for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
   // While anything is open, every other cell steps back.
-  $(".card.board")?.classList.toggle("focus", !!$("#rows .pc.open"));
+  const board = row.closest(".card.board");
+  board?.classList.toggle("focus", !!board.querySelector(".pc.open"));
+}
+/** Bring a week's slide in line with state.open: that player's half open, nothing else. */
+function syncOpen(slide) {
+  const o = state.open;
+  const want = o && [...slide.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((b) => b.dataset.p === o.name)?.closest(".pc");
+  for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
+  if (want && !(want.classList.contains("open") && want.dataset.open === o.side)) openRow(want, o.side);
 }
 
-/**
- * Brings the rows up to date without rebuilding the table. Rows are places,
- * so they stay put; each row's halves and picks are patched, and
- * each player's half slides from their old place to their new one on its
- * board (FLIP), the Show's and the League's independently. An opened half
- * follows its player to their new place. before() runs once the old places
- * are measured (it may change the hero).
- */
-function patchRows(before) {
-  const d = state.d, rows = $("#rows");
-  const first = new Map([...rows.querySelectorAll(".sd")].map((b) => [`${b.dataset.side}|${b.dataset.p}`, b.getBoundingClientRect().top]));
-  const opened = [...rows.children].filter((r) => r.classList.contains("open"))
-    .map((r) => ({ side: r.dataset.open, p: r.querySelector(`.sd[data-side="${r.dataset.open}"]`)?.dataset.p }));
-  before?.();
-  const fresh = document.createElement("div");
-  fresh.innerHTML = standingsRows(d);
-  [...fresh.children].forEach((n, i) => {
-    const old = rows.children[i];
-    if (!old) return rows.append(n.cloneNode(true));
-    old.classList.toggle("lead", n.classList.contains("lead"));
-    old.querySelector(".pc-head").innerHTML = n.querySelector(".pc-head").innerHTML;
-  });
-  while (rows.children.length > fresh.children.length) rows.lastElementChild.remove();
-  // Opened halves follow their players.
-  const want = new Map();
-  for (const o of opened) {
-    const b = [...rows.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((x) => x.dataset.p === o.p);
-    if (b && !want.has(b.closest(".pc"))) want.set(b.closest(".pc"), o.side);
-  }
-  for (const r of rows.children) if (want.has(r) || r.classList.contains("open")) openRow(r, want.get(r) || null);
-  if (reducedMotion) return;
-  const moving = [];
-  for (const b of rows.querySelectorAll(".sd")) {
-    const was = first.get(`${b.dataset.side}|${b.dataset.p}`);
-    const dy = was == null ? 0 : was - b.getBoundingClientRect().top;
-    if (!dy) continue;
-    b.style.transition = "none";
-    b.style.transform = `translateY(${dy}px)`;
-    moving.push(b);
-  }
-  rows.getBoundingClientRect(); // commit the inverted positions before playing
-  for (const b of moving) {
-    b.style.transition = "transform 1s cubic-bezier(.65, 0, .35, 1)"; // slow and even, so each player can be followed
-    b.style.transform = "";
-    b.addEventListener("transitionend", () => { b.style.transition = ""; }, { once: true });
-  }
-}
-
-$("#p-standings").addEventListener("click", (e) => {
-  const b = e.target.closest("#st-tabs [data-week]");
-  if (b) setWeek(+b.dataset.week);
-});
-
-// Sideways swipes step through the weeks; past the last, on to Episodes.
-edgeNav($("#p-standings"), { prev: () => stWeek(state.d) > 1, next: () => true }, (dir) => {
-  if (dir > 0 && stWeek(state.d) >= state.d.episodes.length) return show("episodes");
-  setWeek(stWeek(state.d) + dir);
-});
+bindSwiper(ST, (dir) => {
+  if (dir > 0) show("episodes");
+}, { prev: false, next: true });
 bindSwiper(EP, (dir) => {
   if (dir < 0) show("standings");
   else { state.cast = 0; show("cast"); }
@@ -449,14 +380,12 @@ function cardLight() {
 const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
 addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); });
+addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); });
 
 addEventListener("hashchange", () => {
   const h = readHash();
   if (h.key !== state.key) loadSeries(h.key);
-  // A new week redraws the table (applyArg alone only sets it).
-  if (h.page === "standings" && +h.arg >= 1) setWeek(+h.arg);
-  else applyArg(h.page, h.arg);
+  applyArg(h.page, h.arg);
   show(h.page);
 });
 
@@ -473,8 +402,6 @@ try {
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);
-  // A link to another week: draw that week (loadSeries drew the latest).
-  if (state.wk !== state.d.weeksScored) { $(".st-hero").innerHTML = standingsHero(state.d); renderRows(); }
   show(h.page);
   initEdit(text, refresh);
 } catch (err) {
