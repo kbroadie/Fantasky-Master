@@ -163,13 +163,11 @@ function pickBackdrop(lf, rf) {
  * leader runs flat along the top, everyone else below, over the race chart's
  * gridlines (tidy steps from niceStep, none at 0), smoothed the same way
  * (`smooth`, monotone). Only the opened player is highlighted: their line in
- * the board's colour with the race chart's end label (the first three
- * letters of their name, then their gap, or their total if they lead); every
- * other player is a very thin, faint line. The x axis runs episode 1 to 10
- * (this week in gold, later ones faint) and tightens only when the label
- * needs the room. The plot is stretched to the row (SVG with
- * preserveAspectRatio none and non-scaling strokes); its labels are HTML so
- * they never stretch. All through the week on show.
+ * the board's colour; every other player is a very thin, faint line. No line
+ * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
+ * later ones faint). The plot is stretched to the row (SVG with
+ * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
+ * are HTML so they never stretch. All through the week on show.
  */
 function journey(d, p, side, w) {
   const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), last = d.episodes.length;
@@ -187,16 +185,11 @@ function journey(d, p, side, w) {
   const lines = upTo > 1 ? svg("jr-others", others.map((q) => `<path d="${smooth(pts(q))}"/>`).join("")) + svg("jr-me", `<path d="${smooth(pts(p))}"/>`)
     // Episode 1, with no lines yet, keeps dots (as the race chart does).
     : upTo ? others.map((q) => `<i class="jr-dot" style="--x:0%;--y:${f(y(gap(q, 1)))}%"></i>`).join("") + `<i class="jr-dot me" style="--x:0%;--y:${f(y(gap(p, 1)))}%"></i>` : "";
-  // The end label: the name's first three letters, then the gap (the total if they lead).
   const g = upTo ? gap(p, upTo) : 0;
-  const label = upTo ? `<span class="jr-lbl" style="--x:${f(x(upTo))}%;--y:${f(y(g))}%"><b>${esc(p.name.slice(0, 3))}</b><em>${g ? `−${-g}` : total(p, upTo)}</em></span>` : "";
   const axis = d.episodes.map(({ ep }) => `<span class="${ep === upTo ? "now" : ep > upTo ? "later" : ""}" style="--x:${f(x(ep))}%">${ep}</span>`).join("");
-  // Like the race chart, the axis only tightens (to make room for the label on
-  // the right) once this episode's point would leave too little.
-  const room = upTo > 1 ? `width:min(100%, calc((100% - var(--lbl)) * ${f((last - 1) / (upTo - 1))}))` : "";
   const board = k === "show" ? "Show" : "League";
   const say = upTo ? `${p.name}: ${g ? `${-g} ${board} points behind the leader` : `leads the ${board} on ${total(p, upTo)}`} after episode ${upTo}, ${ord(p.history[upTo - 1][`${k}Rank`])}` : `${p.name}: no episodes scored yet`;
   return `<div class="jr ${k}" role="img" aria-label="${esc(say)}">
-    <div class="jr-plot">${grid}<div class="jr-in" style="${room}">${lines}${label}<div class="jr-ax" aria-hidden="true">${axis}</div></div></div>
+    <div class="jr-plot">${grid}${lines}<div class="jr-ax" aria-hidden="true">${axis}</div></div>
   </div>`;
 }

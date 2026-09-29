@@ -453,10 +453,9 @@ strong { color: var(--t1); font-weight: 700; }
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
 /* An opened half: the race chart ("The race so far") for the opened board,
    full width, only the opened player highlighted (journey in table.js). */
-.jr { --c: var(--show-hi); --lbl: 76px; padding: 14px 16px 10px 12px; }
+.jr { --c: var(--show-hi); padding: 14px 16px 10px; }
 .jr.league { --c: var(--league-hi); }
 .jr-plot { position: relative; height: 112px; margin-bottom: 22px; }
-.jr-in { position: absolute; inset: 0 auto 0 0; width: 100%; }
 .jr-grid { position: absolute; left: 0; right: 0; top: var(--y); border-top: 1px solid rgba(255, 255, 255, .08); }
 .jr-lines { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
 .jr-lines path { fill: none; stroke-linejoin: round; stroke-linecap: round; vector-effect: non-scaling-stroke; }
@@ -464,10 +463,6 @@ strong { color: var(--t1); font-weight: 700; }
 .jr .jr-me path { stroke: var(--c); stroke-width: 2; }
 .jr-dot { position: absolute; left: var(--x); top: var(--y); width: 5px; height: 5px; margin: -2.5px; border-radius: 50%; background: rgba(255, 255, 255, .32); }
 .jr-dot.me { width: 10px; height: 10px; margin: -5px; background: var(--c); }
-/* The end label, as the race chart's: DM Mono caps name in the line's colour, then the figure. */
-.jr-lbl { position: absolute; left: calc(var(--x) + 14px); top: var(--y); transform: translateY(-50%); display: flex; align-items: baseline; gap: 6px; white-space: nowrap; text-shadow: 0 0 3px rgba(0, 0, 0, .9), 0 1px 3px rgba(0, 0, 0, .9); }
-.jr-lbl b { font: 500 12px/14px var(--fm); letter-spacing: .08em; text-transform: uppercase; color: var(--c); }
-.jr-lbl em { font: 800 12px/14px var(--ff); font-style: normal; color: var(--t2); font-variant-numeric: tabular-nums; }
 .jr-ax { position: absolute; left: 0; right: 0; top: calc(100% + 8px); height: 13px; }
 .jr-ax span { position: absolute; left: var(--x); transform: translateX(-50%); font: 400 11px/13px var(--fm); color: var(--t4); }
 .jr-ax span.now { color: var(--gold2); }
@@ -476,8 +471,7 @@ strong { color: var(--t1); font-weight: 700; }
 @keyframes jr-fade { from { opacity: 0; } }
 .pc.open .jr-me { animation: jr-draw .8s var(--ease) both; } /* drawn in left to right (a dash would break on the stretched SVG) */
 .pc.open .jr-others, .pc.open .jr-dot { animation: jr-fade .6s var(--ease) both; }
-.pc.open .jr-lbl { animation: jr-fade .35s var(--ease) .6s both; }
-@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others, .pc.open .jr-dot, .pc.open .jr-lbl { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others, .pc.open .jr-dot { animation: none; } }
 .pk { text-align: center; min-width: 0; }
 .pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }
