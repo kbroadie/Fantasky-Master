@@ -451,11 +451,11 @@ strong { color: var(--t1); font-weight: 700; }
    picks strip, not inside the blurred backdrop layer, so opening a row
    doesn't redraw that layer. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
-/* An opened half's cards (on request): always five rows tall (5 × --head),
-   scrolling inside if they ever need more, with the bottom fading so it
-   reads as more below. */
-.xp { height: calc(5 * var(--head)); overflow-y: auto; overscroll-behavior: contain; padding: 10px 10px 16px;
-  -webkit-mask-image: linear-gradient(#000 calc(100% - 16px), transparent); mask-image: linear-gradient(#000 calc(100% - 16px), transparent); }
+/* An opened half's card (on request): always five rows tall (5 × --head).
+   Not a scroll box: the card always fits (229px), and a box that scrolled
+   itself (with overscroll-behavior: contain) swallowed vertical swipes, so
+   the page couldn't be scrolled from an opened row (fixed on request). */
+.xp { height: calc(5 * var(--head)); overflow: hidden; padding: 10px 10px 16px; }
 .xp .card { margin: 0 0 10px; }
 .xp .card:last-child { margin-bottom: 0; }
 .xp .bars { --plot: 140px; } /* the one card fills the five rows */
