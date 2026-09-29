@@ -149,10 +149,10 @@ export function rowMore(d, name, side) {
 /**
  * An opened Show half: the Cast tab's Points per episode card, for the
  * player's picks. Each bar is the Show points their pick scored that
- * episode, in the pick's colour (a gold number for a pick that won, no
- * crown), with the pick's first three letters under it, above the episode
- * number, on the same scale as the Cast tab, with the median of every
- * player's weekly Show points. Through the week on show.
+ * episode, in the pick's colour (a gold number for a pick that won), with
+ * the pick's first three letters under it, above the episode number, on the
+ * same scale as the Cast tab, with the median of every player's weekly Show
+ * points. Through the week on show.
  */
 function showCards(d, p, w) {
   const upTo = Math.min(w, d.weeksScored);
@@ -163,7 +163,7 @@ function showCards(d, p, w) {
     if (!x || ep > upTo) return null;
     return { v: x.pick ? x.show : 0, won: !!x.won, color: x.pick ? d.cast[x.pick].color : "var(--t4)", tag: x.pick ? x.pick.slice(0, 3) : "–" };
   };
-  return barsCard(d, at, max, median(all), "var(--show-hi)", false);
+  return barsCard(d, at, max, median(all), "var(--show-hi)");
 }
 
 /**
