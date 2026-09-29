@@ -246,14 +246,13 @@ strong { color: var(--t1); font-weight: 700; }
    3… in order, never moving), set apart on a darker strip with a gold
    hairline, then the Show's player at that place and the League's, each as
    name then points. Nothing sorts:
-   each board is already in its own order. With cast photos (Series 21, 22)
-   each half sits over its player's pick that week (.pc-bg). */
+   each board is already in its own order. */
 /* Tracks: the place strip (--rk, flush to the card's edge, the number
    centred in it), then two equal halves, each padded --pad on both sides
    (so every name starts --pad after a rule and every score ends --pad before
    the next rule or the card's edge), a name and right-aligned points (--sc)
    with --g between. --pe is the head's side padding, now 0: the strip and the
-   League's half run to the card's edges (the photo geometry reads both). */
+   League's half run to the card's edges. */
 .board { --pe: 0px; --rk: 32px; --pad: 11px; --sc: 34px; --g: 6px; }
 /* The head lines up with the rows: the place column's strip, then the Show's
    half over the left half and the League's over the right. */
@@ -283,16 +282,16 @@ strong { color: var(--t1); font-weight: 700; }
 .st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-gold); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 
-/* Rows are not compositing layers of their own: with one per row (plus each
-   backdrop's), iOS ran short of layer memory and dropped rows' text after
-   scrolling. The backdrop clips itself to the row instead (below). */
+/* Rows are not compositing layers of their own: with one per row, iOS ran
+   short of layer memory and dropped rows' text after scrolling. */
 .pc { --head: 52px; position: relative; border-bottom: 1px solid var(--b-gold); background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .pc.lead { background: linear-gradient(170deg, rgba(184, 128, 24, .10), var(--s1) 55%); }
-/* Rows don't clip (the backdrop clips itself, below), so a half can slide
-   across other rows to its player's new place when the week changes. */
+/* Rows don't clip, so a half can slide across other rows to its player's
+   new place when the week changes. */
 /* One line of text a row, on one baseline: the place number, names and
    points line up by baseline (not box centres, which sat the points 2px low). */
 .pc-head { display: grid; grid-template-columns: var(--rk) minmax(0, 1fr) minmax(0, 1fr); align-items: baseline; height: var(--head); padding-inline: var(--pe); }
+.pc-head, .pc-more { position: relative; z-index: 1; } /* over the place strip (.pc::after); the column rule is measured from the head */
 /* Column rules, like the row rules (1px, --b-gold), on request: the place
    column's edge (its strip, .pc::after) and this one between the Show and
    the League (the halves' line: the middle plus half the place column), down
@@ -313,8 +312,7 @@ strong { color: var(--t1); font-weight: 700; }
 .board.focus .pc[data-open="show"] .sd.l, .board.focus .pc[data-open="league"] .sd.r { background-color: transparent; }
 .board.focus .pc[data-open="show"] .sd.l > *, .board.focus .pc[data-open="league"] .sd.r > * { opacity: 1; }
 /* The place column's strip: darker, with a gold hairline on its right, down
-   the row's head (the opened picks run full width under it). It's painted
-   over the row's backdrop and under its text. */
+   the row's head (the opened picks run full width under it), under its text. */
 .pc::after {
   content: ""; position: absolute; left: 0; top: 0; z-index: 0; width: calc(var(--pe) + var(--rk)); height: var(--head); pointer-events: none;
   background: rgba(10, 8, 10, .45); box-shadow: inset -1px 0 0 var(--b-gold);
@@ -344,112 +342,14 @@ strong { color: var(--t1); font-weight: 700; }
 .t2 { color: var(--silver) !important; }
 .t3 { color: var(--bronze) !important; }
 
-/* The week's pick as the row's backdrop: their face from the group photo,
-   behind the whole row card (head and expanded picks). Every face is drawn
-   the same size: the photo's width (--W) makes their head --face across
-   (--size is the head's size as a fraction of the photo's width, from
-   heroes.js), and is never less than it takes to span the row edge to edge. The eyes (--ex/--ey)
-   sit on the head line's centre (--head / 2) and at --tx across, the gap
-   between the name and Show. Anchored to the top, so opening the row only
-   uncovers more of the face below. */
-.pc-head, .pc-more { position: relative; z-index: 1; }
-/* The backdrop bleeds --bleed past every side of the row (.pc clips it), so
-   the frosted blur only ever samples photo and shade, never the transparent
-   edge that would glow. Positions inside are measured from the bled box, so
-   the row's own top is at --bleed; horizontally the bleed is symmetric, so
-   50cqw is still the row's centre. */
-/* Its height is fixed (taller than any opened row, which is at most ~200px),
-   so opening a row only uncovers more of it: the backdrop's layer is never
-   resized, and so never redrawn, while the row grows. */
-.pc-bg { --bleed: 24px; position: absolute; top: calc(-1 * var(--bleed)); left: calc(-1 * var(--bleed)); right: calc(-1 * var(--bleed)); height: calc(var(--head) + 200px + 2 * var(--bleed)); z-index: 0; pointer-events: none; --face: 83px; }
-/* Two photos: the Show player's pick on the left and the League player's on
-   the right, not blended (on request): each is its own box (a query
-   container) that ends at the line between the halves (the backdrop's middle
-   plus half the place column), so they meet at that line, softened only by
-   the frost. Each face's eyes sit in the middle of its half (--tx, in its
-   own box's units, worked back from the row's width, the bleeds, --pe and
-   --rk). */
-.pf { position: absolute; top: 0; bottom: 0; overflow: hidden; container-type: inline-size; }
-.pf.l { left: 0; width: calc(50% + var(--rk) / 2); --tx: calc(12px + var(--pe) / 2 + var(--rk) / 2 + 50cqw); }
-.pf.r { left: calc(50% + var(--rk) / 2); right: 0; --tx: calc(50cqw - 12px - var(--pe) / 2); }
-.pc-bg img, .pc-bg .edge {
-  /* Head --face across, and at least wide enough to span the row, unless
-     --cap limits how far that can enlarge the head (Patatas: a narrow photo
-     with an off-centre face). The face's --ex/--ey/--size/--ar are on its .pf. */
-  --W: max(var(--face) / var(--size), min(max(var(--tx) / var(--ex) + 2px, (100cqw - var(--tx)) / (1 - var(--ex)) + 2px), var(--cap, 99) * var(--face) / var(--size)));
-  position: absolute; left: calc(var(--tx) - var(--ex) * var(--W)); width: var(--W);
-}
-.pc-bg img {
-  max-width: none; height: auto; top: calc(var(--bleed) + var(--head) / 2 - var(--ey) * var(--W) / var(--ar));
-  transform: translateY(var(--py, 0px)); /* scroll parallax, set in main.js */
-}
-/* A capped photo that doesn't span the row fades into it at both edges. */
-.pc-bg .edge { top: 0; bottom: 0; background: linear-gradient(90deg, var(--s1), transparent 48px, transparent calc(100% - 48px), var(--s1)); }
-/* Reshade: darker at the edges (places, points) and down the middle,
-   clear over each half's eyes;
-   the dimming behind the picks is on .pc-more, outside this layer.
-   The photo and its shade are one compositing layer (.pc-bg is isolated;
-   the image has no filter, will-change or 3D transform of its own). As
-   separate layers, iOS Safari could draw the photo unshaded for a frame
-   while the top bar resized, flashing the white pillars. */
-.pc-bg { isolation: isolate; }
-/* Frosted glass over the photo, the same for every row, and it stays frosted
-   (an opened half is sharpened by a copy over it, below). The filter is on
-   the whole backdrop, photo and shading together. The backdrop is its own
-   compositing layer for good (will-change), so nothing is promoted or
-   dropped around it: that switch between drawing paths is what made the
-   colours jump on iOS. It clips to its bled box (overflow), so the layer is
-   only the row plus the bleed, never the whole oversized photo. */
-.pc-bg { overflow: hidden; will-change: filter; filter: blur(6px); transition: clip-path .3s var(--ease); }
-/* The backdrop trims itself to its row: a clip on its own layer, applied
-   after the blur, so the bleed and the part below a closed row never show
-   outside it (the row's overflow alone didn't clip it on iOS, which showed as
-   a dark glow). Opening the row lowers the clip with the expand, to the
-   opened height (--open-h, measured in main.js). */
-.pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head)) var(--bleed)); }
-.pc.open .pc-bg { clip-path: inset(var(--bleed) var(--bleed) calc(100% - var(--bleed) - var(--head) - var(--open-h, 200px)) var(--bleed)); }
-/* Opening a half sharpens an L (on request): that player's half of the row
-   and the picks below, while the other player's half stays frosted. A sharp
-   copy of the backdrop (.sharp, made by sharpen in main.js, only while the
-   row is open) fades in over the frosted one, clipped to the L. Its inside
-   edge is the line between the halves (--X: the backdrop's middle plus half
-   the place column). It holds only the opened player's pick (on request: an
-   opened row shows one cast member): the same box, size and place as in
-   their half, so it comes into focus without moving, but free to run on
-   across the row, its edges fading into the row's colour where it ends. */
-.pc .pc-bg.sharp {
-  --X: calc(50% + var(--rk) / 2); --M: calc(var(--bleed) + var(--head)); --B: calc(var(--bleed) + var(--head) + var(--open-h, 200px)); --R: calc(100% - var(--bleed));
-  filter: none; will-change: opacity; opacity: 0;
-  clip-path: polygon(var(--bleed) var(--bleed), var(--X) var(--bleed), var(--X) var(--M), var(--R) var(--M), var(--R) var(--B), var(--bleed) var(--B));
-  transition: opacity .35s var(--ease), clip-path .35s var(--ease);
-}
-.pc .pc-bg.sharp[data-side="league"] { clip-path: polygon(var(--bleed) var(--M), var(--X) var(--M), var(--X) var(--bleed), var(--R) var(--bleed), var(--R) var(--B), var(--bleed) var(--B)); }
-.pc .pc-bg.sharp.on { opacity: 1; }
-.pc .pc-bg.sharp { background: var(--s1); }
-.pc-bg.sharp .pf { overflow: visible; }
-.pc-bg.sharp img {
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent);
-}
-.pc-bg::after {
-  content: ""; position: absolute; inset: 0;
-  /* Stops are placed on the row (--r: a percentage of the row's width, past
-     the bleed); the ends carry on flat through the bleed. */
-  --r: calc(100% - 2 * var(--bleed));
-  background:
-    linear-gradient(rgba(0, 0, 0, .2), rgba(0, 0, 0, .2)),
-    linear-gradient(90deg, rgba(16, 13, 16, .82) var(--bleed), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .17), rgba(16, 13, 16, .34) calc(var(--bleed) + var(--r) * .31), rgba(16, 13, 16, .6) calc(var(--bleed) + var(--r) * .45), rgba(16, 13, 16, .66) calc(var(--bleed) + var(--r) * .53), rgba(16, 13, 16, .56) calc(var(--bleed) + var(--r) * .61), rgba(16, 13, 16, .3) calc(var(--bleed) + var(--r) * .75), rgba(16, 13, 16, .62) calc(var(--bleed) + var(--r) * .88), rgba(16, 13, 16, .8) calc(var(--bleed) + var(--r)));
-}
 .pk b { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 .pc-name, .pc-num, .pc-rank { text-shadow: 0 1px 3px rgba(0, 0, 0, .8); }
 
-/* Tap to open: ten weekly picks */
+/* Tap a half to open its card under the row */
 .pc-more { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--ease); }
 .pc.open .pc-more { grid-template-rows: 1fr; }
 .pc-more > div { overflow: hidden; min-height: 0; }
-/* The dimming behind the picks, for contrast. It's painted here, on the
-   picks strip, not inside the blurred backdrop layer, so opening a row
-   doesn't redraw that layer. */
+/* A slightly darker bed behind an opened row's card. */
 .pc-more > div { background: linear-gradient(180deg, transparent, rgba(16, 13, 16, .5) 24px); }
 /* An opened half's card (on request): always five rows tall (5 × --head).
    Not a scroll box: the card always fits (229px), and a box that scrolled
@@ -492,11 +392,8 @@ strong { color: var(--t1); font-weight: 700; }
 .pc.open .jr-others, .pc.open .jr-dot { animation: jr-fade .6s var(--ease) both; }
 @media (prefers-reduced-motion: reduce) { .pc.open .jr-me, .pc.open .jr-others, .pc.open .jr-dot { animation: none; } }
 .pk { text-align: center; min-width: 0; }
-.pk small { display: block; font-family: var(--fm); font-size: 11px; color: var(--t4); margin-bottom: 3px; }
 .pk .fp { width: 100%; }
 .pk b { display: block; font-size: clamp(11px, 3vw, 13px); font-weight: 800; margin-top: 3px; min-height: 1em; }
-.pk.won b { color: var(--gold3); }
-.pk.won .fp { filter: drop-shadow(0 0 4px var(--gold3)); }
 .pk-blank { display: flex; align-items: center; justify-content: center; aspect-ratio: 225 / 266; border: 1px dashed var(--b-gold); border-radius: 4px; color: var(--t4); font-size: 11px; }
 
 
@@ -677,8 +574,8 @@ strong { color: var(--t1); font-weight: 700; }
 .profile dl { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; margin: 0 14px; padding: 12px 0 14px; border-top: 1px solid var(--b-dim); }
 /* With a group photo, their face sits behind the Profile, offset right:
    head --face across, eyes at (--fx, --fy). The bio narrows to the left of the
-   face; the facts sit below on the darker lower part. One layer, like the
-   Standings backdrops (no filter or will-change on the image). */
+   face; the facts sit below on the darker lower part. The photo and its shade
+   rasterise as one layer (no filter or will-change on the image). */
 .profile.has-face { position: relative; isolation: isolate; }
 .pf-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; container-type: inline-size; --face: clamp(86px, 28cqw, 126px); --fx: 76cqw; --fy: 104px; }
 .pf-bg img {
@@ -853,7 +750,6 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
   .board { --rk: 46px; --pad: 18px; --sc: 44px; --g: 10px; }
   .tt th:not(:first-child) { width: 56px; }
   .tt th:last-child { width: 62px; }
-  .pc-bg { --face: 106px; }
   .bars { --plot: 126px; }
 }
 @media (min-width: 760px) {

@@ -77,7 +77,6 @@ export function buildSeries(records) {
           title: /^Episode \d+$/i.test(r.title) || !r.title ? null : r.title,
           date: isoDate(r.air_date),
           tb: r.tiebreak_winner || undefined,
-          analysis: r.analysis || "",
         });
         break;
       case "score": {
@@ -126,8 +125,4 @@ export async function loadText() {
   const res = await fetch(CSV_URL, { cache: "no-cache" });
   if (!res.ok) throw new Error(`Couldn't load league data (${res.status})`);
   return res.text();
-}
-
-export async function loadData() {
-  return buildSeries(parseCSV(await loadText()));
 }

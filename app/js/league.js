@@ -123,7 +123,6 @@ export function derive(raw, now = new Date()) {
   const history = Array.from({ length: weeksScored }, (_, i) => boardsAsOf(i + 1));
   const cur = weeksScored ? history.at(-1) : boardsAsOf(0);
   const prev = weeksScored > 1 ? history.at(-2) : cur;
-  const topScore = (e) => Math.max(...names.map((n) => EPS[n][e]));
 
   const players = active.map((p) => {
     const weeks = [];
@@ -134,9 +133,7 @@ export function derive(raw, now = new Date()) {
         ep: e, pick: c, scored,
         show: c && scored ? EPS[c][e] : null,
         league: c && scored ? rankPts[e][c] : null,
-        place: c && scored ? placing[e][c] : null,
         won: !!(c && scored && winners[e].winner === c),
-        missed: scored ? topScore(e) - (c ? EPS[c][e] : 0) : null,
       });
     }
     const played = weeks.filter((w) => w.show != null);
@@ -148,11 +145,9 @@ export function derive(raw, now = new Date()) {
       showDelta: prev.showRank.get(p) - cur.showRank.get(p),
       leagueDelta: prev.leagueRank.get(p) - cur.leagueRank.get(p),
       history: history.map((h) => ({ show: h.show[p], league: h.league[p], showRank: h.showRank.get(p), leagueRank: h.leagueRank.get(p) })),
-      played: played.length,
       hits: played.filter((w) => w.won).length,
       best: byShow[0] || null,
       worst: byShow.at(-1) || null,
-      missed: weeks.reduce((a, w) => a + (w.missed ?? 0), 0),
       status: pickStatus(names, weeks.filter((w) => w.ep <= weeksScored).map((w) => w.pick), weeksScored),
     };
   });
@@ -166,7 +161,6 @@ export function derive(raw, now = new Date()) {
     for (const p of voters) by[p.weeks[e - 1].pick].push(p.name);
     weekly[e] = {
       voters: voters.length,
-      avgShow: voters.length ? voters.reduce((a, p) => a + p.weeks[e - 1].show, 0) / voters.length : 0,
       by,
       hits: by[winners[e].winner],
     };
@@ -180,8 +174,6 @@ export function derive(raw, now = new Date()) {
   const seriesRank = rankWithTies(order, (n) => seriesTotal[n]);
   const contestants = names.map((n) => {
     const eps = EPS[n].slice(1, weeksScored + 1);
-    const i = idx[n];
-    const scores = raw.tasks.map((t) => t.s[i]);
     return {
       ...cast[n], key: n,
       total: seriesTotal[n],
@@ -193,10 +185,6 @@ export function derive(raw, now = new Date()) {
       best: eps.length ? Math.max(...eps) : 0,
       worst: eps.length ? Math.min(...eps) : 0,
       wins: Object.values(winners).filter((w) => w.winner === n).length,
-      fives: scores.filter((s) => s >= 5).length,
-      zeros: scores.filter((s) => s === 0).length,
-      pickedBy: active.reduce((a, p) => a + (raw.picks[p] || []).slice(0, weeksScored).filter((c) => c === n).length, 0),
-      deliveredTo: players.reduce((a, p) => a + p.weeks.filter((w) => w.pick === n && w.show != null).reduce((x, w) => x + w.show, 0), 0),
     };
   });
 

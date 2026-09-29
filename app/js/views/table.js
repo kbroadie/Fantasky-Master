@@ -4,7 +4,6 @@
 // each over their pick that week. A week not yet scored is "Episode 5 Picks":
 // the boards as they stand now. Tapping a player opens their ten weekly picks.
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
-import { GROUP, faceFor, NO_PICK } from "../heroes.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
 
@@ -82,11 +81,6 @@ export function standingsHero(d) {
   return `${kicker}<h2 class="ep-title">${w > d.weeksScored ? `Episode ${w} Picks` : `Episode ${w} Standings`}</h2><p class="st-leaders">${leaderLine(d, atWeek(d, w), w)}</p>${how}`;
 }
 
-/** Series with a group photo show the week's pick as each row's backdrop.
- *  Off for now (on request); set ROW_PHOTOS to bring them back. */
-const ROW_PHOTOS = false;
-const heroRows = () => ROW_PHOTOS && !!GROUP[state.key]?.faces;
-
 /** Ep 1–10, like the episode strip; weeks not yet scored are faint. */
 export const weekTabs = (d) => d.episodes.map(({ ep }) =>
   `<button class="strip-tab${ep > d.weeksScored ? " tbd" : ""}" data-week="${ep}">Ep ${ep}</button>`).join("");
@@ -122,23 +116,15 @@ export function standingsRows(d) {
   };
   return show.map((l, i) => {
     const r = league[i];
-    const bg = heroRows() ? pickBackdrop(faceOf(l, w), faceOf(r, w)) : "";
     return `
     <div class="pc${l.showRank === 1 || r.leagueRank === 1 ? " lead" : ""}">
-      ${bg}
       <div class="pc-head"><span class="pc-rank"><b class="${tier(i + 1)}">${i + 1}</b></span>${half(l, "show")}${half(r, "league")}</div>
       <div class="pc-more"><div></div></div>
     </div>`;
   }).join("");
 }
 
-/** A player's pick that week, or Patatas if they didn't pick (or it isn't in yet). */
-function faceOf(p, w) {
-  const now = p.weeks[w - 1];
-  return now?.pick ? faceFor(state.key, now.pick) : NO_PICK;
-}
-
-/** What an opened half shows: the player's ten picks (their chooser in edit mode). */
+/** What an opened half shows: the player's points or race card (their pick chooser in edit mode). */
 export function rowMore(d, name, side) {
   const w = stWeek(d), p = atWeek(d, w).find((x) => x.name === name);
   if (!p) return "";
@@ -235,16 +221,3 @@ function journey(d, p, side, w) {
   </div>`;
 }
 
-/**
- * The row's backdrop: both players' picks, the Show's on the left and the
- * League's on the right, each cropped from their photo and scaled so every
- * head is the same size, with the eyes on the centre line of the row's top
- * line and in the middle of their half. The left photo cross-fades into the
- * right one across the middle of the row (.pf.r's mask). It covers the whole
- * row, so opening the row just uncovers more of the photos below; nothing
- * moves. Frosted (.pc-bg) until the row opens.
- */
-function pickBackdrop(lf, rf) {
-  const face = (f, side) => `<span class="pf ${side}" style="--ex:${f.ex};--ey:${f.ey};--size:${f.head};--ar:${f.ratio}${f.cap ? `;--cap:${f.cap}` : ""}"><img src="${f.src}" alt="" decoding="async">${f.cap ? `<i class="edge"></i>` : ""}</span>`;
-  return `<span class="pc-bg" aria-hidden="true">${face(lf, "l")}${face(rf, "r")}</span>`;
-}
