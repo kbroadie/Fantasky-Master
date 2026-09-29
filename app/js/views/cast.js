@@ -41,8 +41,8 @@ export function barsCard(d, at, max, med, color, title = "Points per episode") {
     const x = at(e.ep);
     if (x?.tag) tagged = true;
     // Not scored yet (or after the week on show): no bar, but a pick already made shows its letters.
-    if (!x || x.tbd) return `<div class="bar tbd"${x?.color ? ` style="--c:${x.color}"` : ""}><i></i>${x?.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
-    return `<div class="bar${x.won ? " won" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
+    if (!x || x.tbd) return `<div class="bar tbd${x?.dim ? " dim" : ""}"${x?.color ? ` style="--c:${x.color}"` : ""}><i></i>${x?.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
+    return `<div class="bar${x.won ? " won" : ""}${x.dim ? " dim" : ""}" style="--f:${f(x.v)}${x.color ? `;--c:${x.color}` : ""}"><i></i><b>${x.v}</b>${x.tag ? `<em>${esc(x.tag)}</em>` : ""}<small>${e.ep}</small></div>`;
   }).join("");
   const medText = med == null ? "" : Number.isInteger(med) ? med : med.toFixed(1);
   const medLine = med == null ? "" : `<div class="bar-med" style="--f:${f(med)}" aria-hidden="true"></div>`;
