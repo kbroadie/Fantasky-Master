@@ -2,7 +2,7 @@
 
 Fantasy league for the TV show *Taskmaster*. Players pick one contestant per episode and score Show points (the contestant's score) and League points (5-4-3-2-1 by finishing place). Rules: `README.md`. Every calculation: `FANTASKY_MASTER_EXPLAINED.md`.
 
-- **Live app:** https://kbroadie.github.io/fantasky-master/ (GitHub Pages serves `main` as-is). The repo is `kbroadie/fantasky-master`, lower case by convention (on request; it was `Fantasky-Master`, and Pages paths are case-sensitive): a small repo still named `Fantasky-Master` forwards the old address, keeping the route. The app is the site's root (promoted on request; it used to live in `app/`, and the old single-file site it replaced is only in git history: don't build on it). `app/index.html` is just a redirect to the root that keeps the route, so old `…/app/#/22/…` links and home-screen bookmarks still work.
+- **Live app:** https://kbroadie.github.io/fantasky-master/ (GitHub Pages serves `main` as-is). The repo is `kbroadie/fantasky-master`, lower case by convention (renamed on request from `Fantasky-Master`; Pages paths are case-sensitive, and the old addresses weren't kept, as they'd never been shared). The app is the site's root (promoted on request; it used to live in `app/`, and the old single-file site it replaced is only in git history: don't build on it).
 
 ## Layout
 
@@ -22,7 +22,6 @@ js/alltime.js                   loads taskmaster_stats.csv: the radar baseline, 
 js/edit.js                      edit mode: picks and scores entered on the page, saved to the CSV through the GitHub API
 js/wiki.js                      reads an episode's scores from the Taskmaster Wiki's API (for edit mode)
 js/checks.js                    the CSV's rules, shared by check-data and edit mode (which checks before saving)
-app/index.html                  redirect: the app moved from /app/ to the root (keeps the #route)
 APP.md                          the app's own notes (data, edit mode, layout)
 tools/check-data.mjs            validates the CSV (checks.js) + worked-example regression + cross-check against the stats (no deps)
 tools/import-stats.mjs          regenerates taskmaster_stats.csv from the all-time stats Google Sheet
