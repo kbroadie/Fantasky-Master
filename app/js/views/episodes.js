@@ -53,10 +53,13 @@ function slide(d, e) {
 
   const order = seated(d);
   const col = order.map((n) => d.idx[n]);
-  // Last place (sharing it counts) gets the stink; the winner gets the gold
-  // light. Both effects are drawn by podium-fx.js.
-  const bottom = Math.max(...d.names.map((n) => d.placing[e.ep][n]));
-  const isLast = (n) => n !== w.winner && d.placing[e.ep][n] === bottom;
+  // Last place gets the stink only when they lost by 5 points or more: at
+  // least 5 behind the next-lowest score (sharing last place counts, and
+  // all of them get it). The winner gets the gold light. Both effects are
+  // drawn by podium-fx.js.
+  const low = Math.min(...d.names.map(pts));
+  const above = Math.min(...d.names.map(pts).filter((v) => v > low));
+  const isLast = (n) => n !== w.winner && pts(n) === low && Number.isFinite(above) && above - low >= 5;
 
   const pod = order.map((n) => {
     const backers = wk.by[n].length, win = n === w.winner, last = isLast(n);
