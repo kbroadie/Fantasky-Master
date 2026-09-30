@@ -15,7 +15,7 @@ js/main.js                      renders all pages at load, tabs, swipers, the St
 js/ui.js                        shared helpers ($, esc, ord, framed…) and `state`
 js/views/{table,episodes,cast}.js       one file per tab (Standings, Episodes, Cast); each returns HTML strings
 js/podium-fx.js                 canvas effects on episode podiums (winner's gold light, last place's stink gas), and the gold light on the first-place Cast header
-js/heroes.js                    presentation only: each series' cast photos (a group photo, or a hero photo per contestant), and each contestant's eyes and head size in them (the Cast profile's face)
+js/heroes.js                    presentation only: each contestant's profile photo (an Imgur hero photo, or a crop of the group photo in img/), and each contestant's eyes and head size in them (the Cast profile's face)
 js/league.js                    pure scoring engine (derive) — must match the systems doc
 js/csv.js                       CSV → series objects
 js/alltime.js                   loads taskmaster_stats.csv: the radar baseline, all-time record badges, profile facts
@@ -105,6 +105,7 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - Use tabular figures for numbers.
 - **Terms:** use **Show** and **League** points, as in README.md.
 - **Imgur images:** the page sets `referrer: no-referrer` because Imgur blocks some referrers. Portraits load as `…m.webp`.
+- **Profile faces** (`heroes.js`): each is a photo of a few megapixels at most (Series 21: each contestant's own Imgur hero photo; Series 22: crops of the cast's group photo kept in `img/s22/`, 8 head-widths left of the eyes, 4 right, 3 above and 8 below). The profile scales the photo up so the head is `--face` across; the whole 20.6-megapixel group photo came out ~3,200px wide and iPhone Safari (and sometimes Chrome) never drew it (fixed on request). Crop any new group photo the same way.
 
 ## Commands
 
