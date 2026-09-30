@@ -265,12 +265,20 @@ function openRow(row, side) {
     row.querySelector(".pc-more > div").innerHTML = rowMore(state.d, name, side, +row.closest(".st-slide").dataset.week);
     row.dataset.open = side;
     row.dataset.view = state.xpView;
+    placeLine(row);
   } else delete row.dataset.open;
   row.classList.toggle("open", !!side);
   for (const b of row.querySelectorAll(".sd")) b.setAttribute("aria-expanded", b.dataset.side === side);
   // While anything is open, every other cell steps back.
   const board = row.closest(".card.board");
   board?.classList.toggle("focus", !!board.querySelector(".pc.open"));
+}
+/** Where the opened half's chevron sits (--cx, from the row's left): its line grows from there and keeps its notch there. */
+function placeLine(row) {
+  const chev = row.querySelector(`.sd[data-side="${row.dataset.open}"] .chev`);
+  if (!chev) return;
+  const c = chev.getBoundingClientRect();
+  row.style.setProperty("--cx", `${(c.left + c.width / 2 - row.getBoundingClientRect().left).toFixed(1)}px`);
 }
 /** Bring a week's slide in line with state.open: that player's half open if it's this week, nothing else. */
 function syncOpen(slide) {
@@ -390,7 +398,7 @@ function cardLight() {
 const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
 addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); });
+addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); for (const r of $$("#st-body .pc.open")) placeLine(r); });
 
 addEventListener("hashchange", () => {
   const h = readHash();

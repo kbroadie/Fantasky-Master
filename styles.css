@@ -356,16 +356,30 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* The chevron after each name: the only sign a cell opens, so it stays, but
    quiet (refined on request): a drawn chevron with round caps and joins, 9 ×
    5.5px on a 1.5px stroke, in --t4, centred on the lowercase letters rather
-   than the line box (1px down). Opened, it turns over and takes its board's
-   colour, red for the Show and blue for the League, so the open state reads
-   at a glance. */
+   than the line box (1px down). Opened, it becomes the line under its row
+   (on request): it flattens and drops into the gap below, where a line in
+   its board's colour (red Show, blue League) grows out from under it across
+   both columns, keeping a notch where the chevron was, so the card below
+   reads as that player's. */
 .chev {
   flex: none; width: 9px; height: 5.5px; margin-left: 6px; overflow: visible;
   fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
-  color: var(--t4); transform: translateY(1px); transition: transform .3s var(--ease), color .3s var(--ease);
+  color: var(--t4); transform: translateY(1px); transition: transform .22s var(--ease), color .22s var(--ease), opacity .22s var(--ease);
 }
-.pc[data-open="show"] .sd.l .chev { color: var(--show-hi); transform: translateY(1px) rotate(180deg); }
-.pc[data-open="league"] .sd.r .chev { color: var(--league-hi); transform: translateY(1px) rotate(180deg); }
+.pc[data-open="show"] .sd.l .chev { color: var(--show-hi); }
+.pc[data-open="league"] .sd.r .chev { color: var(--league-hi); }
+.pc[data-open="show"] .sd.l .chev, .pc[data-open="league"] .sd.r .chev { opacity: 0; transform: translateY(20px) scale(1.6, 0); }
+/* The line (::before) spans both columns, from the place strip to the edge,
+   on the seam between the row's head and its card; the notch (::after)
+   points up at where the chevron was (--cx, measured in placeLine). */
+.pc-more::before, .pc-more::after { content: ""; position: absolute; pointer-events: none; opacity: 0; transition: opacity .2s var(--ease); }
+.pc-more::before { top: -1px; left: var(--rk); right: 0; height: 2px; transform: scaleX(0); transform-origin: calc(var(--cx, 50%) - var(--rk)) 50%; transition: transform .32s var(--ease) .08s, opacity .12s var(--ease) .08s, background-color .3s var(--ease); }
+.pc-more::after { top: -7px; left: var(--cx, 50%); width: 12px; height: 6px; margin-left: -6px; clip-path: polygon(50% 0, 100% 100%, 0 100%); transition: opacity .2s var(--ease) .12s; }
+.pc[data-open] .pc-more::before, .pc[data-open] .pc-more::after { opacity: 1; }
+.pc[data-open] .pc-more::before { transform: none; }
+.pc[data-open="show"] .pc-more::before, .pc[data-open="show"] .pc-more::after { background-color: var(--show-hi); }
+.pc[data-open="league"] .pc-more::before, .pc[data-open="league"] .pc-more::after { background-color: var(--league-hi); }
+@media (prefers-reduced-motion: reduce) { .chev, .pc-more::before, .pc-more::after { transition: none; } }
 .pc-num { text-align: right; font-size: clamp(18px, 4.9vw, 21px); font-weight: 800; letter-spacing: -.02em; }
 .t1 { color: var(--gold2) !important; text-shadow: 0 0 10px var(--gold-glow); }
 .t2 { color: var(--silver) !important; }
@@ -386,18 +400,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
    itself (with overscroll-behavior: contain) swallowed vertical swipes, so
    the page couldn't be scrolled from an opened row (fixed on request). */
 .xp { height: calc(5 * var(--head)); overflow: hidden; padding: 10px 10px 16px; }
-/* Which half the card belongs to (on request: it was unclear): the opened
-   half is underlined in its board's colour, a pointer in the same colour sits
-   on the card's top edge under that half's centre, and the card's border
-   takes the colour too. The pointer's x is the half's centre in the row
-   (the Show half runs from the place strip to the column rule, the League
-   half from the rule to the edge). */
-.pc[data-open="show"] .sd.l { box-shadow: inset 0 -2px 0 var(--show-hi); }
-.pc[data-open="league"] .sd.r { box-shadow: inset 0 -2px 0 var(--league-hi); }
-.xp { position: relative; }
-.xp::before { content: ""; position: absolute; top: 4px; width: 14px; height: 7px; margin-left: -7px; clip-path: polygon(50% 0, 100% 100%, 0 100%); pointer-events: none; }
-.pc[data-open="show"] .xp::before { left: calc(25% + var(--rk) * .75); background: var(--show-hi); }
-.pc[data-open="league"] .xp::before { left: calc(75% + var(--rk) * .25); background: var(--league-hi); }
+/* The card's border takes its board's colour too, like the line above it. */
 .pc[data-open="show"] .xp > .card { border-color: var(--show-edge); }
 .pc[data-open="league"] .xp > .card { border-color: var(--league-edge); }
 .xp .card { margin: 0 0 10px; }
