@@ -75,7 +75,7 @@ So Show rewards backing a big scorer, while League rewards backing the *winner*,
 
 ## When the table updates
 
-It isn't live. **Some time after each episode airs, the host enters the scores and everyone's picks, then shares the updated page in the group.** Until then, that episode shows when it aired and "Results appear once it's scored". If the page looks out of date, refresh it.
+It isn't live. **Some time after each episode airs, the host enters the scores and everyone's picks, then shares the updated page in the group.** Until then, that episode shows only when it aired. If the page looks out of date, refresh it.
 
 ---
 
