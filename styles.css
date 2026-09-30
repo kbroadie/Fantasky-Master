@@ -369,11 +369,11 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .pc[data-open="show"] .sd.l .chev { color: var(--show-hi); }
 .pc[data-open="league"] .sd.r .chev { color: var(--league-hi); }
 .pc[data-open="show"] .sd.l .chev, .pc[data-open="league"] .sd.r .chev { opacity: 0; transform: translateY(20px) scale(1.6, 0); }
-/* The line (::before) spans both columns, from the place strip to the edge,
+/* The line (::before) spans the whole row, through the place column too (on request),
    on the seam between the row's head and its card; the notch (::after)
    points up at where the chevron was (--cx, measured in placeLine). */
 .pc-more::before, .pc-more::after { content: ""; position: absolute; pointer-events: none; opacity: 0; transition: opacity .2s var(--ease); }
-.pc-more::before { top: -1px; left: var(--rk); right: 0; height: 2px; transform: scaleX(0); transform-origin: calc(var(--cx, 50%) - var(--rk)) 50%; transition: transform .32s var(--ease) .08s, opacity .12s var(--ease) .08s, background-color .3s var(--ease); }
+.pc-more::before { top: -1px; left: 0; right: 0; height: 2px; transform: scaleX(0); transform-origin: var(--cx, 50%) 50%; transition: transform .32s var(--ease) .08s, opacity .12s var(--ease) .08s, background-color .3s var(--ease); }
 .pc-more::after { top: -7px; left: var(--cx, 50%); width: 12px; height: 6px; margin-left: -6px; clip-path: polygon(50% 0, 100% 100%, 0 100%); transition: opacity .2s var(--ease) .12s; }
 .pc[data-open] .pc-more::before, .pc[data-open] .pc-more::after { opacity: 1; }
 .pc[data-open] .pc-more::before { transform: none; }
