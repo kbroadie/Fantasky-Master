@@ -4,7 +4,7 @@
 //   node tools/check-data.mjs
 // Exits non-zero on any error; warnings are printed but don't fail.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { parseCSV } from "../js/csv.js";
 import { derive } from "../js/league.js";
 import { checkData } from "../js/checks.js";
@@ -18,6 +18,10 @@ try { stats = parseCSV(readFileSync(STATS, "utf8")); } catch { early.push("data/
 const { errors, warnings, series } = checkData(rows, stats);
 warnings.unshift(...early);
 const err = (m) => errors.push(m);
+
+// Every portrait is a file in the repo (served by GitHub Pages; Imgur is blocked in the UK).
+const ROOT = new URL("..", import.meta.url);
+for (const r of rows) if (r.record === "contestant" && r.portrait_url && !existsSync(new URL(r.portrait_url, ROOT))) err(`Series ${r.series}: ${r.contestant}'s portrait ${r.portrait_url} doesn't exist`);
 
 // Regression: the worked example in FANTASKY_MASTER_EXPLAINED.md §7.
 if (series[22]) {

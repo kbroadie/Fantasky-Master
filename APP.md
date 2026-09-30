@@ -56,7 +56,7 @@ Swiping left on Standings' Week 10 opens Episodes, swiping past the last episode
 ## Performance
 
 - **No framework, no build step, no dependencies.**
-- **Portraits** load as small WebP versions of the Imgur images, lazily.
+- **Portraits** are small WebP files in `img/`, served by GitHub Pages with the site (Imgur is blocked in the UK), loaded lazily.
 - **Reduced motion** settings are respected.
 
 ## Checks and screenshots

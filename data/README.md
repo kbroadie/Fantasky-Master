@@ -18,7 +18,7 @@ Each row has a `record` type that says which columns it uses. Leave the other co
 
 | `record` | One row per… | Columns used |
 |---|---|---|
-| `contestant` | contestant per series | `series`, `contestant` (short name), `full_name`, `accent_color` (hex), `portrait_url` (direct `https://i.imgur.com/<id>.png` link), `bio` (who they are, in a sentence or two; no performance) |
+| `contestant` | contestant per series | `series`, `contestant` (short name), `full_name`, `accent_color` (hex), `portrait_url` (a file in the repo, `img/s<series>/<name>-portrait.webp`: GitHub Pages serves it, as Imgur is blocked in the UK), `bio` (who they are, in a sentence or two; no performance) |
 | `player` | league player per series (the roster) | `series`, `player` |
 | `episode` | episode per series, 1–10, including future ones | `series`, `episode`, `title`, `air_date` (London date, e.g. `1 Oct 2026`), `tiebreak_winner` (only if contestants tied for the top score), `analysis` |
 | `score` | contestant per task | `series`, `episode`, `task_no` (1, 2, 3… within the episode), `task_type` (`P` prize, `F` filmed, `T` team, `L` live), `task_name`, `contestant`, `score` (a whole number, or `DQ` for a disqualification, which counts as 0) |
@@ -45,7 +45,7 @@ episode,22,2,,,,,,,This Is Food Glue,10 Sep 2026,Richard,,,,,,"<strong>Richard A
 
 ## New series
 
-- **Contestants:** 5 `contestant` rows (upload the portraits to a new Imgur album first).
+- **Contestants:** 5 `contestant` rows (add their portraits to `img/s<series>/` first, as WebP about 225 × 266).
 - **Roster:** a `player` row for each league member.
 - **Schedule:** 10 `episode` rows with titles, if known, and London air dates.
 

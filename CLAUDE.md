@@ -15,7 +15,7 @@ js/main.js                      renders all pages at load, tabs, swipers, the St
 js/ui.js                        shared helpers ($, esc, ord, framed…) and `state`
 js/views/{table,episodes,cast}.js       one file per tab (Standings, Episodes, Cast); each returns HTML strings
 js/podium-fx.js                 canvas effects on episode podiums (winner's gold light, last place's stink gas), and the gold light on the first-place Cast header
-js/heroes.js                    presentation only: each contestant's profile photo (an Imgur hero photo, or a crop of the group photo in img/), and each contestant's eyes and head size in them (the Cast profile's face)
+js/heroes.js                    presentation only: each contestant's profile photo (a hero photo, or a crop of the group photo, in img/), and each contestant's eyes and head size in them (the Cast profile's face)
 js/league.js                    pure scoring engine (derive) — must match the systems doc
 js/csv.js                       CSV → series objects
 js/alltime.js                   loads taskmaster_stats.csv: the radar baseline, all-time record badges, profile facts
@@ -104,8 +104,8 @@ The user's v1 prototype is the model: fast, clean, obvious navigation. The aim i
   - The first render waits for the faces it uses (`FACES` in `main.js`), loaded alongside the data and given up after 1.2s, so the page isn't drawn in fallbacks and laid out again when they swap in. Add a face there when a new weight is used.
   - Use tabular figures for numbers.
 - **Terms:** use **Show** and **League** points, as in README.md.
-- **Imgur images:** the page sets `referrer: no-referrer` because Imgur blocks some referrers. Portraits load as `…m.webp`.
-- **Profile faces** (`heroes.js`): each is a photo of a few megapixels at most (Series 21: each contestant's own Imgur hero photo; Series 22: crops of the cast's group photo kept in `img/s22/`, 8 head-widths left of the eyes, 4 right, 3 above and 8 below). The profile scales the photo up so the head is `--face` across; the whole 20.6-megapixel group photo came out ~3,200px wide and iPhone Safari (and sometimes Chrome) never drew it (fixed on request). Crop any new group photo the same way.
+- **Images live in the repo** (`img/s21/`, `img/s22/`), served by GitHub Pages with the site: Imgur is blocked in the UK, so nothing loads from it (moved on request). Each contestant has a portrait, `img/s22/chloe-portrait.webp` (225 × 266 WebP, ~37 KB, the CSV's `portrait_url`; `check-data` checks the file exists), and a profile photo, `img/s22/chloe.jpg` (`heroes.js`).
+- **Profile faces** (`heroes.js`): each is a photo of a few megapixels at most (Series 21: each contestant's own hero photo, kept in `img/s21/`; Series 22: crops of the cast's group photo kept in `img/s22/`, 8 head-widths left of the eyes, 4 right, 3 above and 8 below). The profile scales the photo up so the head is `--face` across; the whole 20.6-megapixel group photo came out ~3,200px wide and iPhone Safari (and sometimes Chrome) never drew it (fixed on request). Crop any new group photo the same way.
 
 ## Commands
 
@@ -117,7 +117,7 @@ npm ci && npx playwright install chromium && node tools/screenshots.mjs
 ```
 
 In the Claude cloud sandbox:
-- The headless browser can't reach Imgur or Google Fonts, so use `FM_CURL_IMAGES=1 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tools/screenshots.mjs`.
+- The headless browser can't reach Google Fonts, so use `FM_CURL_IMAGES=1 PLAYWRIGHT_BROWSERS_PATH=/opt/pw-browsers node tools/screenshots.mjs`.
 - The shots land in `shots/` (gitignored). Read them to review changes.
 
 ## Workflow
