@@ -29,7 +29,7 @@ function slide(d, e) {
     // Like a Standings week not yet scored (on request): just the head, with when
     // it airs (or aired); nothing below it. Edit mode: an aired episode's scores
     // are entered in an editable task table.
-    const line = `${e.ep <= d.weeksAired ? "Aired" : "Airs"} ${esc(fmtWhen.format(e.air))}<br>Results appear once it's scored`;
+    const line = `${e.ep <= d.weeksAired ? "Aired" : "Airs"} ${esc(fmtWhen.format(e.air))}`;
     return head(line) + (state.edit && e.ep <= d.weeksAired ? `<div class="ep-body">${edTable(d, e, seated(d))}</div>` : "");
   }
 
