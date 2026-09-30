@@ -19,11 +19,11 @@ const GROUP = {
   21: {
     ratio: 1440 / 1872,
     faces: {
-      Amy: { src: "https://i.imgur.com/OaUpvBC.jpeg", eye: [0.49, 0.249], head: 0.112 },
-      Armando: { src: "https://i.imgur.com/feObZdp.jpeg", eye: [0.501, 0.254], head: 0.125 },
-      Joanna: { src: "https://i.imgur.com/UzeaWt2.jpeg", eye: [0.516, 0.272], head: 0.126 },
-      Joel: { src: "https://i.imgur.com/sODmmBz.jpeg", eye: [0.4885, 0.2447], head: 0.126 },
-      Kumail: { src: "https://i.imgur.com/g6rBDD4.jpeg", eye: [0.4914, 0.2499], head: 0.125 },
+      Amy: { src: "img/s21/amy.jpg", eye: [0.49, 0.249], head: 0.112 },
+      Armando: { src: "img/s21/armando.jpg", eye: [0.501, 0.254], head: 0.125 },
+      Joanna: { src: "img/s21/joanna.jpg", eye: [0.516, 0.272], head: 0.126 },
+      Joel: { src: "img/s21/joel.jpg", eye: [0.4885, 0.2447], head: 0.126 },
+      Kumail: { src: "img/s21/kumail.jpg", eye: [0.4914, 0.2499], head: 0.125 },
     },
   },
   22: {

@@ -31,7 +31,7 @@ export function checkData(rows, stats = []) {
     if (new Set(cast).size !== cast.length) err(`${S}: duplicate contestant names`);
     for (const r of of("contestant")) {
       if (!/^#[0-9a-f]{6}$/i.test(r.accent_color)) warn(`${S} ${r.at}: ${r.contestant} accent_color "${r.accent_color}" isn't a #rrggbb hex`);
-      if (!/^https:\/\//.test(r.portrait_url)) err(`${S} ${r.at}: ${r.contestant} portrait_url must be an https link`);
+      if (!/^img\/s\d+\/[a-z0-9-]+\.(webp|png|jpe?g)$/.test(r.portrait_url)) err(`${S} ${r.at}: ${r.contestant} portrait_url must be a file in img/ (img/s${S}/name-portrait.webp)`);
     }
 
     const eps = of("episode").map((r) => +r.episode).sort((a, b) => a - b);

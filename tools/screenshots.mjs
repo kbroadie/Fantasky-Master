@@ -2,8 +2,8 @@
 // without opening a browser. Serves the repo itself, so run from anywhere:
 //   npm ci && npx playwright install chromium   (once)
 //   node tools/screenshots.mjs [outDir]         (default: shots/)
-// FM_CURL_IMAGES=1 fetches Imgur images and Google Fonts through curl (for
-// sandboxes whose headless browser can't reach them directly).
+// FM_CURL_IMAGES=1 fetches Google Fonts through curl (for sandboxes whose
+// headless browser can't reach them directly).
 
 import { createServer } from "node:http";
 import { readFile, mkdir } from "node:fs/promises";
@@ -13,7 +13,7 @@ import { chromium } from "playwright";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const OUT = process.argv[2] || join(ROOT, "shots");
-const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".csv": "text/csv", ".woff2": "font/woff2", ".txt": "text/plain", ".svg": "image/svg+xml" };
+const TYPES = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".csv": "text/csv", ".woff2": "font/woff2", ".txt": "text/plain", ".svg": "image/svg+xml", ".webp": "image/webp", ".jpg": "image/jpeg", ".png": "image/png" };
 
 const server = createServer(async (req, res) => {
   const path = normalize(decodeURIComponent(new URL(req.url, "http://x").pathname)).replace(/^(\.\.[/\\])+/, "");
@@ -48,7 +48,7 @@ for (const [name, w, h, hash, action] of SHOTS) {
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   if (process.env.FM_CURL_IMAGES) {
-    await page.route(/i\.imgur\.com|fonts\.googleapis\.com|fonts\.gstatic\.com/, async (r) => {
+    await page.route(/fonts\.googleapis\.com|fonts\.gstatic\.com/, async (r) => {
       const u = r.request().url();
       if (!cache.has(u)) cache.set(u, execFileSync("curl", ["-s", "--retry", "3", "-A", UA, u], { maxBuffer: 1 << 26 }));
       const type = u.includes("googleapis") ? "text/css" : u.includes("gstatic") ? "font/woff2" : /\.jpe?g$/.test(u) ? "image/jpeg" : "image/webp";

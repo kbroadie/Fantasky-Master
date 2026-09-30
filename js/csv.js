@@ -48,12 +48,6 @@ function isoDate(s) {
   return `${m[3]}-${String(MONTHS[m[2].toLowerCase()]).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
 }
 
-/** Imgur direct links → the smaller "m" WebP rendition of the same image. */
-function portrait(url) {
-  const m = url.match(/^https:\/\/i\.imgur\.com\/([A-Za-z0-9]+)\.(png|jpe?g|webp)$/);
-  return m ? `https://i.imgur.com/${m[1]}m.webp` : url;
-}
-
 export function buildSeries(records) {
   const out = {};
   const S = (k) => (out[k] ||= { cast: [], players: [], episodes: [], tasks: [], picks: {} });
@@ -65,7 +59,7 @@ export function buildSeries(records) {
       case "contestant":
         s.cast.push({
           key: r.contestant, full: r.full_name, color: r.accent_color || "#b8862b",
-          img: portrait(r.portrait_url), bio: r.bio,
+          img: r.portrait_url, bio: r.bio,
         });
         break;
       case "player":
