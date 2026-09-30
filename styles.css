@@ -573,14 +573,6 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .pod-col.win .pod-picks { color: var(--gold2); }
 
 /* Episodes still to come */
-.soon { padding: 16px; text-align: center; }
-.soon-sub { font-family: var(--fm); font-size: 12px; color: var(--t3); letter-spacing: .04em; }
-.soon-main { font-family: var(--ff-name); font-size: 22px; font-weight: 700; margin-top: 4px; }
-.soon.next .soon-main { color: var(--gold3); }
-.soon-left { font-size: 15px; color: var(--t2); margin-top: 2px; }
-.ballot { display: flex; gap: 6px; margin-top: 14px; }
-.ballot span { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
-.ballot b { font-family: var(--ff-name); font-size: 12px; font-weight: 700; }
 
 
 .tt-wrap { overflow-x: auto; }

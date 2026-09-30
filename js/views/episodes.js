@@ -1,8 +1,8 @@
 // Episodes: a scrollable Ep 1–10 strip above
 // swipeable episode slides. Everywhere on the tab the cast sit in their studio
 // seat order (1–5, from the all-time stats): the portraits, the task-table
-// columns (each under its portrait) and the ballot.
-import { esc, ord, listing, framed, named, fmtDay, fmtWhen, untilText, icon, smooth, niceStep, state } from "../ui.js";
+// columns (each under its portrait).
+import { esc, ord, listing, framed, named, fmtDay, fmtWhen, icon, smooth, niceStep, state } from "../ui.js";
 import { statsFor } from "../alltime.js";
 import { rankWithTies } from "../league.js";
 import { edTitle, edStrip, edTable } from "../edit.js";
@@ -18,20 +18,6 @@ export const epTabs = (d) => d.episodes.map((e) =>
 
 export const epSlides = (d) => d.episodes.map((e) => `<section class="slide">${slide(d, e)}</section>`).join("");
 
-function upcoming(d, e) {
-  if (e.ep <= d.weeksAired) {
-    return `<div class="card soon"><p class="soon-main">Results coming soon</p><p class="soon-sub">Aired ${esc(fmtWhen.format(e.air))}</p></div>`;
-  }
-  // Every future episode: when its poll closes, and the five contestants.
-  return `
-    <div class="card soon${d.nextEp?.ep === e.ep ? " next" : ""}">
-      <p class="soon-sub">Who wins Episode ${e.ep}? The poll closes</p>
-      <p class="soon-main">${esc(fmtWhen.format(e.air))}</p>
-      <p class="soon-left">in ${untilText(e.air - Date.now())}</p>
-      <div class="ballot">${seated(d).map((n) => `<span>${framed(d.cast[n])}<b style="color:${d.cast[n].color}">${esc(n)}</b></span>`).join("")}</div>
-    </div>`;
-}
-
 function slide(d, e) {
   const head = (line) => `
     <div class="ep-head">
@@ -40,10 +26,11 @@ function slide(d, e) {
       <div class="ep-sub">${line}</div>
     </div>${state.edit ? edStrip(d, e) : ""}`;
   if (e.ep > d.weeksScored) {
-    const line = e.ep <= d.weeksAired ? "Aired · results coming soon" : d.nextEp?.ep === e.ep ? "Up next · poll open" : "Awaiting broadcast";
-    // Edit mode: an aired episode's scores are entered in an editable task table.
-    const body = state.edit && e.ep <= d.weeksAired ? edTable(d, e, seated(d)) : upcoming(d, e);
-    return head(line) + `<div class="ep-body">${body}</div>`;
+    // Like a Standings week not yet scored (on request): just the head, with when
+    // it airs (or aired); nothing below it. Edit mode: an aired episode's scores
+    // are entered in an editable task table.
+    const line = `${e.ep <= d.weeksAired ? "Aired" : "Airs"} ${esc(fmtWhen.format(e.air))}<br>Results appear once it's scored`;
+    return head(line) + (state.edit && e.ep <= d.weeksAired ? `<div class="ep-body">${edTable(d, e, seated(d))}</div>` : "");
   }
 
   const w = d.winners[e.ep], wk = d.weekly[e.ep], pts = (n) => d.EPS[n][e.ep];
