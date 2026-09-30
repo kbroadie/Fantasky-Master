@@ -27,14 +27,17 @@ const GROUP = {
     },
   },
   22: {
-    src: "https://i.imgur.com/aTYNG68.jpeg", // 5246 × 3936
-    ratio: 5246 / 3936,
+    // Each face is cropped from the cast's group photo (https://i.imgur.com/aTYNG68.jpeg,
+    // 5246 × 3936): 8 head-widths left of the eyes, 4 right, 3 above and 8 below,
+    // clamped to the photo, so a profile shows exactly what it did. The whole
+    // photo, scaled up so the head is --face across, made a ~3,200px-wide image
+    // of 20.6 megapixels, which iPhone Safari wouldn't draw.
     faces: {
-      Chloe: { eye: [0.1874, 0.341], head: 0.0258 },
-      Richard: { eye: [0.3118, 0.285], head: 0.0253 },
-      Nina: { eye: [0.6704, 0.3486], head: 0.0240 },
-      Isy: { eye: [0.7696, 0.2991], head: 0.0223 },
-      Matt: { eye: [0.8485, 0.3731], head: 0.0296 },
+      Chloe: { src: "img/s22/chloe.jpg", ratio: 1524 / 1489, eye: [0.6451, 0.2728], head: 0.0888 },
+      Richard: { src: "img/s22/richard.jpg", ratio: 1593 / 1460, eye: [0.6665, 0.2724], head: 0.0833 },
+      Nina: { src: "img/s22/nina.jpg", ratio: 1511 / 1385, eye: [0.6664, 0.273], head: 0.0833 },
+      Isy: { src: "img/s22/isy.jpg", ratio: 1404 / 1287, eye: [0.6669, 0.2729], head: 0.0833 },
+      Matt: { src: "img/s22/matt.jpg", ratio: 1863 / 1708, eye: [0.6668, 0.2726], head: 0.0834 },
     },
   },
 };
