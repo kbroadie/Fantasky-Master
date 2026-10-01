@@ -46,7 +46,8 @@ export function checkData(rows, stats = []) {
     for (const r of of("score")) {
       if (!cast.includes(r.contestant)) err(`${S} ${r.at}: score for unknown contestant "${r.contestant}"`);
       if (!"PFTL".includes(r.task_type) || r.task_type.length !== 1) err(`${S} ${r.at}: task_type "${r.task_type}" should be P, F, T or L`);
-      if (!/^(\d+|DQ)$/i.test(r.score) || +r.score > 10) err(`${S} ${r.at}: score "${r.score}" should be a whole number 0–10, or DQ`);
+      if (!/^(-1|\d+|DQ)$/i.test(r.score) || +r.score < -1 || +r.score > 10)
+ err(`${S} ${r.at}: score "${r.score}" should be a whole number -1–10, or DQ`);
       const k = `${r.episode}/${r.task_no}`;
       const t = (tasks[k] ||= { rows: [], at: r.at });
       t.rows.push(r);
