@@ -56,6 +56,8 @@ Swiping left on Standings' Week 10 opens Episodes, swiping past the last episode
 ## Performance
 
 - **No framework, no build step, no dependencies.**
+- **First visit:** How scoring works opens by itself the first time a device visits, then starts closed.
+- **Sharing:** a link to the site shows a preview card (the brand and this series' cast) in WhatsApp and other apps, and adding it to a home screen gives a gold "FM" icon named Fantasky.
 - **Portraits** are small WebP files in `img/`, served by GitHub Pages with the site (Imgur is blocked in the UK), loaded lazily.
 - **Reduced motion** settings are respected.
 

@@ -6,7 +6,8 @@
   "scripts": {
     "serve": "python3 -m http.server 8000",
     "check": "node tools/check-data.mjs",
-    "shots": "node tools/screenshots.mjs"
+    "shots": "node tools/screenshots.mjs",
+    "share": "node tools/share-images.mjs"
   },
   "devDependencies": {
     "playwright": "1.56.1"

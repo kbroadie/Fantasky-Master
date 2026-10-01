@@ -46,6 +46,7 @@ episode,22,2,,,,,,,This Is Food Glue,10 Sep 2026,Richard,,,,,,"<strong>Richard A
 ## New series
 
 - **Contestants:** 5 `contestant` rows (add their portraits to `img/s<series>/` first, as WebP about 225 × 266).
+- **Link preview:** once the contestants are in, run `node tools/share-images.mjs` so the WhatsApp preview shows the new cast.
 - **Roster:** a `player` row for each league member.
 - **Schedule:** 10 `episode` rows with titles, if known, and London air dates.
 
