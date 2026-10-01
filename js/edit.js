@@ -380,7 +380,7 @@ function commit(ep) {
   const card = $(`#ep-body .ed-tt[data-ep="${ep}"]`);
   card?.querySelectorAll(".bad").forEach((x) => x.classList.remove("bad"));
   const filled = (t) => t.name.trim() || d.names.some((n) => String(t.scores[n] ?? "").trim());
-  const ok = (v) => /^(\d{1,2}|DQ)$/i.test(String(v ?? "").trim()) && !(+v > 10);
+const ok = (v) => /^(-1|\d{1,2}|DQ)$/i.test(String(v ?? "").trim()) && !(+v > 10) && !(+v < -1);
   let bad = 0;
   dr.tasks.forEach((t, i) => {
     if (!filled(t)) return;
@@ -388,7 +388,7 @@ function commit(ep) {
     if (!t.name.trim()) { tr?.querySelector('[data-f="name"]').classList.add("bad"); bad++; }
     for (const n of d.names) if (!ok(t.scores[n])) { tr?.querySelector(`[data-who="${CSS.escape(n)}"]`)?.classList.add("bad"); bad++; }
   });
-  if (bad) { status("Fix the marked boxes: every task needs a name, and every score is 0–10 or DQ.", "bad"); return false; }
+  if (bad) { status("Fix the marked boxes: every task needs a name, and every score is -1–10 or DQ.", "bad"); return false; }
   const tasks = dr.tasks.filter(filled);
   delete drafts[k];
   if (!tasks.length && !d.epTasks(ep).length) { status(); return true; } // nothing entered
