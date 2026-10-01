@@ -161,7 +161,7 @@ export function boardChart(d, w, k, width) {
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
   const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
     color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true, width });
-  return `<div class="race st-race ${k}"><p class="st-key"><b class="${k}">${BOARD[k]}</b> points behind the leader</p>${svg}<p class="rc-cap"></p></div>`;
+  return `<div class="race st-race ${k}"><p class="st-key" aria-label="${BOARD[k]} points behind the leader">Δ <b class="${k}">${BOARD[k]}</b> pts to leader</p>${svg}<p class="rc-cap"></p></div>`;
 }
 
 /**
