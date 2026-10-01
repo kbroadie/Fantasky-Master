@@ -101,7 +101,9 @@ export function standingsSlides(d) {
 
 /**
  * The board: its head, then either the rows or, while a head is pressed
- * (state.stView), that board's race chart in their place (boardChart).
+ * (state.stView), that board's race chart in their place (boardChart): the
+ * place column runs on down its left, and the chart fills the rest. The chart
+ * is drawn at its measured width, so main.js fills it in (syncBoards).
  */
 function board(d, w) {
   const k = chartable(d, w) ? state.stView : null;
@@ -111,7 +113,7 @@ function board(d, w) {
           ${["show", "league"].map((b) => boardHead(d, w, b, k)).join("")}
         </div>
         <div class="rows">${standingsRows(d, w)}</div>
-        <div class="st-chart">${k ? boardChart(d, w, k) : ""}</div>
+        <div class="st-chart"><i class="st-chart-rk" aria-hidden="true"></i><div class="st-chart-plot"></div></div>
       </div>`;
 }
 /** Only a scored week has a race to draw (an unscored one has a board only in edit mode). */
@@ -154,12 +156,12 @@ const playerColor = (d) => {
  * Each player has their own colour (playerColor), as each contestant has on
  * Episodes; tap a line to follow it.
  */
-export function boardChart(d, w, k) {
+export function boardChart(d, w, k, width) {
   const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
   let n = 3;
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
   const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
-    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true });
+    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true, width });
   return `<div class="race st-race ${k}"><p class="st-key">${BOARD[k]} points behind the leader</p>${svg}<p class="rc-cap"></p></div>`;
 }
 

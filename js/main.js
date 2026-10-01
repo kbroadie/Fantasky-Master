@@ -55,6 +55,7 @@ function renderStandings(d) {
   $("#st-tabs").innerHTML = weekTabs(d);
   $("#st-body").innerHTML = standingsSlides(d);
   for (const s of $("#st-body").children) { sizes.observe(s); syncOpen(s); }
+  if (state.stView) syncBoards(true);
   queueLight();
 }
 
@@ -296,15 +297,22 @@ function syncOpen(slide) {
   for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
   if (want && !(want.classList.contains("open") && want.dataset.open === o.side && want.dataset.view === state.xpView)) openRow(want, o.side);
 }
-/** Apply state.stView to every week's board: its race chart in place of the rows, or the rows. */
-function syncBoards() {
+/**
+ * Apply state.stView to every week's board: its race chart in place of the
+ * rows, or the rows. The chart is drawn at its real width, measured once (every
+ * week's board is the same width); `force` redraws them all (a resize, or a
+ * fresh render).
+ */
+function syncBoards(force = false) {
+  let width = 0;
   for (const s of $$("#st-body .st-slide")) {
     const board = s.querySelector(".board"), w = +s.dataset.week;
     if (!board) continue;
-    const k = chartable(state.d, w) ? state.stView : null;
-    if (board.dataset.chart === (k || undefined)) continue;
+    const k = chartable(state.d, w) ? state.stView : null, plot = board.querySelector(".st-chart-plot");
+    if (!force && board.dataset.chart === (k || undefined) && (!k || plot.firstChild)) continue;
     if (k) board.dataset.chart = k; else delete board.dataset.chart;
-    board.querySelector(".st-chart").innerHTML = k ? boardChart(state.d, w, k) : "";
+    if (k && !width) width = plot.clientWidth;
+    plot.innerHTML = k ? boardChart(state.d, w, k, width) : "";
     board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
   }
 }
@@ -422,7 +430,7 @@ function cardLight() {
 const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
 addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); for (const r of $$("#st-body .pc.open")) placeLine(r); });
+addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); for (const r of $$("#st-body .pc.open")) placeLine(r); if (state.stView) syncBoards(true); });
 
 addEventListener("hashchange", () => {
   const h = readHash();

@@ -315,15 +315,22 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
 .st-side .st-graph { width: 12px; height: 12px; stroke-width: 1.5; filter: none; opacity: .75; }
 .st-side.on { box-shadow: inset 0 -3px 0 var(--c); }
 .board[data-chart] .st-side:not(.on) { opacity: .5; }
-/* A pressed head: the rows give way to the board's race chart, full width. */
+/* A pressed head: the rows give way to the board's race chart. The place
+   column runs on down its left (the head's strip, continued), and the chart
+   fills the rest at its real width, in the card's solid colour (which the
+   labels' halo assumes), covering the head's glow and grain. Its key reads
+   like a caption, from the chart's left edge; its gridlines run edge to edge
+   like the row rules; its lines are lighter than Episodes', as fifteen cross. */
 .board .st-chart { display: none; position: relative; z-index: 1; }
 .board[data-chart] .rows { display: none; }
-/* What the chart measures, as the Episodes card's legend says it; lighter
-   lines than Episodes', as fifteen of them cross. */
-.st-key { padding: 4px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); text-align: right; }
+.board[data-chart] .st-chart { display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr); }
+.st-chart-rk { background: linear-gradient(rgba(10, 8, 10, .45), rgba(10, 8, 10, .45)), var(--s2); box-shadow: inset -1px 0 0 var(--b-gold); }
+.st-chart-plot { min-width: 0; background: var(--s2); }
+.race.st-race svg { max-width: none; width: 100%; height: auto; padding: 0; margin: 0; }
+.st-key { padding: 10px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); }
 .st-race path.rc-line { stroke-width: 1.6; }
+.st-race .rc-grid { stroke: var(--b-gold); } /* like the row rules it stands in for */
 .race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
-.board[data-chart] .st-chart { display: block; padding-top: 6px; background: var(--s2); } /* the card colour the labels' halo assumes; covers the head's glow and grain */
 
 /* Rows are not compositing layers of their own: with one per row, iOS ran
    short of layer memory and dropped rows' text after scrolling. */
