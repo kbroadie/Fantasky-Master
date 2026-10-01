@@ -165,10 +165,26 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const numX = (lx) => (exact ? R - namesW - 8 : lx + 14 + per * (NAME + 6) + numW);
   const xEnd = exact ? R - namesW - 8 - numW - 12 : Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
   const span1 = exact ? end : last;
-  const x = (e) => (span1 > 1 ? L + ((e - 1) / (span1 - 1)) * (xEnd - L) : xEnd), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
+  const y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
+  // Exact (fitted) charts label their gridlines (on request, "rethink the
+  // horizontal grid lines": unlabelled, their uneven spacing on the fitted
+  // scale said nothing). Round values of 1, 2, 5, 10, 20… points, about six
+  // candidates, kept only where 22px clear of the top and of the last one
+  // kept. Their values sit in a gutter at the left, right-aligned beside their
+  // lines like an axis, so the race's lines start after it and never cross
+  // them; the gridlines stop at the line ends, clear of the names.
+  const kept = [];
+  if (exact) {
+    const gs = [1, 2, 5, 10, 20, 50, 100].find((v) => v >= deepest / 6) || 100;
+    for (let v = -gs, last = T; v >= -deepest; v -= gs) if (y(v) - last >= 22) { kept.push(v); last = y(v); }
+  }
+  const gutter = kept.length ? Math.max(...kept.map((v) => `−${-v}`.length)) * DIG + 8 : 0, X0 = L + gutter;
+  const x = (e) => (span1 > 1 ? X0 + ((e - 1) / (span1 - 1)) * (xEnd - X0) : xEnd);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
-  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  let grid;
+  if (exact) grid = kept.map((v) => `<line class="rc-grid" x1="${f1(X0)}" x2="${f1(xEnd)}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-tick" x="${f1(X0 - 6)}" y="${f1(y(v) + 4)}" text-anchor="end">−${-v}</text>`).join("");
+  else grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = Array.from({ length: span1 }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
