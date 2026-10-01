@@ -20,7 +20,7 @@
 
   --ff: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --ff-head: "Bungee", "Arial Black", sans-serif;
-  --ff-name: "Fredoka", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --ff-name: "Nunito", "Arial Rounded MT Bold", system-ui, sans-serif;
   --fm: "DM Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 
   --px: 16px;
@@ -157,7 +157,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 
 /* Shared header block (Standings hero, episode head, Cast header), one pattern
    on every tab: a DM Mono kicker, the Bungee title, then one line of Inter
-   (names in Fredoka, figures bold). A stage: a soft red light from above with
+   (names in Nunito, figures bold). A stage: a soft red light from above with
    the scoring cards' film grain, closed by a gold hairline that fades out at
    both ends (like the footer's) rather than a hard rule. */
 .hero, .ep-head {
@@ -172,14 +172,14 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .ep-head .kicker, .hero .kicker, .ep-head .ep-sub, .hero .ep-sub { text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
 .ep-sub { font-size: 14px; color: var(--t2); font-variant-numeric: tabular-nums; }
 .ep-sub b { font-weight: 700; color: var(--t1); }
-.ep-sub .cn { font-family: var(--ff-name); }
+.ep-sub .cn { font-family: var(--ff-name); font-weight: 800; }
 
 /* Standings hero: one headline, "Week 4 Standings", set like an episode title */
 .st-hero { text-align: center; padding-block: 18px 16px; } /* the same as .ep-head */
 .st-hero .ep-title { margin-bottom: 0; }
 .st-hero .ep-sub { margin-top: 6px; }
 .st-leaders { display: flex; flex-wrap: wrap; justify-content: center; gap: 2px 16px; margin-top: 6px; font-size: 14px; color: var(--t2); text-shadow: 0 1px 8px rgba(0, 0, 0, .7); }
-.st-leaders b { font-family: var(--ff-name); font-weight: 700; color: var(--gold2); }
+.st-leaders b { font-family: var(--ff-name); font-weight: 800; color: var(--gold2); }
 .st-leaders .st-show { color: var(--show-hi); }
 .st-leaders .st-league { color: var(--league-hi); }
 /* "How scoring works" under the leaders line opens both explanations below
@@ -351,7 +351,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .pc-rank { text-align: center; }
 /* The place is secondary to the names and points: smaller and lighter */
 .pc-rank b { font-size: 15px; font-weight: 700; color: var(--t3); }
-.pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 700; }
+.pc-name { display: flex; align-items: center; min-width: 0; max-width: 100%; font-family: var(--ff-name); font-size: clamp(16px, 4.1vw, 20px); font-weight: 800; }
 .pc-name .nm { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* The chevron after each name: the only sign a cell opens, so it stays, but
    quiet (refined on request): a drawn chevron with round caps and joins, 9 ×
@@ -566,7 +566,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .fx-gas { z-index: 4; }
 .pod-col.last .fp { filter: saturate(.8) brightness(.93) drop-shadow(0 2px 6px rgba(0, 0, 0, .6)); }
 .pod-col.last .pod-pts { color: #a3a86e; } /* the fog's own muted olive */
-.pod-name { font-family: var(--ff-name); font-size: 12px; font-weight: 700; margin-top: 3px; }
+.pod-name { font-family: var(--ff-name); font-size: 12px; font-weight: 800; margin-top: 3px; }
 .pod-pts { font-size: clamp(18px, 5vw, 22px); font-weight: 800; line-height: 1; }
 .pod-col.win .pod-pts { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
 .pod-picks { font-family: var(--fm); font-size: 11px; color: var(--t3); white-space: nowrap; }
@@ -622,7 +622,7 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .med-key { display: inline-block; width: 14px; margin-right: 5px; vertical-align: middle; border-top: 1px dashed rgba(240, 232, 220, .7); }
 /* All-time records: a badge per stat where the contestant is in the top 10 */
 .records .rec { display: grid; grid-template-columns: 1fr auto; column-gap: 10px; padding: 8px 12px; border-top: 1px solid var(--b-dim); }
-.rec-label { font-family: var(--ff-name); font-size: 16px; font-weight: 700; color: var(--gold3); }
+.rec-label { font-family: var(--ff-name); font-size: 16px; font-weight: 800; color: var(--gold3); }
 .rec-rank { font-size: 15px; font-weight: 800; color: var(--t2); text-align: right; }
 .rec-rank.top { color: var(--gold3); text-shadow: 0 0 8px var(--gold-glow); }
 .rec-text { grid-column: 1 / -1; font-size: 13px; color: var(--t2); margin-top: 1px; }
@@ -799,7 +799,7 @@ body:not(.editing) .ed-bar { display: none; } /* Done hides it; it's reused if e
 .pk-edit-h { font-family: var(--fm); font-size: 11px; font-weight: 500; letter-spacing: .12em; text-transform: uppercase; color: var(--t3); margin: 2px 2px 6px; }
 .pk-choose { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px; }
 .pk-choose .pk { border: 0; background: none; color: inherit; padding: 4px 3px 5px; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
-.pk-choose .pk b { font: 600 12px var(--ff-name); color: var(--t2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pk-choose .pk b { font: 700 12px var(--ff-name); color: var(--t2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .pk-choose .pk.on { background: var(--gold-t); box-shadow: inset 0 0 0 1.5px var(--gold3); }
 .pk-choose .pk-none b { color: var(--t3); }
 

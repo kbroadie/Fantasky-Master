@@ -412,7 +412,7 @@ addEventListener("hashchange", () => {
 // The web fonts load alongside the data, so the page is first drawn in them
 // rather than drawn in fallbacks and laid out again when they swap in. A slow
 // font gives up after 1.2s from here and swaps in later.
-const FACES = ["16px Bungee", "500 16px Fredoka", "600 16px Fredoka", "700 16px Fredoka", "16px Inter", "600 16px Inter", "700 16px Inter", "800 16px Inter", "16px 'DM Mono'", "500 16px 'DM Mono'"];
+const FACES = ["16px Bungee", "700 16px Nunito", "800 16px Nunito", "16px Inter", "600 16px Inter", "700 16px Inter", "800 16px Inter", "16px 'DM Mono'", "500 16px 'DM Mono'"];
 const fontsIn = Promise.race([
   Promise.all(FACES.map((f) => document.fonts.load(f).catch(() => {}))),
   new Promise((r) => setTimeout(r, 1200)),
