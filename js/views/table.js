@@ -118,12 +118,11 @@ function board(d, w) {
 }
 /** Only a scored week has a race to draw (an unscored one has a board only in edit mode). */
 export const chartable = (d, w) => w <= d.weeksScored;
-const GRAPH = `<svg class="st-graph" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 9.5 4.5 5.5 7 7.5 11 2.5"/></svg>`;
 /** A head: the board's crown or trophy and name; a button that swaps the rows for its race chart, and back. */
 export function boardHead(d, w, b, k) {
   const icon = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[b === "show" ? "crown" : "trophy"]}"/></svg>`;
   if (!chartable(d, w)) return `<span class="st-side ${b}">${icon}${BOARD[b]}</span>`;
-  return `<button type="button" class="st-side ${b}${k === b ? " on" : ""}" data-board="${b}" aria-pressed="${k === b}" aria-label="${BOARD[b]}: ${k === b ? "show the standings" : "show the race so far"}">${icon}<span>${BOARD[b]}${GRAPH}</span></button>`;
+  return `<button type="button" class="st-side ${b}${k === b ? " on" : ""}" data-board="${b}" aria-pressed="${k === b}" aria-label="${BOARD[b]}: ${k === b ? "show the standings" : "show the race so far"}">${icon}${BOARD[b]}</button>`;
 }
 
 /**
@@ -162,7 +161,7 @@ export function boardChart(d, w, k, width) {
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
   const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
     color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true, width });
-  return `<div class="race st-race ${k}"><p class="st-key">${BOARD[k]} points behind the leader</p>${svg}<p class="rc-cap"></p></div>`;
+  return `<div class="race st-race ${k}"><p class="st-key"><b class="${k}">${BOARD[k]}</b> points behind the leader</p>${svg}<p class="rc-cap"></p></div>`;
 }
 
 /**

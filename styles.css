@@ -293,8 +293,8 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 /* The head names the two halves in the week strip's language: DM Mono caps
    under the scoring cards' crown and trophy, each half tinted from the top in
    its colour with a 2px bar under it. Each half is also a button: it swaps the
-   rows for that board's race chart (a small line-chart glyph after the name
-   says so); pressed, its bar thickens and the other half steps back. */
+   rows for that board's race chart; pressed, its bar thickens and the other
+   half steps back. */
 .st-head {
   position: relative; z-index: 1; display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr) minmax(0, 1fr) var(--pe);
   border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6));
@@ -311,8 +311,6 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
 button.st-side { border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
 button.st-side.league { border-left: 1px solid var(--b-gold); }
-.st-side > span { display: inline-flex; align-items: center; gap: 6px; }
-.st-side .st-graph { width: 12px; height: 12px; stroke-width: 1.5; filter: none; opacity: .75; }
 .st-side.on { box-shadow: inset 0 -3px 0 var(--c); }
 .board[data-chart] .st-side:not(.on) { opacity: .5; }
 /* A pressed head: the rows give way to the board's race chart. The place
@@ -328,6 +326,9 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
 .st-chart-plot { min-width: 0; background: var(--s2); }
 .race.st-race svg { max-width: none; width: 100%; height: auto; padding: 0; margin: 0; }
 .st-key { padding: 10px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); }
+.st-key b { font-weight: inherit; }
+.st-key b.show { color: var(--show-hi); }
+.st-key b.league { color: var(--league-hi); }
 .st-race path.rc-line { stroke-width: 1.6; }
 .st-race .rc-grid { stroke: var(--b-gold); } /* like the row rules it stands in for */
 .race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
