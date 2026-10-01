@@ -468,6 +468,15 @@ const fontsIn = Promise.race([
   new Promise((r) => setTimeout(r, 1200)),
 ]);
 
+// The tab bar is right from the first frame, before the data and fonts arrive:
+// the selected tab's dark text over the gold panel (it had been grey there
+// until loading finished), on the page the address asks for.
+{
+  const i = Math.max(0, PAGES.indexOf(location.hash.split("/")[2]));
+  $(".tabs").style.setProperty("--i", i);
+  $$(".tab").forEach((t, j) => t.setAttribute("aria-selected", j === i));
+}
+
 try {
   const [text, allTime] = await Promise.all([loadText(), loadStats(), fontsIn]);
   SERIES = buildSeries(parseCSV(text));
