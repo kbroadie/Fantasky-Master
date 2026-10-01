@@ -86,65 +86,115 @@ function slide(d, e) {
 // forward and fade the rest; tap a point to read it in the caption.
 
 function raceChart(d, cur) {
-  const upTo = Math.max(cur, d.weeksScored); // the lines run to the latest episode scored
-  const names = d.names, eps = Array.from({ length: upTo }, (_, i) => i + 1);
-  const total = Object.fromEntries(names.map((n) => [n, [0]]));
-  for (const e of eps) for (const n of names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  const end = Math.max(cur, d.weeksScored); // the lines run to the latest episode scored
+  const total = Object.fromEntries(d.names.map((n) => [n, [0]]));
+  for (let e = 1; e <= end; e++) for (const n of d.names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
+  return `
+    <div class="card race">
+      <div class="card-head"><span>The race so far</span><span class="legend">points behind the leader</span></div>
+      ${raceSvg({ names: d.names, cur, end, last: d.episodes.length, total: (n, e) => total[n][e], color: (n) => d.cast[n].color, label: (n) => n.slice(0, 3), unit: "points" })}
+      <p class="rc-cap"></p>
+    </div>`;
+}
+
+/**
+ * The race chart's SVG, shared by Episodes (five contestants) and Standings
+ * (every player, on each board): each line is one name's gap to the leader
+ * after every episode up to `end`, with a dot at `cur` and an end label
+ * (`label`, then the gap; the leader's total). Labels stay 15 apart, so the
+ * plot grows taller with more names. `cls(n)` adds a class to a name's group.
+ * `exact` (Standings): every label sits level with its line's end, with no
+ * hairlines: names tied at the end share a row, side by side, and the y scale
+ * is fitted to the rows (warp): each step between neighbouring rows gets 15px,
+ * or 4px a point if that's more, and any dip below the last row half that, so
+ * close finishes stay apart and a deep slump doesn't make the chart a canyon.
+ */
+export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "", exact = false, width = 340 }) {
+  const eps = Array.from({ length: end }, (_, i) => i + 1);
   // The gap to the leader after each episode: 0 for the leader, negative below.
-  const best = Object.fromEntries(eps.map((e) => [e, Math.max(...names.map((n) => total[n][e]))]));
-  const gap = (n, e) => total[n][e] - best[e];
+  const best = Object.fromEntries(eps.map((e) => [e, Math.max(...names.map((n) => total(n, e)))]));
+  const gap = (n, e) => total(n, e) - best[e];
   const leaders = (e) => names.filter((n) => !gap(n, e));
-  const sorted = (e) => [...names].sort((a, b) => total[b][e] - total[a][e]);
-  const rank = (e, name) => rankWithTies(sorted(e), (n) => total[n][e]).get(name);
+  const sorted = (e) => [...names].sort((a, b) => total(b, e) - total(a, e));
+  const rank = (e, name) => rankWithTies(sorted(e), (n) => total(n, e)).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
-  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  const W = 340, L = 10, R = 330, T = 12, B = 160, H = B + 24; // the plot fills the card
+  const step = niceStep(deepest), yMin = exact ? -deepest : -Math.ceil(deepest / step) * step;
+  // The end labels' rows: one per name, or (exact) one per gap at the end.
+  const ends = sorted(end), rows = exact ? [...new Set(ends.map((m) => gap(m, end)))].map((g) => ends.filter((m) => gap(m, end) === g)) : ends.map((m) => [m]);
+  // The plot fills the card, and is tall enough for every row 15 apart: by
+  // count (pushed apart where they crowd), or (exact) by the warp, a scale
+  // fitted to the rows: piecewise linear between them, 15px a step at least
+  // (4px a point beyond that), and half that below the last row; stretched to
+  // 148px if it comes out shorter.
+  // Exact charts are drawn at their real width (`width`, measured), so text
+  // is true size and the edges line up with the board.
+  const W = exact ? Math.round(width) : 340, L = exact ? 12 : 10, R = exact ? W - 12 : 330, T = 12;
+  const depths = rows.map((r) => -gap(r[0], end)), KP = 4;
+  const steps = depths.slice(1).map((dd, i) => Math.max(15, KP * (dd - depths[i])));
+  const tail = (deepest - depths.at(-1)) * KP / 2;
+  const span = steps.reduce((a, b) => a + b, 0) + tail, fit = span < 148 ? 148 / (span || 1) : 1;
+  const knots = steps.reduce((a, st) => [...a, a.at(-1) + st], [0]);
+  const warp = (dd) => {
+    const i = depths.findIndex((k, j) => j + 1 < depths.length && dd <= depths[j + 1]);
+    return fit * (i < 0 ? knots.at(-1) + (dd - depths.at(-1)) * KP / 2 : knots[i] + (dd - depths[i]) / (depths[i + 1] - depths[i]) * steps[i]);
+  };
+  const B = exact ? T + Math.max(148, Math.ceil(fit * span)) : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
-  // Labels: the three-letter name just right of the line's end, then the
-  // number right-aligned in a column (NAME is the name's width, DIG a digit's).
-  // The plot fills the card (to R); only when this episode's line ends would
-  // leave too little room for the labels (episodes 9 and 10) does the axis
-  // tighten just enough to keep them to the right.
-  const NAME = 26, DIG = 7.4, num = (m) => (gap(m, upTo) ? `−${-gap(m, upTo)}` : `${total[m][upTo]}`);
-  const numW = Math.max(...names.map((m) => num(m).length)) * DIG;
-  const last = d.episodes.length, LBL = 14 + NAME + 6 + numW + 4;
-  const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, upTo - 1));
-  const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
+  // Labels: the short name just right of the line's end, then the
+  // number right-aligned in a column (NAME is the widest name, DIG a digit's).
+  // The plot fills the card (to R); only when the lines' ends would leave too
+  // little room for the labels (late episodes) does the axis tighten just
+  // enough to keep them to the right.
+  const NAME = Math.max(...names.map((m) => label(m).length)) * 26 / 3, DIG = 7.4; // 26 for three letters
+  const num = (m) => (gap(m, end) ? `−${-gap(m, end)}` : `${total(m, end)}`);
+  const numW = Math.max(...names.map((m) => num(m).length)) * DIG, per = Math.max(...rows.map((r) => r.length));
+  // Exact charts keep the labels in a fixed column at the right, the same
+  // place every week: the number right-aligned, then the names (so a long
+  // tie never pushes a number away from its line), and the lines run the
+  // full width to meet them, the axis covering only the episodes scored.
+  const namesW = per * (NAME + 6) - 6;
+  const LBL = 14 + per * (NAME + 6) + numW + 4;
+  const nameX = (lx, i) => (exact ? R - namesW : lx + 14) + i * (NAME + 6);
+  const numX = (lx) => (exact ? R - namesW - 8 : lx + 14 + per * (NAME + 6) + numW);
+  const xEnd = exact ? R - namesW - 8 - numW - 12 : Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
+  const span1 = exact ? end : last;
+  const x = (e) => (span1 > 1 ? L + ((e - 1) / (span1 - 1)) * (xEnd - L) : xEnd), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
   const f1 = (v) => v.toFixed(1);
-  const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
-  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
-  const xAxis = d.episodes.map(({ ep: e }) => `<text class="rc-axis${e === cur ? " now" : e > upTo ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
+  const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
+  // Exact gridlines run edge to edge, like the board's row rules.
+  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${exact ? 0 : L}" x2="${exact ? W : R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  const xAxis = Array.from({ length: span1 }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
   // numbers), then push up only the ones that still crowd. A hairline joins a moved label to its line.
-  const ends = sorted(upTo), labelY = {};
-  ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, upTo)), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
-  labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
-  for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
-  // Leader drawn last, so its line sits on top. Each contestant is one group
+  const labelY = {}, slot = {};
+  if (exact) for (const r of rows) r.forEach((m, i) => { labelY[m] = y(gap(m, end)); slot[m] = i; });
+  else {
+    ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, end)), i ? labelY[ends[i - 1]] + 15 : -Infinity); slot[m] = 0; });
+    labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
+    for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
+  }
+  // Leader drawn last, so its line sits on top. Each name is one group
   // (data-who) so a tap can bring it forward and fade the rest.
   const lines = [...ends].reverse().map((name) => {
-    const c = d.cast[name].color, pts = eps.map((e) => [x(e), y(gap(name, e))]);
+    const c = color(name), pts = eps.map((e) => [x(e), y(gap(name, e))]);
     const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
     // One point on each line: the episode on show.
     const [dx, dy] = pts[cur - 1], dots = `<circle class="rc-pt now" cx="${f1(dx)}" cy="${f1(dy)}" r="4.5" style="fill:${c}"/>`;
     const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    const label = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(name.slice(0, 3))}</text>`
-      + `<text class="rc-name rc-total" x="${f1(lx + 14 + NAME + 6 + numW)}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
+    // Tied names (exact) sit side by side; each draws the row's number, in the
+    // same place, so it stays readable whichever one is followed.
+    const text = `<text class="rc-name" x="${f1(nameX(lx, slot[name]))}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
+      + `<text class="rc-name rc-total${exact && !gap(name, end) ? " top" : ""}" x="${f1(numX(lx))}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);
-      const say = `Ep ${e} · ${name} · ${total[name][e]} points · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
+      const say = `Ep ${e} · ${name} · ${total(name, e)} ${unit} · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
       return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
     }).join("");
-    return `<g data-who="${esc(name)}">${path}${dots}${lead}${label}${hits}</g>`;
+    return `<g data-who="${esc(name)}"${cls(name) ? ` class="${cls(name)}"` : ""}>${path}${dots}${lead}${text}${hits}</g>`;
   }).join("");
-  const summary = ends.map((m) => `${m} ${gap(m, upTo) ? `${-gap(m, upTo)} behind` : `leads on ${total[m][upTo]}`}`).join(", ");
-  return `
-    <div class="card race">
-      <div class="card-head"><span>The race so far</span><span class="legend">points behind the leader</span></div>
-      <svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Points behind the leader after episode ${upTo}: ${esc(summary)}">${grid}${xAxis}${lines}</svg>
-      <p class="rc-cap"></p>
-    </div>`;
+  const summary = ends.map((m) => `${m} ${gap(m, end) ? `${-gap(m, end)} behind` : `leads on ${total(m, end)}`}`).join(", ");
+  return `<svg viewBox="0 0 ${W} ${H}"${exact ? ` width="${W}" height="${H}"` : ""} role="img" aria-label="${esc(`${unit[0].toUpperCase()}${unit.slice(1)} behind the leader after episode ${end}: ${summary}`)}">${grid}${xAxis}${lines}</svg>`;
 }

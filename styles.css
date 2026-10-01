@@ -292,7 +292,9 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .board .pc:last-child { border-bottom: 0; }
 /* The head names the two halves in the week strip's language: DM Mono caps
    under the scoring cards' crown and trophy, each half tinted from the top in
-   its colour with a 2px bar under it. It's a label, not a control. */
+   its colour with a 2px bar under it. Each half is also a button: it swaps the
+   rows for that board's race chart; pressed, its bar thickens and the other
+   half steps back. */
 .st-head {
   position: relative; z-index: 1; display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr) minmax(0, 1fr) var(--pe);
   border-bottom: 1px solid var(--b-gold); background: linear-gradient(180deg, rgba(31, 27, 31, .35), rgba(20, 17, 20, .6));
@@ -307,6 +309,29 @@ main { padding-top: calc(var(--bar-h) + env(safe-area-inset-top)); }
 .st-side.show { grid-column: 2; --c: var(--show-hi); --b: var(--show); }
 .st-side.league { grid-column: 3 / 5; --c: var(--league-hi); --b: var(--league); border-left: 1px solid var(--b-gold); }
 .st-side svg { width: 15px; height: 15px; fill: none; stroke: var(--c); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 4px var(--b)); }
+button.st-side { border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+button.st-side.league { border-left: 1px solid var(--b-gold); }
+.st-side.on { box-shadow: inset 0 -3px 0 var(--c); }
+.board[data-chart] .st-side:not(.on) { opacity: .5; }
+/* A pressed head: the rows give way to the board's race chart. The place
+   column runs on down its left (the head's strip, continued), and the chart
+   fills the rest at its real width, in the card's solid colour (which the
+   labels' halo assumes), covering the head's glow and grain. Its key reads
+   like a caption, from the chart's left edge; its gridlines run edge to edge
+   like the row rules; its lines are lighter than Episodes', as fifteen cross. */
+.board .st-chart { display: none; position: relative; z-index: 1; }
+.board[data-chart] .rows { display: none; }
+.board[data-chart] .st-chart { display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr); }
+.st-chart-rk { background: linear-gradient(rgba(10, 8, 10, .45), rgba(10, 8, 10, .45)), var(--s2); box-shadow: inset -1px 0 0 var(--b-gold); }
+.st-chart-plot { min-width: 0; background: var(--s2); }
+.race.st-race svg { max-width: none; width: 100%; height: auto; padding: 0; margin: 0; }
+.st-key { padding: 10px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); }
+.st-key b { font-weight: inherit; }
+.st-key b.show { color: var(--show-hi); }
+.st-key b.league { color: var(--league-hi); }
+.st-race path.rc-line { stroke-width: 1.6; }
+.st-race .rc-grid { stroke: var(--b-gold); } /* like the row rules it stands in for */
+.race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
 
 /* Rows are not compositing layers of their own: with one per row, iOS ran
    short of layer memory and dropped rows' text after scrolling. */

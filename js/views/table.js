@@ -7,6 +7,7 @@
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
+import { raceSvg } from "./episodes.js";
 
 /** The week on show: state.wk, or the latest scored week. */
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
@@ -94,15 +95,73 @@ export function standingsSlides(d) {
   return d.episodes.map(({ ep: w }) => `
     <section class="slide st-slide" data-week="${w}">
       <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d, w)}</div>
-      ${w > d.weeksScored && !state.edit ? "" : `<div class="card board">
+      ${w > d.weeksScored && !state.edit ? "" : board(d, w)}
+    </section>`).join("");
+}
+
+/**
+ * The board: its head, then either the rows or, while a head is pressed
+ * (state.stView), that board's race chart in their place (boardChart): the
+ * place column runs on down its left, and the chart fills the rest. The chart
+ * is drawn at its measured width, so main.js fills it in (syncBoards).
+ */
+function board(d, w) {
+  const k = chartable(d, w) ? state.stView : null;
+  return `<div class="card board"${k ? ` data-chart="${k}"` : ""}>
         <div class="st-head">
           <span class="st-rk" aria-hidden="true"></span>
-          <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
-          <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
+          ${["show", "league"].map((b) => boardHead(d, w, b, k)).join("")}
         </div>
         <div class="rows">${standingsRows(d, w)}</div>
-      </div>`}
-    </section>`).join("");
+        <div class="st-chart"><i class="st-chart-rk" aria-hidden="true"></i><div class="st-chart-plot"></div></div>
+      </div>`;
+}
+/** Only a scored week has a race to draw (an unscored one has a board only in edit mode). */
+export const chartable = (d, w) => w <= d.weeksScored;
+/** A head: the board's crown or trophy and name; a button that swaps the rows for its race chart, and back. */
+export function boardHead(d, w, b, k) {
+  const icon = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[b === "show" ? "crown" : "trophy"]}"/></svg>`;
+  if (!chartable(d, w)) return `<span class="st-side ${b}">${icon}${BOARD[b]}</span>`;
+  return `<button type="button" class="st-side ${b}${k === b ? " on" : ""}" data-board="${b}" aria-pressed="${k === b}" aria-label="${BOARD[b]}: ${k === b ? "show the standings" : "show the race so far"}">${icon}${BOARD[b]}</button>`;
+}
+
+/**
+ * Each player's colour in the race charts (on request: "more colorful"): the
+ * same in both boards and every week, so a player can be followed from one to
+ * the other. The hues are spaced evenly round the colour wheel (24° apart for
+ * 15 players), dealt out in alphabetical order by a stride of about 0.38 of
+ * the way round (so names next to each other land far apart), and hues next
+ * to each other on the wheel alternate light and dark. OKLCH keeps every hue
+ * equally vivid on the dark card.
+ */
+const playerColor = (d) => {
+  const order = d.players.map((q) => q.name).sort((a, b) => a.localeCompare(b)), n = order.length;
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  let k = Math.round(n * 0.382);
+  while (gcd(k, n) !== 1) k++;
+  return (m) => {
+    const slot = (order.indexOf(m) * k) % n;
+    return `oklch(${slot % 2 ? 0.7 : 0.84} 0.15 ${(20 + slot * 360 / n).toFixed(1)})`;
+  };
+};
+
+/**
+ * A board's race (on request: the Episodes tab's "The race so far", for every
+ * player), shown in place of the rows while its head is pressed: each
+ * player's gap to that board's leader after every scored week, with a dot at
+ * the week on show. Each end label sits level with its line (exact: no
+ * hairlines; tied players share a row, and the chart is as tall as that
+ * takes): the shortest prefix that tells every player apart, then the gap.
+ * Each player has their own colour (playerColor), as each contestant has on
+ * Episodes; tap a line to follow it.
+ */
+export function boardChart(d, w, k, width) {
+  const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
+  let n = 3;
+  while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
+  const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
+    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true, width });
+  return `<div class="race st-race ${k}"><p class="st-key" aria-label="${BOARD[k]} points behind the leader">Δ <b class="${k}">${BOARD[k]}</b> pts to leader</p>${svg}<p class="rc-cap"></p></div>`;
 }
 
 /**

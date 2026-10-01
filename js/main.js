@@ -5,7 +5,7 @@ import { loadText, parseCSV, buildSeries } from "./csv.js";
 import { initEdit } from "./edit.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsSlides, stWeek, weekTabs, rowMore } from "./views/table.js";
+import { standingsSlides, stWeek, weekTabs, rowMore, boardChart, boardHead, chartable } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -55,6 +55,7 @@ function renderStandings(d) {
   $("#st-tabs").innerHTML = weekTabs(d);
   $("#st-body").innerHTML = standingsSlides(d);
   for (const s of $("#st-body").children) { sizes.observe(s); syncOpen(s); }
+  if (state.stView) syncBoards(true);
   queueLight();
 }
 
@@ -232,6 +233,15 @@ $("#p-standings").addEventListener("click", (e) => {
     queueLight();
     return;
   }
+  // A board's head (Show or League) swaps the rows for that board's race
+  // chart, full width; the same head swaps back, the other switches boards.
+  // It holds for every week (state.stView).
+  const head = e.target.closest(".st-side[data-board]");
+  if (head) {
+    state.stView = state.stView === head.dataset.board ? null : head.dataset.board;
+    syncBoards();
+    return;
+  }
   // An opened half's card title flips it between Points per episode and The
   // race so far; the choice holds for every row opened after it.
   const swap = e.target.closest(".xp-swap");
@@ -287,6 +297,25 @@ function syncOpen(slide) {
   for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
   if (want && !(want.classList.contains("open") && want.dataset.open === o.side && want.dataset.view === state.xpView)) openRow(want, o.side);
 }
+/**
+ * Apply state.stView to every week's board: its race chart in place of the
+ * rows, or the rows. The chart is drawn at its real width, measured once (every
+ * week's board is the same width); `force` redraws them all (a resize, or a
+ * fresh render).
+ */
+function syncBoards(force = false) {
+  let width = 0;
+  for (const s of $$("#st-body .st-slide")) {
+    const board = s.querySelector(".board"), w = +s.dataset.week;
+    if (!board) continue;
+    const k = chartable(state.d, w) ? state.stView : null, plot = board.querySelector(".st-chart-plot");
+    if (!force && board.dataset.chart === (k || undefined) && (!k || plot.firstChild)) continue;
+    if (k) board.dataset.chart = k; else delete board.dataset.chart;
+    if (k && !width) width = plot.clientWidth;
+    plot.innerHTML = k ? boardChart(state.d, w, k, width) : "";
+    board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
+  }
+}
 /** Apply state.open: to its week, and to any week that still has a row open (closed at once). */
 function syncAll() {
   for (const s of $$("#st-body .st-slide")) if (+s.dataset.week === state.open?.wk || s.querySelector(".pc.open")) syncOpen(s);
@@ -316,10 +345,11 @@ const heatTap = (e) => {
 };
 $("#cast-body").addEventListener("click", heatTap);
 
-// The race chart (Episodes): tap a line, name or point to follow that
-// contestant (their line comes forward, the rest fade); a point also reads out
-// that week in the caption. Tap them again, or empty chart, to see everyone.
-$("#ep-body").addEventListener("click", (e) => {
+// The race charts (Episodes, and both boards' under each Standings week): tap
+// a line, name or point to follow that contestant or player (their line comes
+// forward, the rest fade); a point also reads out that week in the caption.
+// Tap them again, or empty chart, to see everyone.
+function raceTap(e) {
   const card = e.target.closest(".race");
   if (!card) return;
   const who = e.target.closest("g[data-who]"), hit = e.target.closest(".rc-hit");
@@ -337,7 +367,9 @@ $("#ep-body").addEventListener("click", (e) => {
   card.classList.add("focus");
   if (hit) { hit.classList.add("on"); cap.textContent = hit.dataset.say; }
   else cap.textContent = "";
-});
+}
+$("#ep-body").addEventListener("click", raceTap);
+$("#st-body").addEventListener("click", raceTap);
 
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));
@@ -398,7 +430,7 @@ function cardLight() {
 const queueLight = () => { if (!lraf) lraf = requestAnimationFrame(cardLight); };
 addEventListener("scroll", queueLight, { passive: true });
 
-addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); for (const r of $$("#st-body .pc.open")) placeLine(r); });
+addEventListener("resize", () => { for (const sw of [ST, EP, CAST]) if ($(sw.body).offsetParent) jump(sw, sw.get()); queueLight(); edges(); for (const r of $$("#st-body .pc.open")) placeLine(r); if (state.stView) syncBoards(true); });
 
 addEventListener("hashchange", () => {
   const h = readHash();
