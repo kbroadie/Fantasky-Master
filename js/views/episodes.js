@@ -200,7 +200,7 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // (data-who) so a tap can bring it forward and fade the rest.
   const lines = [...ends].reverse().map((name) => {
     const c = color(name), pts = eps.map((e) => [x(e), y(gap(name, e))]);
-    const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}" style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
+    const path = pts.length > 1 ? `<path class="rc-line" d="${smooth(pts)}"${exact ? ' pathLength="1"' : ""} style="stroke:${c}"/><path class="rc-tap" d="${smooth(pts)}"/>` : "";
     // One point on each line: the episode on show.
     const [dx, dy] = pts[cur - 1], dots = `<circle class="rc-pt now" cx="${f1(dx)}" cy="${f1(dy)}" r="4.5" style="fill:${c}"/>`;
     const [lx, ly] = pts.at(-1), ty = labelY[name];

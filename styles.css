@@ -319,10 +319,21 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
    board's name in its colour, a lowercase legend at the right), the same faint
    white gridlines; drawn at its real width. Its lines are lighter than
    Episodes', as fifteen cross. */
-.board .st-chart { display: none; position: relative; z-index: 1; }
+/* It opens like a row's card (on request): its space grows from nothing
+   (grid rows 0fr → 1fr, .3s, only on the board tapped, .ease), pushing the
+   rows down, and closes the same way; then its lines draw in left to right
+   and the labels and dots fade in, like an opened player's race card (.draw,
+   set in main.js on the board tapped). */
+.board .st-chart { display: grid; grid-template-rows: 0fr; position: relative; z-index: 1; background: linear-gradient(170deg, var(--s2), var(--s1)); }
+.board.ease .st-chart { transition: grid-template-rows .3s var(--ease); }
+.board[data-chart] .st-chart { grid-template-rows: 1fr; }
+.st-chart-in { overflow: hidden; min-height: 0; }
 .board[data-chart] .st-chart + .rows { border-top: 1px solid var(--b-gold); }
-.board[data-chart] .st-chart { display: block; padding: 10px 10px 16px; background: linear-gradient(170deg, var(--s2), var(--s1)); }
-.st-chart .card { margin: 0; }
+.st-chart .card { margin: 10px 10px 16px; }
+@keyframes rc-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+.st-race.draw path.rc-line { stroke-dasharray: 1; animation: rc-draw .8s var(--ease) .12s both; }
+.st-race.draw .rc-pt, .st-race.draw .rc-name { animation: jr-fade .6s var(--ease) .3s both; }
+@media (prefers-reduced-motion: reduce) { .board.ease .st-chart { transition: none; } .st-race.draw path.rc-line, .st-race.draw .rc-pt, .st-race.draw .rc-name { animation: none; } }
 .st-chart .st-race.show { border-color: var(--show-edge); }
 .st-chart .st-race.league { border-color: var(--league-edge); }
 .st-race .card-head { gap: 8px; letter-spacing: .06em; white-space: nowrap; }
