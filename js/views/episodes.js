@@ -109,7 +109,7 @@ function raceChart(d, cur) {
  * or 4px a point if that's more, and any dip below the last row half that, so
  * close finishes stay apart and a deep slump doesn't make the chart a canyon.
  */
-export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "", exact = false, width = 340 }) {
+export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "", exact = false, width = 340, minPlot = 0, measure = false }) {
   const eps = Array.from({ length: end }, (_, i) => i + 1);
   // The gap to the leader after each episode: 0 for the leader, negative below.
   const best = Object.fromEntries(eps.map((e) => [e, Math.max(...names.map((n) => total(n, e)))]));
@@ -127,18 +127,21 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // (4px a point beyond that), and half that below the last row; stretched to
   // 148px if it comes out shorter.
   // Exact charts are drawn at their real width (`width`, measured), so text
-  // is true size and the edges line up with the board.
-  const W = exact ? Math.round(width) : 340, L = exact ? 12 : 10, R = exact ? W - 12 : 330, T = 12;
+  // is true size, inset 16px like the player race card's plot.
+  const W = exact ? Math.round(width) : 340, L = exact ? 16 : 10, R = exact ? W - 16 : 330, T = 12;
   const depths = rows.map((r) => -gap(r[0], end)), KP = 4;
   const steps = depths.slice(1).map((dd, i) => Math.max(15, KP * (dd - depths[i])));
   const tail = (deepest - depths.at(-1)) * KP / 2;
-  const span = steps.reduce((a, b) => a + b, 0) + tail, fit = span < 148 ? 148 / (span || 1) : 1;
+  // The plot is at least 148px, and at least `minPlot` (so a board's two
+  // charts can be made the same height); `measure` returns just its height.
+  const span = steps.reduce((a, b) => a + b, 0) + tail, plotH = Math.max(148, minPlot, Math.ceil(span)), fit = plotH / (span || 1);
+  if (exact && measure) return plotH;
   const knots = steps.reduce((a, st) => [...a, a.at(-1) + st], [0]);
   const warp = (dd) => {
     const i = depths.findIndex((k, j) => j + 1 < depths.length && dd <= depths[j + 1]);
     return fit * (i < 0 ? knots.at(-1) + (dd - depths.at(-1)) * KP / 2 : knots[i] + (dd - depths[i]) / (depths[i + 1] - depths[i]) * steps[i]);
   };
-  const B = exact ? T + Math.max(148, Math.ceil(fit * span)) : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
+  const B = exact ? T + plotH : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
   // Labels: the short name just right of the line's end, then the
@@ -162,8 +165,7 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const x = (e) => (span1 > 1 ? L + ((e - 1) / (span1 - 1)) * (xEnd - L) : xEnd), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
-  // Exact gridlines run edge to edge, like the board's row rules.
-  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${exact ? 0 : L}" x2="${exact ? W : R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = Array.from({ length: span1 }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
@@ -193,7 +195,8 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
       const say = `Ep ${e} · ${name} · ${total(name, e)} ${unit} · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
       return `<circle class="rc-hit" cx="${f1(a)}" cy="${f1(b)}" r="12" data-say="${esc(say)}"><title>${esc(say)}</title></circle>`;
     }).join("");
-    return `<g data-who="${esc(name)}"${cls(name) ? ` class="${cls(name)}"` : ""}>${path}${dots}${lead}${text}${hits}</g>`;
+    // (Exact) how far behind they are at the week on show, for the legend.
+    return `<g data-who="${esc(name)}"${exact ? ` data-behind="${-gap(name, cur)}"` : ""}${cls(name) ? ` class="${cls(name)}"` : ""}>${path}${dots}${lead}${text}${hits}</g>`;
   }).join("");
   const summary = ends.map((m) => `${m} ${gap(m, end) ? `${-gap(m, end)} behind` : `leads on ${total(m, end)}`}`).join(", ");
   return `<svg viewBox="0 0 ${W} ${H}"${exact ? ` width="${W}" height="${H}"` : ""} role="img" aria-label="${esc(`${unit[0].toUpperCase()}${unit.slice(1)} behind the leader after episode ${end}: ${summary}`)}">${grid}${xAxis}${lines}</svg>`;

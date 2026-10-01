@@ -312,6 +312,8 @@ function syncBoards(force = false) {
     if (!force && board.dataset.chart === (k || undefined) && (!k || plot.firstChild)) continue;
     if (k) board.dataset.chart = k; else delete board.dataset.chart;
     if (k && !width) width = plot.clientWidth;
+    plot.classList.remove("show", "league");
+    if (k) plot.classList.add(k);
     plot.innerHTML = k ? boardChart(state.d, w, k, width) : "";
     board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
   }
@@ -360,6 +362,7 @@ function raceTap(e) {
   if (!who || same) {
     card.classList.remove("focus");
     cap.textContent = "";
+    setBehind(card, null);
     return;
   }
   who.classList.add("on");
@@ -367,6 +370,12 @@ function raceTap(e) {
   card.classList.add("focus");
   if (hit) { hit.classList.add("on"); cap.textContent = hit.dataset.say; }
   else cap.textContent = "";
+  setBehind(card, who);
+}
+/** A board race's legend, like the player race card's: the followed player's gap ("4 behind the leader"). */
+function setBehind(card, who) {
+  const leg = card.querySelector(".st-behind");
+  if (leg) leg.textContent = who ? `${who.dataset.behind} behind the leader` : "points behind the leader";
 }
 $("#ep-body").addEventListener("click", raceTap);
 $("#st-body").addEventListener("click", raceTap);
