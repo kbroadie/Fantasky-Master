@@ -104,8 +104,10 @@ function raceChart(d, cur) {
  * (`label`, then the gap; the leader's total). Labels stay 15 apart, so the
  * plot grows taller with more names. `cls(n)` adds a class to a name's group.
  * `exact` (Standings): every label sits level with its line's end, with no
- * hairlines: names tied at the end share a row, side by side, and the plot is
- * as tall as it takes to keep different rows 15 apart.
+ * hairlines: names tied at the end share a row, side by side, and the y scale
+ * is fitted to the rows (warp): each step between neighbouring rows gets 15px,
+ * or 4px a point if that's more, and any dip below the last row half that, so
+ * close finishes stay apart and a deep slump doesn't make the chart a canyon.
  */
 export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "", exact = false }) {
   const eps = Array.from({ length: end }, (_, i) => i + 1);
@@ -120,11 +122,21 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // The end labels' rows: one per name, or (exact) one per gap at the end.
   const ends = sorted(end), rows = exact ? [...new Set(ends.map((m) => gap(m, end)))].map((g) => ends.filter((m) => gap(m, end) === g)) : ends.map((m) => [m]);
   // The plot fills the card, and is tall enough for every row 15 apart: by
-  // count (pushed apart where they crowd), or (exact) by scale, so the
-  // closest two gaps still come out 15 apart.
-  const closest = Math.min(...rows.slice(1).map((r, i) => gap(rows[i][0], end) - gap(r[0], end)));
-  const W = 340, L = 10, R = 330, T = 12, H0 = exact ? Math.max(148, Math.ceil(15 * deepest / closest) || 0) : 0;
-  const B = exact ? T + H0 : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
+  // count (pushed apart where they crowd), or (exact) by the warp, a scale
+  // fitted to the rows: piecewise linear between them, 15px a step at least
+  // (4px a point beyond that), and half that below the last row; stretched to
+  // 148px if it comes out shorter.
+  const W = 340, L = 10, R = 330, T = 12;
+  const depths = rows.map((r) => -gap(r[0], end)), KP = 4;
+  const steps = depths.slice(1).map((dd, i) => Math.max(15, KP * (dd - depths[i])));
+  const tail = (deepest - depths.at(-1)) * KP / 2;
+  const span = steps.reduce((a, b) => a + b, 0) + tail, fit = span < 148 ? 148 / (span || 1) : 1;
+  const knots = steps.reduce((a, st) => [...a, a.at(-1) + st], [0]);
+  const warp = (dd) => {
+    const i = depths.findIndex((k, j) => j + 1 < depths.length && dd <= depths[j + 1]);
+    return fit * (i < 0 ? knots.at(-1) + (dd - depths.at(-1)) * KP / 2 : knots[i] + (dd - depths[i]) / (depths[i + 1] - depths[i]) * steps[i]);
+  };
+  const B = exact ? T + Math.max(148, Math.ceil(fit * span)) : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
   // Labels: the short name just right of the line's end, then the
@@ -141,7 +153,7 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const nameX = (lx, i) => (exact ? lx + 12 + numW + 8 : lx + 14) + i * (NAME + 6);
   const numX = (lx) => (exact ? lx + 12 + numW : lx + 14 + per * (NAME + 6) + numW);
   const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
-  const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
+  const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
   const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
