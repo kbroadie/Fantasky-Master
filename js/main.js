@@ -316,10 +316,11 @@ const heatTap = (e) => {
 };
 $("#cast-body").addEventListener("click", heatTap);
 
-// The race chart (Episodes): tap a line, name or point to follow that
-// contestant (their line comes forward, the rest fade); a point also reads out
-// that week in the caption. Tap them again, or empty chart, to see everyone.
-$("#ep-body").addEventListener("click", (e) => {
+// The race charts (Episodes, and both boards' under each Standings week): tap
+// a line, name or point to follow that contestant or player (their line comes
+// forward, the rest fade); a point also reads out that week in the caption.
+// Tap them again, or empty chart, to see everyone.
+function raceTap(e) {
   const card = e.target.closest(".race");
   if (!card) return;
   const who = e.target.closest("g[data-who]"), hit = e.target.closest(".rc-hit");
@@ -337,7 +338,9 @@ $("#ep-body").addEventListener("click", (e) => {
   card.classList.add("focus");
   if (hit) { hit.classList.add("on"); cap.textContent = hit.dataset.say; }
   else cap.textContent = "";
-});
+}
+$("#ep-body").addEventListener("click", raceTap);
+$("#st-body").addEventListener("click", raceTap);
 
 // Long task names are clamped to two lines; tap one to read it in full.
 $("#ep-body").addEventListener("click", (e) => e.target.closest(".tname")?.classList.toggle("full"));

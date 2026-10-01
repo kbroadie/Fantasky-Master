@@ -7,6 +7,7 @@
 import { esc, listing, tier, ord, fmtDay, fmtWhen, smooth, niceStep, state } from "../ui.js";
 import { pickChooser } from "../edit.js";
 import { barsCard, median } from "./cast.js";
+import { raceSvg } from "./episodes.js";
 
 /** The week on show: state.wk, or the latest scored week. */
 export const stWeek = (d) => Math.min(Math.max(1, state.wk || d.weeksScored), d.episodes.length);
@@ -102,7 +103,32 @@ export function standingsSlides(d) {
         </div>
         <div class="rows">${standingsRows(d, w)}</div>
       </div>`}
+      ${w > d.weeksScored ? "" : standingsRace(d, w, "show") + standingsRace(d, w, "league")}
     </section>`).join("");
+}
+
+/**
+ * Under a scored week's boards, each board's race (on request: the Episodes
+ * tab's "The race so far", for every player): each player's gap to that
+ * board's leader after every scored week, with a dot at the week on show and
+ * an end label (the shortest prefix that tells every player apart, then the
+ * gap). That week's top three are in gold, silver and bronze, everyone else
+ * in the board's colour, a step back; tap a line to follow it. The chart is as
+ * tall as its labels need (15 apart).
+ */
+function standingsRace(d, w, k) {
+  const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
+  let n = 3;
+  while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
+  const rank = (m) => by[m].history[w - 1][`${k}Rank`];
+  const color = (m) => [, "var(--gold2)", "var(--silver)", "var(--bronze)"][rank(m)] || `var(--${k}-hi)`;
+  const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
+    color, label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, cls: (m) => (rank(m) > 3 ? "rest" : "") });
+  return `<div class="card race st-race ${k}">
+      <div class="card-head"><span><b>${BOARD[k]}</b> race so far</span><span class="legend">points behind the leader</span></div>
+      ${svg}
+      <p class="rc-cap"></p>
+    </div>`;
 }
 
 /**
