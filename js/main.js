@@ -426,6 +426,10 @@ try {
   // the all-time stats are available, otherwise against the league's series.
   state.allTime = allTime;
   state.stats = allTime.length ? allTimePerEpisode(allTime) : { ...perEpisodeStats(SERIES), n: 0 };
+  // A first visit opens How scoring works on Standings (League scoring is new;
+  // on request, in place of a walkthrough). Remembered per device; closed
+  // from then on unless tapped open.
+  try { if (!localStorage.getItem("fm-seen-how")) { state.how = true; localStorage.setItem("fm-seen-how", "1"); } } catch {}
   const h = readHash();
   loadSeries(h.key);
   applyArg(h.page, h.arg);
