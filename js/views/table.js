@@ -160,7 +160,8 @@ export function boardChart(d, w, k, width) {
   const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
   let n = 3;
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
-  const opts = (b) => ({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][b],
+  // The lines end at the week on show (on request).
+  const opts = (b) => ({ names, cur: w, end: w, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][b],
     color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[b]} points`, exact: true, width });
   // The Show's and League's charts are the same height each week (the taller's).
   const minPlot = Math.max(...["show", "league"].map((b) => raceSvg({ ...opts(b), measure: true })));
@@ -275,11 +276,11 @@ function raceCard(d, p, w, k) {
  * labels. The x axis runs episode 1 to 10 edge to edge (this week in gold,
  * episodes not yet scored faint). The plot is stretched to the row (SVG with
  * preserveAspectRatio none and non-scaling strokes); the gridlines and axis
- * are HTML so they never stretch. The lines run through every scored week,
- * with a dot on the opened player's line at the week on show.
+ * are HTML so they never stretch. The lines end at the week on show (on
+ * request), with a dot on the opened player's line there.
  */
 function journey(d, p, side, w) {
-  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), end = d.weeksScored, last = d.episodes.length;
+  const k = side === "show" ? "show" : "league", upTo = Math.min(w, d.weeksScored), end = upTo, last = d.episodes.length; // the lines end at the week on show
   const eps = Array.from({ length: end }, (_, i) => i + 1);
   const total = (q, e) => q.history[e - 1][k];
   const best = (e) => Math.max(...d.players.map((q) => total(q, e)));

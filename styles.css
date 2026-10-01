@@ -332,6 +332,7 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
 .race.st-race svg { max-width: none; width: 100%; height: auto; padding: 0; margin: 0; }
 .st-race path.rc-line { stroke-width: 1.6; }
 .st-race .rc-grid { stroke: rgba(255, 255, 255, .08); } /* as the player race card's */
+.rc-tick { font: 400 11px var(--fm); fill: var(--t4); paint-order: stroke; stroke: var(--s2); stroke-width: 4px; stroke-linejoin: round; } /* a gridline's value, haloed so the race's lines pass behind it */
 .race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
 
 /* Rows are not compositing layers of their own: with one per row, iOS ran

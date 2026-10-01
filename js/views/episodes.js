@@ -75,8 +75,8 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// How far each contestant is behind the leader after every episode scored so
-// far, whichever episode is on show, with a dot on each line at this one (the
+// How far each contestant is behind the leader after every episode up to the
+// one on show (on request: the lines end there), with a dot at each line's end (the
 // leader runs flat along 0 at the top; the x axis always runs 1 to 10, so the
 // race builds rightwards week by week): a smooth line in their colour (a monotone cubic Bézier, so it
 // never overshoots a point, e.g. above the leader's 0 or past a real low),
@@ -86,7 +86,7 @@ function slide(d, e) {
 // forward and fade the rest; tap a point to read it in the caption.
 
 function raceChart(d, cur) {
-  const end = Math.max(cur, d.weeksScored); // the lines run to the latest episode scored
+  const end = cur; // the lines end at the episode on show
   const total = Object.fromEntries(d.names.map((n) => [n, [0]]));
   for (let e = 1; e <= end; e++) for (const n of d.names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
   return `
@@ -129,9 +129,12 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // Exact charts are drawn at their real width (`width`, measured), so text
   // is true size, inset 16px like the player race card's plot.
   const W = exact ? Math.round(width) : 340, L = exact ? 16 : 10, R = exact ? W - 16 : 330, T = 12;
+  // (Exact) a row of tied names wraps after every two (on request), so it
+  // can take more than one line, and the next row keeps clear of them all.
+  const WRAP = exact ? 2 : Infinity, rowLines = (r) => Math.max(1, Math.ceil(r.length / WRAP));
   const depths = rows.map((r) => -gap(r[0], end)), KP = 4;
-  const steps = depths.slice(1).map((dd, i) => Math.max(15, KP * (dd - depths[i])));
-  const tail = (deepest - depths.at(-1)) * KP / 2;
+  const steps = depths.slice(1).map((dd, i) => Math.max(15 * rowLines(rows[i]), KP * (dd - depths[i])));
+  const tail = Math.max((deepest - depths.at(-1)) * KP / 2, 15 * (rowLines(rows.at(-1)) - 1));
   // The plot is at least 148px, and at least `minPlot` (so a board's two
   // charts can be made the same height); `measure` returns just its height.
   const span = steps.reduce((a, b) => a + b, 0) + tail, plotH = Math.max(148, minPlot, Math.ceil(span)), fit = plotH / (span || 1);
@@ -151,7 +154,7 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // enough to keep them to the right.
   const NAME = Math.max(...names.map((m) => label(m).length)) * 26 / 3, DIG = 7.4; // 26 for three letters
   const num = (m) => (gap(m, end) ? `−${-gap(m, end)}` : `${total(m, end)}`);
-  const numW = Math.max(...names.map((m) => num(m).length)) * DIG, per = Math.max(...rows.map((r) => r.length));
+  const numW = Math.max(...names.map((m) => num(m).length)) * DIG, per = Math.min(WRAP, Math.max(...rows.map((r) => r.length)));
   // Exact charts keep the labels in a fixed column at the right, the same
   // place every week: the number right-aligned, then the names (so a long
   // tie never pushes a number away from its line), and the lines run the
@@ -162,16 +165,32 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const numX = (lx) => (exact ? R - namesW - 8 : lx + 14 + per * (NAME + 6) + numW);
   const xEnd = exact ? R - namesW - 8 - numW - 12 : Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
   const span1 = exact ? end : last;
-  const x = (e) => (span1 > 1 ? L + ((e - 1) / (span1 - 1)) * (xEnd - L) : xEnd), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
+  const y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
+  // Exact (fitted) charts label their gridlines (on request, "rethink the
+  // horizontal grid lines": unlabelled, their uneven spacing on the fitted
+  // scale said nothing). Round values of 1, 2, 5, 10, 20… points, about six
+  // candidates, kept only where 22px clear of the top and of the last one
+  // kept. Their values sit in a gutter at the left, right-aligned beside their
+  // lines like an axis, so the race's lines start after it and never cross
+  // them; the gridlines stop at the line ends, clear of the names.
+  const kept = [];
+  if (exact) {
+    const gs = [1, 2, 5, 10, 20, 50, 100].find((v) => v >= deepest / 6) || 100;
+    for (let v = -gs, last = T; v >= -deepest; v -= gs) if (y(v) - last >= 22) { kept.push(v); last = y(v); }
+  }
+  const gutter = kept.length ? Math.max(...kept.map((v) => `−${-v}`.length)) * DIG + 8 : 0, X0 = L + gutter;
+  const x = (e) => (span1 > 1 ? X0 + ((e - 1) / (span1 - 1)) * (xEnd - X0) : xEnd);
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
-  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  let grid;
+  if (exact) grid = kept.map((v) => `<line class="rc-grid" x1="${f1(X0)}" x2="${f1(xEnd)}" y1="${f1(y(v))}" y2="${f1(y(v))}"/><text class="rc-tick" x="${f1(X0 - 6)}" y="${f1(y(v) + 4)}" text-anchor="end">−${-v}</text>`).join("");
+  else grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = Array.from({ length: span1 }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
   // numbers), then push up only the ones that still crowd. A hairline joins a moved label to its line.
-  const labelY = {}, slot = {};
-  if (exact) for (const r of rows) r.forEach((m, i) => { labelY[m] = y(gap(m, end)); slot[m] = i; });
+  const labelY = {}, slot = {}, line = {};
+  if (exact) for (const r of rows) r.forEach((m, i) => { labelY[m] = y(gap(m, end)); slot[m] = i % WRAP; line[m] = Math.floor(i / WRAP); });
   else {
     ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, end)), i ? labelY[ends[i - 1]] + 15 : -Infinity); slot[m] = 0; });
     labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
@@ -186,9 +205,10 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
     const [dx, dy] = pts[cur - 1], dots = `<circle class="rc-pt now" cx="${f1(dx)}" cy="${f1(dy)}" r="4.5" style="fill:${c}"/>`;
     const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    // Tied names (exact) sit side by side; each draws the row's number, in the
-    // same place, so it stays readable whichever one is followed.
-    const text = `<text class="rc-name" x="${f1(nameX(lx, slot[name]))}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
+    // Tied names (exact) sit side by side, two to a line; each draws the
+    // row's number, in the same place on its first line, so it stays readable
+    // whichever one is followed.
+    const text = `<text class="rc-name" x="${f1(nameX(lx, slot[name]))}" y="${f1(ty + 4 + (line[name] || 0) * 15)}" style="fill:${c}">${esc(label(name))}</text>`
       + `<text class="rc-name rc-total${exact && !gap(name, end) ? " top" : ""}" x="${f1(numX(lx))}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);

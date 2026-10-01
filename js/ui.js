@@ -86,7 +86,13 @@ export function niceStep(max) {
 /** A monotone cubic Bézier path through points sorted by x (Fritsch–Carlson). */
 export function smooth(pts) {
   const n = pts.length, f1 = (v) => v.toFixed(1);
-  if (n < 3) return `M${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join("L")}`;
+  if (n < 2) return `M${pts.map(([x, y]) => `${f1(x)},${f1(y)}`).join("L")}`;
+  // Two points (a race after week 2): a gentle S, level as it leaves and as it
+  // arrives (on request: curved, not straight), which never overshoots either.
+  if (n === 2) {
+    const [[x0, y0], [x1, y1]] = pts, h = (x1 - x0) / 2;
+    return `M${f1(x0)},${f1(y0)}C${f1(x0 + h)},${f1(y0)} ${f1(x1 - h)},${f1(y1)} ${f1(x1)},${f1(y1)}`;
+  }
   const dx = [], m = [], t = [];
   for (let i = 0; i < n - 1; i++) { dx[i] = pts[i + 1][0] - pts[i][0]; m[i] = (pts[i + 1][1] - pts[i][1]) / dx[i]; }
   t[0] = m[0]; t[n - 1] = m[n - 2];
