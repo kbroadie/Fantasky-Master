@@ -103,8 +103,11 @@ function raceChart(d, cur) {
  * after every episode up to `end`, with a dot at `cur` and an end label
  * (`label`, then the gap; the leader's total). Labels stay 15 apart, so the
  * plot grows taller with more names. `cls(n)` adds a class to a name's group.
+ * `exact` (Standings): every label sits level with its line's end, with no
+ * hairlines: names tied at the end share a row, side by side, and the plot is
+ * as tall as it takes to keep different rows 15 apart.
  */
-export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "" }) {
+export function raceSvg({ names, cur, end, last, total, color, label, unit, cls = () => "", exact = false }) {
   const eps = Array.from({ length: end }, (_, i) => i + 1);
   // The gap to the leader after each episode: 0 for the leader, negative below.
   const best = Object.fromEntries(eps.map((e) => [e, Math.max(...names.map((n) => total(n, e)))]));
@@ -113,9 +116,15 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const sorted = (e) => [...names].sort((a, b) => total(b, e) - total(a, e));
   const rank = (e, name) => rankWithTies(sorted(e), (n) => total(n, e)).get(name);
   const deepest = Math.max(1, ...eps.flatMap((e) => names.map((n) => -gap(n, e))));
-  const step = niceStep(deepest), yMin = -Math.ceil(deepest / step) * step;
-  // The plot fills the card, and is tall enough for every end label 15 apart.
-  const W = 340, L = 10, R = 330, T = 12, B = Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
+  const step = niceStep(deepest), yMin = exact ? -deepest : -Math.ceil(deepest / step) * step;
+  // The end labels' rows: one per name, or (exact) one per gap at the end.
+  const ends = sorted(end), rows = exact ? [...new Set(ends.map((m) => gap(m, end)))].map((g) => ends.filter((m) => gap(m, end) === g)) : ends.map((m) => [m]);
+  // The plot fills the card, and is tall enough for every row 15 apart: by
+  // count (pushed apart where they crowd), or (exact) by scale, so the
+  // closest two gaps still come out 15 apart.
+  const closest = Math.min(...rows.slice(1).map((r, i) => gap(rows[i][0], end) - gap(r[0], end)));
+  const W = 340, L = 10, R = 330, T = 12, H0 = exact ? Math.max(148, Math.ceil(15 * deepest / closest) || 0) : 0;
+  const B = exact ? T + H0 : Math.max(160, T + 15 * (names.length - 1)), H = B + 24;
   // The x axis always runs 1 to 10: the race starts at the left edge and
   // builds to the right week by week; episodes still to come are faint.
   // Labels: the short name just right of the line's end, then the
@@ -125,21 +134,24 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // enough to keep them to the right.
   const NAME = Math.max(...names.map((m) => label(m).length)) * 26 / 3, DIG = 7.4; // 26 for three letters
   const num = (m) => (gap(m, end) ? `−${-gap(m, end)}` : `${total(m, end)}`);
-  const numW = Math.max(...names.map((m) => num(m).length)) * DIG;
-  const LBL = 14 + NAME + 6 + numW + 4;
+  const numW = Math.max(...names.map((m) => num(m).length)) * DIG, per = Math.max(...rows.map((r) => r.length));
+  const LBL = 14 + per * (NAME + 6) + numW + 4;
   const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
   const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
-  const ticks = Array.from({ length: Math.round(-yMin / step) + 1 }, (_, i) => -i * step);
+  const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
   const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = Array.from({ length: last }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode
   // numbers), then push up only the ones that still crowd. A hairline joins a moved label to its line.
-  const ends = sorted(end), labelY = {};
-  ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, end)), i ? labelY[ends[i - 1]] + 15 : -Infinity); });
-  labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
-  for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
+  const labelY = {}, slot = {};
+  if (exact) for (const r of rows) r.forEach((m, i) => { labelY[m] = y(gap(m, end)); slot[m] = i; });
+  else {
+    ends.forEach((m, i) => { labelY[m] = Math.max(y(gap(m, end)), i ? labelY[ends[i - 1]] + 15 : -Infinity); slot[m] = 0; });
+    labelY[ends.at(-1)] = Math.min(labelY[ends.at(-1)], B);
+    for (let i = ends.length - 2; i >= 0; i--) labelY[ends[i]] = Math.min(labelY[ends[i]], labelY[ends[i + 1]] - 15);
+  }
   // Leader drawn last, so its line sits on top. Each name is one group
   // (data-who) so a tap can bring it forward and fade the rest.
   const lines = [...ends].reverse().map((name) => {
@@ -149,8 +161,10 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
     const [dx, dy] = pts[cur - 1], dots = `<circle class="rc-pt now" cx="${f1(dx)}" cy="${f1(dy)}" r="4.5" style="fill:${c}"/>`;
     const [lx, ly] = pts.at(-1), ty = labelY[name];
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
-    const text = `<text class="rc-name" x="${f1(lx + 14)}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
-      + `<text class="rc-name rc-total" x="${f1(lx + 14 + NAME + 6 + numW)}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
+    // Tied names (exact) sit side by side; each draws the row's number, in the
+    // same place, so it stays readable whichever one is followed.
+    const text = `<text class="rc-name" x="${f1(lx + 14 + slot[name] * (NAME + 6))}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
+      + `<text class="rc-name rc-total" x="${f1(lx + 14 + per * (NAME + 6) + numW)}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);
       const say = `Ep ${e} · ${name} · ${total(name, e)} ${unit} · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;

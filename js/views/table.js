@@ -95,40 +95,54 @@ export function standingsSlides(d) {
   return d.episodes.map(({ ep: w }) => `
     <section class="slide st-slide" data-week="${w}">
       <div class="hero st-hero${state.how ? " explain" : ""}">${standingsHero(d, w)}</div>
-      ${w > d.weeksScored && !state.edit ? "" : `<div class="card board">
-        <div class="st-head">
-          <span class="st-rk" aria-hidden="true"></span>
-          <span class="st-side show"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.crown}"/></svg>Show</span>
-          <span class="st-side league"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS.trophy}"/></svg>League</span>
-        </div>
-        <div class="rows">${standingsRows(d, w)}</div>
-      </div>`}
-      ${w > d.weeksScored ? "" : standingsRace(d, w, "show") + standingsRace(d, w, "league")}
+      ${w > d.weeksScored && !state.edit ? "" : board(d, w)}
     </section>`).join("");
 }
 
 /**
- * Under a scored week's boards, each board's race (on request: the Episodes
- * tab's "The race so far", for every player): each player's gap to that
- * board's leader after every scored week, with a dot at the week on show and
- * an end label (the shortest prefix that tells every player apart, then the
- * gap). That week's top three are in gold, silver and bronze, everyone else
- * in the board's colour, a step back; tap a line to follow it. The chart is as
- * tall as its labels need (15 apart).
+ * The board: its head, then either the rows or, while a head is pressed
+ * (state.stView), that board's race chart in their place (boardChart).
  */
-function standingsRace(d, w, k) {
+function board(d, w) {
+  const k = chartable(d, w) ? state.stView : null;
+  return `<div class="card board"${k ? ` data-chart="${k}"` : ""}>
+        <div class="st-head">
+          <span class="st-rk" aria-hidden="true"></span>
+          ${["show", "league"].map((b) => boardHead(d, w, b, k)).join("")}
+        </div>
+        <div class="rows">${standingsRows(d, w)}</div>
+        <div class="st-chart">${k ? boardChart(d, w, k) : ""}</div>
+      </div>`;
+}
+/** Only a scored week has a race to draw (an unscored one has a board only in edit mode). */
+export const chartable = (d, w) => w <= d.weeksScored;
+const GRAPH = `<svg class="st-graph" viewBox="0 0 12 12" aria-hidden="true"><path d="M1 9.5 4.5 5.5 7 7.5 11 2.5"/></svg>`;
+/** A head: the board's crown or trophy and name; a button that swaps the rows for its race chart, and back. */
+export function boardHead(d, w, b, k) {
+  const icon = `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="${HOW_ICONS[b === "show" ? "crown" : "trophy"]}"/></svg>`;
+  if (!chartable(d, w)) return `<span class="st-side ${b}">${icon}${BOARD[b]}</span>`;
+  return `<button type="button" class="st-side ${b}${k === b ? " on" : ""}" data-board="${b}" aria-pressed="${k === b}" aria-label="${BOARD[b]}: ${k === b ? "show the standings" : "show the race so far"}">${icon}<span>${BOARD[b]}${GRAPH}</span></button>`;
+}
+
+/**
+ * A board's race (on request: the Episodes tab's "The race so far", for every
+ * player), shown in place of the rows while its head is pressed: each
+ * player's gap to that board's leader after every scored week, with a dot at
+ * the week on show. Each end label sits level with its line (exact: no
+ * hairlines; tied players share a row, and the chart is as tall as that
+ * takes): the shortest prefix that tells every player apart, then the gap.
+ * That week's top three are in gold, silver and bronze, everyone else in the
+ * board's colour, a step back; tap a line to follow it.
+ */
+export function boardChart(d, w, k) {
   const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
   let n = 3;
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
   const rank = (m) => by[m].history[w - 1][`${k}Rank`];
   const color = (m) => [, "var(--gold2)", "var(--silver)", "var(--bronze)"][rank(m)] || `var(--${k}-hi)`;
   const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
-    color, label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, cls: (m) => (rank(m) > 3 ? "rest" : "") });
-  return `<div class="card race st-race ${k}">
-      <div class="card-head"><span><b>${BOARD[k]}</b> race so far</span><span class="legend">points behind the leader</span></div>
-      ${svg}
-      <p class="rc-cap"></p>
-    </div>`;
+    color, label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, cls: (m) => (rank(m) > 3 ? "rest" : ""), exact: true });
+  return `<div class="race st-race ${k}">${svg}<p class="rc-cap"></p></div>`;
 }
 
 /**

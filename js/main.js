@@ -5,7 +5,7 @@ import { loadText, parseCSV, buildSeries } from "./csv.js";
 import { initEdit } from "./edit.js";
 import { derive, currentSeriesKey } from "./league.js";
 import { $, $$, esc, reducedMotion, state, fmtWhen, until, perEpisodeStats, footer } from "./ui.js";
-import { standingsSlides, stWeek, weekTabs, rowMore } from "./views/table.js";
+import { standingsSlides, stWeek, weekTabs, rowMore, boardChart, boardHead, chartable } from "./views/table.js";
 import { epTabs, epSlides } from "./views/episodes.js";
 import { castOrder, castTabs, castSlides } from "./views/cast.js";
 import { mountPodiumFx } from "./podium-fx.js";
@@ -232,6 +232,15 @@ $("#p-standings").addEventListener("click", (e) => {
     queueLight();
     return;
   }
+  // A board's head (Show or League) swaps the rows for that board's race
+  // chart, full width; the same head swaps back, the other switches boards.
+  // It holds for every week (state.stView).
+  const head = e.target.closest(".st-side[data-board]");
+  if (head) {
+    state.stView = state.stView === head.dataset.board ? null : head.dataset.board;
+    syncBoards();
+    return;
+  }
   // An opened half's card title flips it between Points per episode and The
   // race so far; the choice holds for every row opened after it.
   const swap = e.target.closest(".xp-swap");
@@ -286,6 +295,18 @@ function syncOpen(slide) {
   const want = o && [...slide.querySelectorAll(`.sd[data-side="${o.side}"]`)].find((b) => b.dataset.p === o.name)?.closest(".pc");
   for (const row of slide.querySelectorAll(".pc.open")) if (row !== want || row.dataset.open !== o.side) openRow(row, null);
   if (want && !(want.classList.contains("open") && want.dataset.open === o.side && want.dataset.view === state.xpView)) openRow(want, o.side);
+}
+/** Apply state.stView to every week's board: its race chart in place of the rows, or the rows. */
+function syncBoards() {
+  for (const s of $$("#st-body .st-slide")) {
+    const board = s.querySelector(".board"), w = +s.dataset.week;
+    if (!board) continue;
+    const k = chartable(state.d, w) ? state.stView : null;
+    if (board.dataset.chart === (k || undefined)) continue;
+    if (k) board.dataset.chart = k; else delete board.dataset.chart;
+    board.querySelector(".st-chart").innerHTML = k ? boardChart(state.d, w, k) : "";
+    board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
+  }
 }
 /** Apply state.open: to its week, and to any week that still has a row open (closed at once). */
 function syncAll() {
