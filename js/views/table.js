@@ -125,23 +125,41 @@ export function boardHead(d, w, b, k) {
 }
 
 /**
+ * Each player's colour in the race charts (on request: "more colorful"): the
+ * same in both boards and every week, so a player can be followed from one to
+ * the other. The hues are spaced evenly round the colour wheel (24° apart for
+ * 15 players), dealt out in alphabetical order by a stride of about 0.38 of
+ * the way round (so names next to each other land far apart), and hues next
+ * to each other on the wheel alternate light and dark. OKLCH keeps every hue
+ * equally vivid on the dark card.
+ */
+const playerColor = (d) => {
+  const order = d.players.map((q) => q.name).sort((a, b) => a.localeCompare(b)), n = order.length;
+  const gcd = (a, b) => (b ? gcd(b, a % b) : a);
+  let k = Math.round(n * 0.382);
+  while (gcd(k, n) !== 1) k++;
+  return (m) => {
+    const slot = (order.indexOf(m) * k) % n;
+    return `oklch(${slot % 2 ? 0.7 : 0.84} 0.15 ${(20 + slot * 360 / n).toFixed(1)})`;
+  };
+};
+
+/**
  * A board's race (on request: the Episodes tab's "The race so far", for every
  * player), shown in place of the rows while its head is pressed: each
  * player's gap to that board's leader after every scored week, with a dot at
  * the week on show. Each end label sits level with its line (exact: no
  * hairlines; tied players share a row, and the chart is as tall as that
  * takes): the shortest prefix that tells every player apart, then the gap.
- * That week's top three are in gold, silver and bronze, everyone else in the
- * board's colour, a step back; tap a line to follow it.
+ * Each player has their own colour (playerColor), as each contestant has on
+ * Episodes; tap a line to follow it.
  */
 export function boardChart(d, w, k) {
   const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
   let n = 3;
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
-  const rank = (m) => by[m].history[w - 1][`${k}Rank`];
-  const color = (m) => [, "var(--gold2)", "var(--silver)", "var(--bronze)"][rank(m)] || `var(--${k}-hi)`;
   const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
-    color, label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, cls: (m) => (rank(m) > 3 ? "rest" : ""), exact: true });
+    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true });
   return `<div class="race st-race ${k}">${svg}<p class="rc-cap"></p></div>`;
 }
 

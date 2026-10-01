@@ -537,10 +537,6 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
 /* Tap a line: it comes forward (moved last in main.js) and the rest fade */
 .race g[data-who] { transition: opacity .2s; }
 .race.focus g[data-who]:not(.on) { opacity: .15; }
-/* Standings' races: everyone outside that week's top three (gold, silver,
-   bronze) steps back until followed. */
-.race g.rest { opacity: .6; }
-.race.focus g.rest.on { opacity: 1; }
 .race .rc-lead { stroke-width: 1; opacity: .6; }
 .rc-pt { stroke: var(--s2); stroke-width: 2; } /* a ring of the card's colour where lines cross */
 .rc-name { font-family: var(--fm); font-size: 12px; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; } /* like the task table's column heads */
