@@ -75,8 +75,8 @@ function slide(d, e) {
 }
 
 // ── The race so far ─────────────────────────────────────────────────────────
-// How far each contestant is behind the leader after every episode scored so
-// far, whichever episode is on show, with a dot on each line at this one (the
+// How far each contestant is behind the leader after every episode up to the
+// one on show (on request: the lines end there), with a dot at each line's end (the
 // leader runs flat along 0 at the top; the x axis always runs 1 to 10, so the
 // race builds rightwards week by week): a smooth line in their colour (a monotone cubic Bézier, so it
 // never overshoots a point, e.g. above the leader's 0 or past a real low),
@@ -86,7 +86,7 @@ function slide(d, e) {
 // forward and fade the rest; tap a point to read it in the caption.
 
 function raceChart(d, cur) {
-  const end = Math.max(cur, d.weeksScored); // the lines run to the latest episode scored
+  const end = cur; // the lines end at the episode on show
   const total = Object.fromEntries(d.names.map((n) => [n, [0]]));
   for (let e = 1; e <= end; e++) for (const n of d.names) total[n][e] = total[n][e - 1] + d.EPS[n][e];
   return `
