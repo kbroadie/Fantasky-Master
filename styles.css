@@ -318,6 +318,11 @@ button.st-side.league { border-left: 1px solid var(--b-gold); }
 /* A pressed head: the rows give way to the board's race chart, full width. */
 .board .st-chart { display: none; position: relative; z-index: 1; }
 .board[data-chart] .rows { display: none; }
+/* What the chart measures, as the Episodes card's legend says it; lighter
+   lines than Episodes', as fifteen of them cross. */
+.st-key { padding: 4px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); text-align: right; }
+.st-race path.rc-line { stroke-width: 1.6; }
+.race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
 .board[data-chart] .st-chart { display: block; padding-top: 6px; background: var(--s2); } /* the card colour the labels' halo assumes; covers the head's glow and grain */
 
 /* Rows are not compositing layers of their own: with one per row, iOS ran

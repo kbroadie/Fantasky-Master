@@ -135,7 +135,11 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const NAME = Math.max(...names.map((m) => label(m).length)) * 26 / 3, DIG = 7.4; // 26 for three letters
   const num = (m) => (gap(m, end) ? `−${-gap(m, end)}` : `${total(m, end)}`);
   const numW = Math.max(...names.map((m) => num(m).length)) * DIG, per = Math.max(...rows.map((r) => r.length));
-  const LBL = 14 + per * (NAME + 6) + numW + 4;
+  // Exact rows put the number first, right-aligned just after the line's end,
+  // then the names, so a long tie never pushes a number away from its line.
+  const LBL = exact ? 12 + numW + 8 + per * (NAME + 6) : 14 + per * (NAME + 6) + numW + 4;
+  const nameX = (lx, i) => (exact ? lx + 12 + numW + 8 : lx + 14) + i * (NAME + 6);
+  const numX = (lx) => (exact ? lx + 12 + numW : lx + 14 + per * (NAME + 6) + numW);
   const xEnd = Math.min(R, L + (W - LBL - L) * (last - 1) / Math.max(1, end - 1));
   const x = (e) => L + ((e - 1) / (last - 1)) * (xEnd - L), y = (v) => T + (v / yMin) * (B - T);
   const f1 = (v) => v.toFixed(1);
@@ -163,8 +167,8 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
     const lead = Math.abs(ty - ly) > 3 ? `<path class="rc-lead" d="M${f1(lx + 6)},${f1(ly)}L${f1(lx + 12)},${f1(ty)}" style="stroke:${c}"/>` : "";
     // Tied names (exact) sit side by side; each draws the row's number, in the
     // same place, so it stays readable whichever one is followed.
-    const text = `<text class="rc-name" x="${f1(lx + 14 + slot[name] * (NAME + 6))}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
-      + `<text class="rc-name rc-total" x="${f1(lx + 14 + per * (NAME + 6) + numW)}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
+    const text = `<text class="rc-name" x="${f1(nameX(lx, slot[name]))}" y="${f1(ty + 4)}" style="fill:${c}">${esc(label(name))}</text>`
+      + `<text class="rc-name rc-total${exact && !gap(name, end) ? " top" : ""}" x="${f1(numX(lx))}" y="${f1(ty + 4)}" text-anchor="end">${num(name)}</text>`;
     const hits = pts.map(([a, b], i) => {
       const e = i + 1, gg = gap(name, e);
       const say = `Ep ${e} · ${name} · ${total(name, e)} ${unit} · ${gg ? `${-gg} behind ${listing(leaders(e))}` : leaders(e).length > 1 ? "joint leader" : "leading"} (${ord(rank(e, name))})`;
