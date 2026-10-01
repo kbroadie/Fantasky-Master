@@ -657,7 +657,7 @@ score,22,5,4,F,"Disobey all instructions that start with ""Alex says""",,Richard
 score,22,5,5,L,Live: Snag the snake,,Chloe,5,,,,,,,,
 score,22,5,5,L,Live: Snag the snake,,Isy,0,,,,,,,,
 score,22,5,5,L,Live: Snag the snake,,Matt,0,,,,,,,,
-score,22,5,5,L,Live: Snag the snake,,Nina,0,,,,,,,,
+score,22,5,5,L,Live: Snag the snake,,Nina,-1,,,,,,,,
 score,22,5,5,L,Live: Snag the snake,,Richard,0,,,,,,,,
 pick,22,5,,,,Alex,Nina,,,,,,,,,
 pick,22,5,,,,Amanda,Chloe,,,,,,,,,
