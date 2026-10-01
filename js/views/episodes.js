@@ -127,8 +127,8 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   // (4px a point beyond that), and half that below the last row; stretched to
   // 148px if it comes out shorter.
   // Exact charts are drawn at their real width (`width`, measured), so text
-  // is true size and the edges line up with the board.
-  const W = exact ? Math.round(width) : 340, L = exact ? 12 : 10, R = exact ? W - 12 : 330, T = 12;
+  // is true size, inset 16px like the player race card's plot.
+  const W = exact ? Math.round(width) : 340, L = exact ? 16 : 10, R = exact ? W - 16 : 330, T = 12;
   const depths = rows.map((r) => -gap(r[0], end)), KP = 4;
   const steps = depths.slice(1).map((dd, i) => Math.max(15, KP * (dd - depths[i])));
   const tail = (deepest - depths.at(-1)) * KP / 2;
@@ -162,8 +162,7 @@ export function raceSvg({ names, cur, end, last, total, color, label, unit, cls 
   const x = (e) => (span1 > 1 ? L + ((e - 1) / (span1 - 1)) * (xEnd - L) : xEnd), y = (v) => (exact ? T + warp(-v) : T + (v / yMin) * (B - T));
   const f1 = (v) => v.toFixed(1);
   const ticks = Array.from({ length: Math.floor(-yMin / step + 1e-9) + 1 }, (_, i) => -i * step);
-  // Exact gridlines run edge to edge, like the board's row rules.
-  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${exact ? 0 : L}" x2="${exact ? W : R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
+  const grid = ticks.filter((v) => v).map((v) => `<line class="rc-grid" x1="${L}" x2="${R}" y1="${f1(y(v))}" y2="${f1(y(v))}"/>`).join("");
   const xAxis = Array.from({ length: span1 }, (_, i) => i + 1).map((e) => `<text class="rc-axis${e === cur ? " now" : e > end ? " later" : ""}" x="${f1(x(e))}" y="${H - 6}" text-anchor="middle">${e}</text>`).join("");
   // End labels at each line's end, kept at least 15 apart: push down where
   // they crowd, cap the lowest at the plot's bottom (clear of the episode

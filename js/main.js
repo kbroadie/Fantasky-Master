@@ -312,6 +312,8 @@ function syncBoards(force = false) {
     if (!force && board.dataset.chart === (k || undefined) && (!k || plot.firstChild)) continue;
     if (k) board.dataset.chart = k; else delete board.dataset.chart;
     if (k && !width) width = plot.clientWidth;
+    plot.classList.remove("show", "league");
+    if (k) plot.classList.add(k);
     plot.innerHTML = k ? boardChart(state.d, w, k, width) : "";
     board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
   }

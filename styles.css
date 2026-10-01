@@ -313,24 +313,25 @@ button.st-side { border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-
 button.st-side.league { border-left: 1px solid var(--b-gold); }
 .st-side.on { box-shadow: inset 0 -3px 0 var(--c); }
 .board[data-chart] .st-side:not(.on) { opacity: .5; }
-/* A pressed head: the rows give way to the board's race chart. The place
-   column runs on down its left (the head's strip, continued), and the chart
-   fills the rest at its real width, in the card's solid colour (which the
-   labels' halo assumes), covering the head's glow and grain. Its key reads
-   like a caption, from the chart's left edge; its gridlines run edge to edge
-   like the row rules; its lines are lighter than Episodes', as fifteen cross. */
+/* A pressed head: the rows give way to the board's race chart, styled like
+   an opened row's player race card (on request): inset by the same padding in
+   a card with the board's edge colour, the same head ("SHOW RACE SO FAR", the
+   board's name in its colour, a lowercase legend at the right), the same faint
+   white gridlines; drawn at its real width. Its lines are lighter than
+   Episodes', as fifteen cross. */
 .board .st-chart { display: none; position: relative; z-index: 1; }
 .board[data-chart] .rows { display: none; }
-.board[data-chart] .st-chart { display: grid; grid-template-columns: calc(var(--pe) + var(--rk)) minmax(0, 1fr); }
-.st-chart-rk { background: linear-gradient(rgba(10, 8, 10, .45), rgba(10, 8, 10, .45)), var(--s2); box-shadow: inset -1px 0 0 var(--b-gold); }
-.st-chart-plot { min-width: 0; background: var(--s2); }
+.board[data-chart] .st-chart { display: block; padding: 10px 10px 16px; background: linear-gradient(170deg, var(--s2), var(--s1)); }
+.st-chart .card { margin: 0; }
+.st-chart .st-race.show { border-color: var(--show-edge); }
+.st-chart .st-race.league { border-color: var(--league-edge); }
+.st-race .card-head { gap: 8px; letter-spacing: .06em; white-space: nowrap; }
+.st-race .card-head b { font-weight: inherit; }
+.st-race .card-head b.show { color: var(--show-hi); }
+.st-race .card-head b.league { color: var(--league-hi); }
 .race.st-race svg { max-width: none; width: 100%; height: auto; padding: 0; margin: 0; }
-.st-key { padding: 10px 12px 0; font: 400 11px var(--fm); letter-spacing: .06em; color: var(--t4); }
-.st-key b { font-weight: inherit; }
-.st-key b.show { color: var(--show-hi); }
-.st-key b.league { color: var(--league-hi); }
 .st-race path.rc-line { stroke-width: 1.6; }
-.st-race .rc-grid { stroke: var(--b-gold); } /* like the row rules it stands in for */
+.st-race .rc-grid { stroke: rgba(255, 255, 255, .08); } /* as the player race card's */
 .race .rc-name.rc-total.top { fill: var(--gold2); } /* the leader's total, gold as first place's points are on the board */
 
 /* Rows are not compositing layers of their own: with one per row, iOS ran
