@@ -50,7 +50,7 @@ Swiping left on Standings' Week 10 opens Episodes, swiping past the last episode
 - **Type:** nothing is smaller than 11px.
 - **Times:** every date, time and countdown is shown in the device's own time zone and format.
 - **Faces:** contestants always appear as their gold-framed portraits.
-- **Fonts:** as in v1, from Google Fonts: **Bungee** for headings, **Fredoka** for names, **Inter** for text and scores, **DM Mono** for labels.
+- **Fonts:** as in v1, from Google Fonts: **Bungee** for headings, **Nunito** for names (Fredoka in v1, replaced for legibility), **Inter** for text and scores, **DM Mono** for labels.
 - **Motion:** used for navigation (the sliding tab, a row opening), plus the winner's gold light and last place's stink gas on each episode (drawn on canvas, only while on screen). Reduced-motion settings switch these off.
 
 ## Performance
