@@ -101,10 +101,10 @@ export function standingsSlides(d) {
 
 /**
  * The board: its head, then either the rows or, while a head is pressed
- * (state.stView), that board's race chart in their place (boardChart): a
- * card inset like an opened row's (the player race card's frame, head and
- * gridlines). The chart is drawn at its measured width, so main.js fills it
- * in (syncBoards).
+ * (state.stView), that board's race chart above them, pushing them down
+ * (boardChart): a card inset like an opened row's (the player race card's
+ * frame, head and gridlines). The chart is drawn at its measured width, so
+ * main.js fills it in (syncBoards).
  */
 function board(d, w) {
   const k = chartable(d, w) ? state.stView : null;
@@ -113,8 +113,8 @@ function board(d, w) {
           <span class="st-rk" aria-hidden="true"></span>
           ${["show", "league"].map((b) => boardHead(d, w, b, k)).join("")}
         </div>
-        <div class="rows">${standingsRows(d, w)}</div>
         <div class="st-chart"><div class="card race st-race st-chart-plot${k ? ` ${k}` : ""}"></div></div>
+        <div class="rows">${standingsRows(d, w)}</div>
       </div>`;
 }
 /** Only a scored week has a race to draw (an unscored one has a board only in edit mode). */
@@ -160,9 +160,14 @@ export function boardChart(d, w, k, width) {
   const names = d.players.map((q) => q.name), by = Object.fromEntries(d.players.map((q) => [q.name, q]));
   let n = 3;
   while (n < 8 && new Set(names.map((m) => m.slice(0, n).toUpperCase())).size < names.length) n++;
-  const svg = raceSvg({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][k],
-    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[k]} points`, exact: true, width });
-  return `<div class="card-head"><span><b class="${k}">${BOARD[k]}</b> race so far</span><span class="legend" aria-label="points behind the leader">Δ pts to leader</span></div>${svg}<p class="rc-cap"></p>`;
+  const opts = (b) => ({ names, cur: w, end: d.weeksScored, last: d.episodes.length, total: (m, e) => by[m].history[e - 1][b],
+    color: playerColor(d), label: (m) => m.slice(0, n), unit: `${BOARD[b]} points`, exact: true, width });
+  // The Show's and League's charts are the same height each week (the taller's).
+  const minPlot = Math.max(...["show", "league"].map((b) => raceSvg({ ...opts(b), measure: true })));
+  const svg = raceSvg({ ...opts(k), minPlot });
+  // The legend reads like the player race card's: "4 behind the leader" for
+  // the player being followed (main.js), "points behind the leader" until then.
+  return `<div class="card-head"><span><b class="${k}">${BOARD[k]}</b> race so far</span><span class="legend st-behind">points behind the leader</span></div>${svg}<p class="rc-cap"></p>`;
 }
 
 /**

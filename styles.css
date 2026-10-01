@@ -313,14 +313,14 @@ button.st-side { border: 0; padding: 0; margin: 0; cursor: pointer; -webkit-tap-
 button.st-side.league { border-left: 1px solid var(--b-gold); }
 .st-side.on { box-shadow: inset 0 -3px 0 var(--c); }
 .board[data-chart] .st-side:not(.on) { opacity: .5; }
-/* A pressed head: the rows give way to the board's race chart, styled like
-   an opened row's player race card (on request): inset by the same padding in
+/* A pressed head: the board's race chart opens above the rows, pushing them
+   down, styled like an opened row's player race card (on request): inset by the same padding in
    a card with the board's edge colour, the same head ("SHOW RACE SO FAR", the
    board's name in its colour, a lowercase legend at the right), the same faint
    white gridlines; drawn at its real width. Its lines are lighter than
    Episodes', as fifteen cross. */
 .board .st-chart { display: none; position: relative; z-index: 1; }
-.board[data-chart] .rows { display: none; }
+.board[data-chart] .st-chart + .rows { border-top: 1px solid var(--b-gold); }
 .board[data-chart] .st-chart { display: block; padding: 10px 10px 16px; background: linear-gradient(170deg, var(--s2), var(--s1)); }
 .st-chart .card { margin: 0; }
 .st-chart .st-race.show { border-color: var(--show-edge); }
