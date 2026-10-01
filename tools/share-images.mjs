@@ -3,6 +3,7 @@
 //   img/share.jpg                 1200 × 630, the og:image WhatsApp & co. show
 //   img/icon-180.png              apple-touch-icon (iOS home screen)
 //   img/icon-192.png, icon-512.png  manifest.webmanifest (Android home screen)
+//   img/icon-32.png, icon-48.png    the browser-tab favicon
 // Re-run when a new series starts (the preview shows its cast):
 //   node tools/share-images.mjs [series]        (default: the latest in the CSV)
 // FM_CURL_IMAGES=1 fetches Google Fonts through curl, as in screenshots.mjs.
@@ -63,7 +64,7 @@ const ICON = page(`<div class="stage icon"><div class="brand"><span><span class=
   .icon .brand .g { text-shadow: 0 0 40px var(--gold-glow), 0 4px 0 rgba(0, 0, 0, .6); }`);
 
 const UA = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36";
-const browser = await chromium.launch();
+const browser = await chromium.launch({ args: ["--disable-lcd-text"] }); // grey antialiasing: no colour fringes on small icons
 async function shoot(html, w, h, scale, path, type) {
   const ctx = await browser.newContext({ viewport: { width: w, height: h }, deviceScaleFactor: scale });
   const p = await ctx.newPage();
@@ -79,6 +80,6 @@ async function shoot(html, w, h, scale, path, type) {
   console.log("✓", path);
 }
 await shoot(SHARE, 1200, 630, 1, "img/share.jpg", "jpeg");
-for (const [n, s] of [[512, 1], [192, 192 / 512], [180, 180 / 512]]) await shoot(ICON, 512, 512, s, `img/icon-${n}.png`, "png");
+for (const [n, s] of [[512, 1], [192, 192 / 512], [180, 180 / 512], [48, 48 / 512], [32, 32 / 512]]) await shoot(ICON, 512, 512, s, `img/icon-${n}.png`, "png");
 await browser.close();
 server.close();
