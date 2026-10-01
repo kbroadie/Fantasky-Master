@@ -239,7 +239,12 @@ $("#p-standings").addEventListener("click", (e) => {
   const head = e.target.closest(".st-side[data-board]");
   if (head) {
     state.stView = state.stView === head.dataset.board ? null : head.dataset.board;
-    syncBoards();
+    // Like a row opening: only the board tapped on animates (.ease), and its
+    // lines draw in; the other weeks just switch.
+    for (const b of $$("#st-body .board.ease")) b.classList.remove("ease");
+    const board = head.closest(".board");
+    board.classList.add("ease");
+    syncBoards(false, board);
     return;
   }
   // An opened half's card title flips it between Points per episode and The
@@ -303,7 +308,7 @@ function syncOpen(slide) {
  * week's board is the same width); `force` redraws them all (a resize, or a
  * fresh render).
  */
-function syncBoards(force = false) {
+function syncBoards(force = false, drawn = null) {
   let width = 0;
   for (const s of $$("#st-body .st-slide")) {
     const board = s.querySelector(".board"), w = +s.dataset.week;
@@ -312,9 +317,13 @@ function syncBoards(force = false) {
     if (!force && board.dataset.chart === (k || undefined) && (!k || plot.firstChild)) continue;
     if (k) board.dataset.chart = k; else delete board.dataset.chart;
     if (k && !width) width = plot.clientWidth;
-    plot.classList.remove("show", "league");
-    if (k) plot.classList.add(k);
-    plot.innerHTML = k ? boardChart(state.d, w, k, width) : "";
+    // Closing keeps the chart drawn while it folds away (like a row's card).
+    if (k) {
+      plot.classList.remove("show", "league");
+      plot.classList.add(k);
+      plot.innerHTML = boardChart(state.d, w, k, width);
+      plot.classList.toggle("draw", board === drawn && !reducedMotion);
+    }
     board.querySelector(".st-head").innerHTML = `<span class="st-rk" aria-hidden="true"></span>${["show", "league"].map((b) => boardHead(state.d, w, b, k)).join("")}`;
   }
 }

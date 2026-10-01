@@ -113,7 +113,7 @@ function board(d, w) {
           <span class="st-rk" aria-hidden="true"></span>
           ${["show", "league"].map((b) => boardHead(d, w, b, k)).join("")}
         </div>
-        <div class="st-chart"><div class="card race st-race st-chart-plot${k ? ` ${k}` : ""}"></div></div>
+        <div class="st-chart"><div class="st-chart-in"><div class="card race st-race st-chart-plot${k ? ` ${k}` : ""}"></div></div></div>
         <div class="rows">${standingsRows(d, w)}</div>
       </div>`;
 }
